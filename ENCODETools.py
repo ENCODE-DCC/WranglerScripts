@@ -90,10 +90,10 @@ def WriteJSON(new_object,object_file):
         outfile.close()
 
 # check json object for validity.  SHOULD ONLY NEED OBJECT.  NEED DEF TO EXTRACT VALUE (LIKE TYPE) FROM JSON OBJECT GRACEFULLY.
-def ValidJSON(object_type,object_id,new_object):
+def ValidJSON(object_type,object_id,new_object,keys):
     #get the relevant schema
-    object_schema = get_ENCODE(('/profiles/' + object_type + '.json'))
-            
+    object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
+
     # test the new object.  SHOULD HANDLE ERRORS GRACEFULLY        
     try:
         jsonschema.validate(new_object,object_schema)
@@ -109,14 +109,15 @@ def ValidJSON(object_type,object_id,new_object):
         print('Validation of ' + object_id + ' succeeded.')
         return True
 
-# intended to fix invalid JSON.  DOES NOT DO ANYTHING YET.
-def CleanJSON(object_type,object_id,new_object,keys):
-    for key,value in new_object.items():
-        new_object.pop(key)
-        if not ValidJSON(object_type,object_id,new_object):
-            new_object[key] = value
-        else:
-            return True
+# intended to fix invalid JSON.  removes unexpected or unpatchable properties.  DOES NOT REMOVE ITEMS THAT CAN ONLY BE POSTED
+def CleanJSON(new_object,object_schema):
+    for key in new_object.keys():
+        if not object_schema[u'properties'].get(key):
+            new_object.pop(key)
+        elif object_schema[u'properties'][key].get(u'requestMethod'):
+            if 'PATCH' not in object_schema[u'properties'][key][u'requestMethod']:
+                new_object.pop(key)
+    return new_object
 
 # flatten embedded json objects to their ID
 def FlatJSON(json_object,keys):

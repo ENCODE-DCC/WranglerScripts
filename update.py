@@ -35,12 +35,12 @@ if __name__ == "__main__":
     # FUTURE: Should also be deal with errors that are only dependency based.
 
     # set server name.  MODIFY TO HAVE USER CHOOSE SERVER (ENUM LIST FROM THE FILE)
-    server_name = 'test'
+    server_name = 'submit-dev'
     
-    # set data file.  MODIFY TO HAVE USER CHOOSE SERVER (ENUM LIST FROM THE FILE)
+    # set data file
     data_file = 'update.json'
 
-    # get ID, PW.  MODIFY TO USE USERNAME/PASS TO GAIN ACCESS TO CREDENTIALS
+    # get ID, PW.  MODIFY TO USE USERNAME/PASS INSTEAD OF SERVER NAME TO GAIN ACCESS TO CREDENTIALS
     key_file = 'keys.txt'
     keys = KeyENCODE(key_file,server_name)
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     # load object  SHOULD HANDLE ERRORS GRACEFULLY
     print('Opening ' + data_file)
-    json_object = ReadJSON('objects/' + data_file)
+    json_object = ReadJSON(data_file)
     
     # if the returned json object is not a list, put it in one
     if type(json_object) is dict:
@@ -80,6 +80,9 @@ if __name__ == "__main__":
         # PROBLEM: SHOULD CHECK UUID AND NOT USE ANY SHORTCUT METADATA THAT MIGHT NEED TO CHANGE
         # BUT CAN'T USE UUID IF NEW... HENCE PROBLEM
         old_object = FlatJSON(get_ENCODE(object_id,keys),keys)
+
+        # get relevant schema
+        object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
 
 #        # test the validity of new object
 #        if not ValidJSON(object_type,object_id,new_object):
@@ -106,9 +109,6 @@ if __name__ == "__main__":
         # if object is not found, verify and post it
         if old_object.get(u'title') == u'Not Found':
 
-            # get relevant schema
-            object_schema = get_ENCODE(('/profiles/' + object_type + '.json'))
-            
             # test the new object.  SHOULD HANDLE ERRORS GRACEFULLY        
             try:
                 jsonschema.validate(new_object,object_schema)
@@ -123,18 +123,19 @@ if __name__ == "__main__":
                 print('Validation of ' + object_id + ' succeeded.')
 
                 # post the new object(s).  SHOULD HANDLE ERRORS GRACEFULLY
-                response = new_ENCODE(object_collection,new_object,keys)
+                response = new_ENCODE(object_type,new_object,keys)
 
 
-        # if object is found, check for differences and patch it if needed.
+        # if object is found, check for differences and patch it if needed/valid.
         else:
 
-            # compare new object to old one, remove identical fields.  Also, remove fields not present in schema. SHOULD INFORM OF THIS OPERATION, BUT NOT NEEDED WHEN SINGLE PATCH CODE EXISTS.
+            # compare new object to old one, remove identical fields.
             for key in new_object.keys():
                 if new_object.get(key) == old_object.get(key):
                     new_object.pop(key)
-                elif not old_object.get(key):
-                    new_object.pop(key)
+
+            # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PATCHED.
+            new_object = CleanJSON(new_object,object_schema)
 
             # if there are any different fields, patch them.  SHOULD ALLOW FOR USER TO VIEW/APPROVE DIFFERENCES
             if new_object:
