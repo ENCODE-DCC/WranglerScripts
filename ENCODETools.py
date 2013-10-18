@@ -63,16 +63,17 @@ def new_ENCODE(collection_id, object_json):
     return response.json()
 
 # get keys from file
-def KeyENCODE(key_file,server_name):
+def KeyENCODE(key_file,user_name,server_name):
     key_open = open(key_file)
     keys = csv.DictReader(key_open,delimiter = '\t')
     for key in keys:
-        if key.get('Server') == server_name:
+        if (key.get('Server') == server_name) & (key.get('User') == user_name):
             key_info = {}
             key_info['user'] = key.get('User')
             key_info['server'] = ('http://' + key.get('Server') + '.encodedcc.org')
             key_info['authid'] = key.get('ID')
             key_info['authpw'] = key.get('PW')
+            print('Identity confirmed')
     key_open.close()
     return(key_info)
 

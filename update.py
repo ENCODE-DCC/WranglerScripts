@@ -3,13 +3,16 @@ from ENCODETools import get_ENCODE
 from ENCODETools import patch_ENCODE
 from ENCODETools import new_ENCODE
 from ENCODETools import GetENCODE
-from ENCODETools import KeyENCODE
+#from ENCODETools import KeyENCODE
 from ENCODETools import ReadJSON
 #from ENCODETools import WriteJSON
 from ENCODETools import ValidJSON
 from ENCODETools import CleanJSON
 from ENCODETools import FlatJSON
 #from ENCODETools import EmbedJSON
+
+from identity import data_file
+from identity import keys
 
 
 if __name__ == "__main__":
@@ -18,20 +21,6 @@ if __name__ == "__main__":
     Authentication is determined from the keys.txt file.
     '''
     # FUTURE: Should also be deal with errors that are only dependency based.
-
-    # set server name.  MODIFY TO HAVE USER CHOOSE SERVER (ENUM LIST FROM THE FILE)
-    server_name = 'submit'
-    
-    # set data file
-    data_file = 'update.json'
-
-    # get ID, PW.  MODIFY TO USE USERNAME/PASS INSTEAD OF SERVER NAME TO GAIN ACCESS TO CREDENTIALS
-    key_file = 'keys.txt'
-    keys = KeyENCODE(key_file,server_name)
-
-    # let user know the server/user that is set for running script
-    print(keys['user'] + ' will be running this update on ' + keys['server'])
-    #print(AUTHID,AUTHPW)
 
     # load objects in object folder.  MODIFY TO HAVE USER VIEW AND SELECT OBJECTS
     #object_filenames = os.listdir('objects/')
