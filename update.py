@@ -1,14 +1,3 @@
-import sys
-import os
-import csv
-import json
-import jsonschema
-import requests
-from pyelasticsearch import ElasticSearch
-import xlrd
-import xlwt
-from base64 import b64encode
-
 # ENCODE Tools functions
 from ENCODETools import get_ENCODE
 from ENCODETools import patch_ENCODE
@@ -16,14 +5,11 @@ from ENCODETools import new_ENCODE
 from ENCODETools import GetENCODE
 from ENCODETools import KeyENCODE
 from ENCODETools import ReadJSON
-from ENCODETools import WriteJSON
+#from ENCODETools import WriteJSON
 from ENCODETools import ValidJSON
 from ENCODETools import CleanJSON
 from ENCODETools import FlatJSON
-from ENCODETools import EmbedJSON
-
-# set headers.  UNCLEAR IF THIS IS USED PROPERLY
-HEADERS = {'content-type': 'application/json'}
+#from ENCODETools import EmbedJSON
 
 
 if __name__ == "__main__":
@@ -34,7 +20,7 @@ if __name__ == "__main__":
     # FUTURE: Should also be deal with errors that are only dependency based.
 
     # set server name.  MODIFY TO HAVE USER CHOOSE SERVER (ENUM LIST FROM THE FILE)
-    server_name = 'submit-dev'
+    server_name = 'submit'
     
     # set data file
     data_file = 'update.json'
@@ -108,22 +94,10 @@ if __name__ == "__main__":
         # if object is not found, verify and post it
         if old_object.get(u'title') == u'Not Found':
 
-            # test the new object.  SHOULD HANDLE ERRORS GRACEFULLY        
-            try:
-                jsonschema.validate(new_object,object_schema)
-            # did not validate
-            except Exception as e:
-                print('Validation of ' + object_id + ' failed.')
-                print(e)
-
-            # did validate
-            else:
-                # inform the user of the success
-                print('Validation of ' + object_id + ' succeeded.')
-
+            # test the new object       
+            if ValidJSON(object_type,object_id,new_object,keys):
                 # post the new object(s).  SHOULD HANDLE ERRORS GRACEFULLY
                 response = new_ENCODE(object_type,new_object,keys)
-
 
         # if object is found, check for differences and patch it if needed/valid.
         else:

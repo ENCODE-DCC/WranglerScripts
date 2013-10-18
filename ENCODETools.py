@@ -28,7 +28,7 @@ def GetENCODE(object_id,keys):
         url = keys['server']+object_id+'?limit=all'
         #print(url)
         try:
-            response = requests.get(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS)
+            response = requests.get(url,auth=(keys['authid'],keys['authpw']), headers=HEADERS)
             if not response.status_code == 200:
                 print >> sys.stderr, response.text
         # no
