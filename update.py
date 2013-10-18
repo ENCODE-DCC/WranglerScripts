@@ -10,7 +10,6 @@ import xlwt
 from base64 import b64encode
 
 # ENCODE Tools functions
-sys.path.append('/Users/Drew/Google Drive/Scripts/ENCODE-DCC/submission_sample_scripts/dte')
 from ENCODETools import get_ENCODE
 from ENCODETools import patch_ENCODE
 from ENCODETools import new_ENCODE
