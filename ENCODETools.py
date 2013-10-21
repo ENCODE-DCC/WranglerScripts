@@ -53,11 +53,11 @@ def patch_ENCODE(obj_id,patch_json,keys):
     return response.json()
 
 # post object to server
-def new_ENCODE(collection_id, object_json):
+def new_ENCODE(collection_id, object_json,keys):
     '''POST an ENCODE object as JSON and return the resppnse JSON'''
-    url = SERVER+'/'+collection_id+'/'
+    url = keys['server'] +'/'+collection_id+'/'
     json_payload = json.dumps(object_json)
-    response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
+    response = requests.post(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS, data=json_payload)
     if not response.status_code == 201:
         print >> sys.stderr, response.text
     return response.json()
