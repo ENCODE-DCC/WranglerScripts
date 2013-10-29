@@ -148,7 +148,7 @@ def EmbedJSON(json_object,keys):
         elif type(value) is list:
             value_list = value
         for value_check in value_list:
-            if type(value_check) is unicode:
+            if (type(value_check) is unicode) & (len(value_check) > 1):
                 if str(value_check[0]) == '/':
                     json_sub_object = GetENCODE(str(value_check),keys)
                     if type(json_sub_object) is dict:
