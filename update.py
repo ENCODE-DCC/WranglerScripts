@@ -42,21 +42,24 @@ if __name__ == "__main__":
 
     for new_object in object_list:
         
-        new_object = FlatJSON(new_object,keys)
-
         # define object parameters.  NEEDS TO RUN A CHECK TO CONFIRM THESE EXIST FIRST.
         object_type = str(new_object[u'@type'][0])
         object_id = str(new_object[u'@id'])
         object_uuid = str(new_object[u'uuid'])
         object_name = str(new_object[u'accession'])
 
+        # get relevant schema
+        object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
+
+        # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PATCHED.
+        new_object = CleanJSON(new_object,object_schema)
+
+        new_object = FlatJSON(new_object,keys)
+
         # check to see if object already exists  
         # PROBLEM: SHOULD CHECK UUID AND NOT USE ANY SHORTCUT METADATA THAT MIGHT NEED TO CHANGE
         # BUT CAN'T USE UUID IF NEW... HENCE PROBLEM
-        old_object = FlatJSON(get_ENCODE(object_id,keys),keys)
-
-        # get relevant schema
-        object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
+        old_object = GetENCODE(object_id,keys)
 
 #        # test the validity of new object
 #        if not ValidJSON(object_type,object_id,new_object):
@@ -90,14 +93,13 @@ if __name__ == "__main__":
 
         # if object is found, check for differences and patch it if needed/valid.
         else:
-
+            # flatten original (to match new)
+            old_object = FlatJSON(old_object,keys)
+            
             # compare new object to old one, remove identical fields.
             for key in new_object.keys():
                 if new_object.get(key) == old_object.get(key):
                     new_object.pop(key)
-
-            # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PATCHED.
-            new_object = CleanJSON(new_object,object_schema)
 
             # if there are any different fields, patch them.  SHOULD ALLOW FOR USER TO VIEW/APPROVE DIFFERENCES
             if new_object:
