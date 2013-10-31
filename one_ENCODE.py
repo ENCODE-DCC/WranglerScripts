@@ -5,6 +5,7 @@
 import requests
 import json
 import sys
+import os.path
 from base64 import b64encode
 from copy import deepcopy
 
@@ -119,8 +120,8 @@ def main():
 		default='default',
 		help="The keypair identifier from the keyfile.  Default is --key=default")
 	parser.add_argument('--keyfile',
-		default="./keypairs.json",
-		help="The keypair file.  Default is --keyfile=./keypairs.json")
+		default=os.path.expanduser("~/keypairs.json"),
+		help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
 	parser.add_argument('--authid',
 		help="The HTTP auth ID.")
 	parser.add_argument('--authpw',
