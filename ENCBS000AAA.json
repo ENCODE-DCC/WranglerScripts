@@ -1,0 +1,44 @@
+{
+    "@type": [
+        "biosample",
+        "item"
+    ],
+    "accession": "ENCBS000AAA",
+    "aliases": [
+        "richard-myers:MCF-7 rep 3"
+    ],
+    "alternate_accessions": [],
+    "award": "U54HG004576",
+    "biosample_term_id": "BTO:0000093",
+    "biosample_term_name": "MCF-7 cell",
+    "biosample_type": "immortalized cell line",
+    "constructs": [],
+    "culture_harvest_date": "2012-04-10",
+    "culture_start_date": "2012-03-16",
+    "derived_from": [],
+    "description": "mammary gland, adenocarcinoma",
+    "donor": "ENCDO000AAE",
+    "encode2_dbxrefs": [
+        "MCF-7"
+    ],
+    "health_status": "unknown",
+    "lab": "richard-myers",
+    "life_stage": "unknown",
+    "note": "(PMID: 4357757)",
+    "organism": "/organisms/human/",
+    "part_of": [],
+    "passage_number": 5,
+    "pooled_from": [],
+    "product_id": "HTB-22",
+    "protocol_documents": [
+        "984071d4-9149-476a-b353-93592c6f48f3"
+    ],
+    "rnais": [],
+    "schema_version": "1",
+    "source": "atcc",
+    "status": "CURRENT",
+    "submitted_by": "fpauli@hudsonalpha.org",
+    "treatments": [],
+    "url": "http://www.atcc.org/Products/All/HTB-22.aspx",
+    "uuid": "56e94f2b-25ac-4c58-9828-f63b66220999"
+}
