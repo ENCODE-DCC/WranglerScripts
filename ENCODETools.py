@@ -142,18 +142,23 @@ def FlatJSON(json_object,keys):
 # expand json object
 def EmbedJSON(json_object,keys):
     for key,value in json_object.items():
-        value_list = []
-        if type(value) is unicode:
-            value_list.append(value)
-        elif type(value) is list:
-            value_list = value
-        for value_check in value_list:
-            if (type(value_check) is unicode) & (len(value_check) > 1):
-                if str(value_check[0]) == '/':
-                    json_sub_object = GetENCODE(str(value_check),keys)
+        if (type(value) is unicode) & (len(value) > 1):
+            if str(value[0]) == '/':
+                    json_sub_object = GetENCODE(str(value),keys)
                     if type(json_sub_object) is dict:
                         #json_sub_object = EmbedJSON(json_sub_object,keys)
                         json_object[key] = json_sub_object
+        elif type(value) is list:
+            values_embed = []
+            for entry in value:
+                if (type(entry) is unicode) & (len(entry) > 1):
+                    if str(entry[0]) == '/':
+                        json_sub_object = GetENCODE(str(entry),keys)
+                        if type(json_sub_object) is dict:
+                            #json_sub_object = EmbedJSON(json_sub_object,keys)
+                            values_embed.append(json_sub_object)
+            if len(values_embed) is len(json_object[key]):
+                json_object[key] = values_embed
     return json_object
 
 
