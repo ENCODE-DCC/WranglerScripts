@@ -9,7 +9,34 @@ import os.path
 from base64 import b64encode
 from copy import deepcopy
 
-EPILOG = __doc__
+EPILOG = '''Examples:
+
+To get one ENCODE object from the server/keypair called "default" in the default keypair file and print the JSON:
+
+	%(prog)s --id ENCBS000AAA
+
+To use a different key from the default keypair file:
+
+	%(prog)s --id ENCBS000AAA --key submit
+
+To save the output:
+
+	%(prog)s --id ENCBS000AAA --key submit > my_saved_json.json
+
+To PATCH or POST from JSON:
+
+	%(prog)s --infile my_new_json.json
+	Where the file contains a @id property that, if it matches an existing object do a PATCH, else do a POST.
+
+To force a PUT:
+
+	%(prog)s --infile my_new_json.json --force-put
+
+To force a GET only (no PATCH, PUT or POST) of the object as it exists in the database:
+
+	%(prog)s --infile my_new_json.json --get-only
+
+'''
 
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
@@ -130,7 +157,7 @@ def main():
 
 	import argparse
 	parser = argparse.ArgumentParser(
-	    description="POST, PATCH or PUT one ENCODE JSON object", epilog=EPILOG,
+	    description=__doc__, epilog=EPILOG,
 	    formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 
