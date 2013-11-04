@@ -12,11 +12,6 @@ import sys, os.path
 
 EPILOG = __doc__
 
-'''store the ENCODE server address and an authorization keypair'''
-'''create the keypair from persona or get one from your wrangler'''
-SERVER = 'http://test.encodedcc.org'
-AUTHID = 'access_key_id'
-AUTHPW = 'secret_access_key'
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
 
@@ -25,26 +20,6 @@ def get_ENCODE(obj_id):
     url = SERVER+obj_id+'?limit=all'
     response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
     if not response.status_code == 200:
-        print >> sys.stderr, response.text
-    return response.json()
-
-def patch_ENCODE(obj_id, patch_json):
-    '''PATCH an existing ENCODE object and return the response JSON'''
-    url = SERVER+obj_id
-    json_payload = json.dumps(patch_json)
-    response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload)
-    print "Patch:"
-    print response.status_code
-    if not response.status_code == 200:
-        print >> sys.stderr, response.text
-    return response.json()
-
-def new_ENCODE(collection_id, object_json):
-    '''POST an ENCODE object as JSON and return the resppnse JSON'''
-    url = SERVER+collection_id
-    json_payload = json.dumps(object_json)
-    response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
-    if not response.status_code == 201:
         print >> sys.stderr, response.text
     return response.json()
 

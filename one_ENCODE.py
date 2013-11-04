@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-''' Script to add one ENCODE object from a file or stdin
+''' Script to add one ENCODE object from a file or stdin or get one object from an ENCODE server
 '''
 import requests
 import json
@@ -19,7 +19,17 @@ def get_ENCODE(obj_id):
 	'''
 	url = SERVER+obj_id+'?limit=all'
 	#url = SERVER+obj_id
+	if DEBUG_ON:
+		print "DEBUG: GET %s" %(url)
 	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
+	if DEBUG_ON:
+		print "DEBUG: GET RESPONSE code %s" %(response.status_code)
+		try:
+			if response.json():
+				print "DEBUG: GET RESPONSE JSON"
+				print json.dumps(response.json(), indent=4, separators=(',', ': '))
+		except:
+			print "DEBUG: GET RESPONSE text %s" %(response.text)
 	if not response.status_code == requests.codes.ok:
 		response.raise_for_status()
 	return response.json()
@@ -34,8 +44,13 @@ def patch_ENCODE(obj_id, patch_input):
 	else:
 		print >> sys.stderr, 'Datatype to patch is not string or dict.'
 	url = SERVER+obj_id
-	print "In patch with %s" %(json_payload)
+	if DEBUG_ON:
+		print "DEBUG: PATCH URL : %s" %(url)
+		print "DEBUG: PATCH data: %s" %(json_payload)
 	response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload)
+	if DEBUG_ON:
+		print "DEBUG: PATCH RESPONSE"
+		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
 	if not response.status_code == 200:
 	    print >> sys.stderr, response.text
 	return response.json()
@@ -50,9 +65,13 @@ def replace_ENCODE(obj_id, put_input):
 	else:
 		print >> sys.stderr, 'Datatype to put is not string or dict.'
 	url = SERVER+obj_id
-	print "PUT URL : %s" %(url)
-	print "PUT : %s" %(json_payload)
+	if DEBUG_ON:
+		print "DEBUG: PUT URL : %s" %(url)
+		print "DEBUG: PUT data: %s" %(json_payload)
 	response = requests.put(url, auth=(AUTHID, AUTHPW), data=json_payload)
+	if DEBUG_ON:
+		print "DEBUG: PUT RESPONSE"
+		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
 	if not response.status_code == 200:
 		print >> sys.stderr, response.text
 	print response.text
@@ -68,11 +87,14 @@ def new_ENCODE(collection_id, post_input):
 	else:
 		print >> sys.stderr, 'Datatype to post is not string or dict.'
 	url = SERVER+collection_id
-	if True:
-		print "POST to URL: %s" %(url)
-		print "POST data:"
+	if DEBUG_ON:
+		print "DEBUG: POST URL : %s" %(url)
+		print "DEBUG: POST data:"
 		print json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))
 	response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
+	if DEBUG_ON:
+		print "DEBUG: POST RESPONSE"
+		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
 	if not response.status_code == 201:
 		print >> sys.stderr, response.text
 	print "Return object:"
@@ -141,6 +163,9 @@ def main():
 		action='store_true',
 		help="Print debug messages.  Default is False.")
 	args = parser.parse_args()
+
+	global DEBUG_ON
+	DEBUG_ON = args.debug
 
 	if args.get_only:
 		GET_ONLY = True
