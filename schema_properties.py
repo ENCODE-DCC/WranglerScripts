@@ -146,7 +146,7 @@ def main():
 
 	outstring = ""
 	for heading in headings:
-		if args.submittable and heading in exclude_unsubmittable:
+		if args.submittable and heading.split(':')[0] in exclude_unsubmittable:
 			pass
 		else:
 			outstring += heading
