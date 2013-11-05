@@ -36,6 +36,10 @@ To force a GET only (no PATCH, PUT or POST) of the object as it exists in the da
 
 	%(prog)s --infile my_new_json.json --get-only
 
+In case of emergency, break glass:
+
+	echo '{"@id": "/biosamples/ENCBS999JSS/", "note": "This is destructive"}' | %(prog)s
+
 '''
 
 '''force return from the server in JSON format'''
