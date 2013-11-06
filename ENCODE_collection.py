@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-'''GET an ENCODE JSON schema and print a useful list of properties, perhaps tab-delimited for a spreadsheet header'''
+'''GET an ENCODE collection and output a tsv of all objects and their properties suitable for spreadsheet import'''
 
 '''use requests to handle the HTTP connection'''
 import requests
@@ -10,23 +10,24 @@ import json
 import jsonschema
 import sys, os.path
 
-EPILOG = '''Examples:
+EPILOG = '''Limitations:
 
-Print the sorted list of properties for the human-donor schema (using the default server/keypair from the default keypair file):
+Gets all objects, no searching implemented yet.
+Bug #822 makes this not work for characterizations, datasets, documents, experiments and software
+	(I can write a workaround but only if 822 takes long to fix)
+Arrays of strings come back with the items quoted, SO NOT SUITABLE FOR DIRECT PATCH back
 
-	%(prog)s human-donor
-	%(prog)s human-donors
-	%(prog)s human_donor
-	%(prog)s human_donors
-	%(prog)s human-donor.json
+Examples:
 
-Print the list of submittable replicate properties from submit-dev, tab-delimited
+Dump all the biosamples, with all schema properties, from the default server with default keypair and save to a file
 
-	%(prog)s replicate --key submit-dev --tsv --submittable
+	# be patient, this takes some time to run
+	%(prog)s biosamples > biosamples.tsv
 
-diff the biosample schema properties between submit and demo-v
+Same for human-donors
 
-	diff <(%(prog)s biosample --key submit) <(%(prog)s biosample --key demo-v)
+	%(prog)s human-donors > human-donors.tsv
+
 '''
 
 '''force return from the server in JSON format'''
@@ -75,6 +76,31 @@ def processkeys(args):
 	if not SERVER.endswith("/"):
 		SERVER += "/"
 
+def flat_one(JSON_obj):
+	return [JSON_obj[identifier] for identifier in \
+				['accession', 'name', 'email', 'title', 'uuid', 'href'] \
+				if identifier in JSON_obj][0]
+
+def flat_ENCODE(JSON_obj):
+	flat_obj = {}
+	for key in JSON_obj:
+		if isinstance(JSON_obj[key], dict):
+			flat_obj.update({key:flat_one(JSON_obj[key])})
+		elif isinstance(JSON_obj[key], list) and JSON_obj[key] != [] and isinstance(JSON_obj[key][0], dict):
+			newlist = []
+			for obj in JSON_obj[key]:
+				newlist.append(flat_one(obj))
+			flat_obj.update({key:newlist})
+		else:
+			flat_obj.update({key:JSON_obj[key]})
+	return flat_obj
+
+def pprint_ENCODE(JSON_obj):
+	if ('type' in JSON_obj) and (JSON_obj['type'] == "object"):
+		print json.dumps(JSON_obj['properties'], sort_keys=True, indent=4, separators=(',', ': '))
+	else:
+		print json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': '))
+
 
 def main():
 
@@ -85,15 +111,11 @@ def main():
 	)
 
 	parser.add_argument('collection',
-		help="Anything resembling the schema name you want. (E.g. biosamples, biosample, biosample.json, human-donor, human_donor, human-donors, human_donors, etc.)")
+		help="The collection to get")
 	parser.add_argument('--submittable',
 		default=False,
 		action='store_true',
 		help="Show only properties you might want a submitter to submit.")
-	parser.add_argument('--tsv',
-		default=False,
-		action='store_true',
-		help="Display the properties as a tab-delimited string, suitable for import into a spreadsheet.")
 	parser.add_argument('--server',
 		help="Full URL of the server.")
 	parser.add_argument('--key',
@@ -144,18 +166,33 @@ def main():
 
 	exclude_unsubmittable = ['accession', 'uuid', 'schema_version', 'alternate_accessions', 'submitted_by']
 
-	outstring = ""
+	global collection
+	collection = get_ENCODE(supplied_name)
+	collected_items = collection['@graph']
+
+	headstring = ""
 	for heading in headings:
 		if args.submittable and heading.split(':')[0] in exclude_unsubmittable:
 			pass
 		else:
-			outstring += heading
-			if args.tsv:
-				outstring += '\t'
+			headstring += heading + '\t'
+	headstring = headstring.rstrip()
+	print headstring
+
+	for obj in [get_ENCODE(item['@id']) for item in collected_items]:
+		obj = flat_ENCODE(obj)
+		rowstring = ""
+		for header in headstring.split('\t'):
+			prop_key = header.split(':')[0]
+			if prop_key in obj:
+				tempstring = json.dumps(obj[prop_key]).lstrip('"').rstrip('"')
+				if tempstring == '[]':
+					tempstring = ""
+				rowstring += tempstring + '\t'
 			else:
-				outstring += '\n'
-	outstring = outstring.rstrip()
-	print outstring
+				rowstring += '\t'
+		rowstring = rowstring.rstrip()
+		print rowstring
 
 if __name__ == '__main__':
 	main()
