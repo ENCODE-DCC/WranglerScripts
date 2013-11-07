@@ -58,6 +58,7 @@ def new_ENCODE(collection_id, object_json,keys):
     url = keys['server'] +'/'+collection_id+'/'
     json_payload = json.dumps(object_json)
     response = requests.post(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS, data=json_payload)
+    print(response.status_code)
     if not response.status_code == 201:
         print >> sys.stderr, response.text
     return response.json()
@@ -111,12 +112,14 @@ def ValidJSON(object_type,object_id,new_object,keys):
         return True
 
 # intended to fix invalid JSON.  removes unexpected or unpatchable properties.  DOES NOT REMOVE ITEMS THAT CAN ONLY BE POSTED
-def CleanJSON(new_object,object_schema):
+def CleanJSON(new_object,object_schema,action):
     for key in new_object.keys():
         if not object_schema[u'properties'].get(key):
             new_object.pop(key)
         elif object_schema[u'properties'][key].get(u'requestMethod'):
-            if 'PATCH' not in object_schema[u'properties'][key][u'requestMethod']:
+            if object_schema[u'properties'][key][u'requestMethod'] is []:
+                new_object.pop(key)
+            elif action not in object_schema[u'properties'][key][u'requestMethod']:
                 new_object.pop(key)
     return new_object
 
@@ -142,8 +145,9 @@ def FlatJSON(json_object,keys):
 # expand json object
 def EmbedJSON(json_object,keys):
     for key,value in json_object.items():
-        if (type(value) is unicode) & (len(value) > 1):
-            if str(value[0]) == '/':
+        if (type(value) is unicode):
+            if (len(value) > 1):
+                if str(value[0]) == '/':
                     json_sub_object = GetENCODE(str(value),keys)
                     if type(json_sub_object) is dict:
                         #json_sub_object = EmbedJSON(json_sub_object,keys)
@@ -151,12 +155,13 @@ def EmbedJSON(json_object,keys):
         elif type(value) is list:
             values_embed = []
             for entry in value:
-                if (type(entry) is unicode) & (len(entry) > 1):
-                    if str(entry[0]) == '/':
-                        json_sub_object = GetENCODE(str(entry),keys)
-                        if type(json_sub_object) is dict:
-                            #json_sub_object = EmbedJSON(json_sub_object,keys)
-                            values_embed.append(json_sub_object)
+                if (type(entry) is unicode):
+                    if (len(entry) > 1):
+                        if str(entry[0]) == '/':
+                            json_sub_object = GetENCODE(str(entry),keys)
+                            if type(json_sub_object) is dict:
+                                #json_sub_object = EmbedJSON(json_sub_object,keys)
+                                values_embed.append(json_sub_object)
             if len(values_embed) is len(json_object[key]):
                 json_object[key] = values_embed
     return json_object

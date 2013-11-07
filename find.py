@@ -34,20 +34,19 @@ if __name__ == "__main__":
     # flatten objects and select based on search criteria
     object_list = []
     for master_object in master_objects:
+        master_object = FlatJSON(master_object,keys)
         for key,value in master_object.items():
             if search_key_string in str(key):
                 #print(key)
                 if type(value) is unicode:
                     if search_value_string in str(value):
                         print('Object ' + master_object[u'accession'] + ' Selected.  ' + str(key) + ' - ' + value)
-                        master_object = FlatJSON(master_object,keys)
                         object_list.append(master_object)
                         break
                 if type(value) is list:
                     for entry in value:
                         if search_value_string in str(entry):
                             print('Object ' + master_object[u'accession'] + ' Selected.  ' + str(key) + ' - ' + entry)
-                            master_object = FlatJSON(master_object,keys)
                             object_list.append(master_object)
                             break
 

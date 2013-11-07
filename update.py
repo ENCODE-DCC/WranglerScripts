@@ -40,21 +40,29 @@ if __name__ == "__main__":
     elif type(json_object) is list:
         object_list = json_object
 
+    counter_post_success = 0
+    counter_post_fail = 0
+    counter_patch_success = 0
+    counter_patch_fail = 0
+
     for new_object in object_list:
         
         # define object parameters.  NEEDS TO RUN A CHECK TO CONFIRM THESE EXIST FIRST.
-        object_type = str(new_object[u'@type'][0])
-        object_id = str(new_object[u'@id'])
         object_uuid = str(new_object[u'uuid'])
-        object_name = str(new_object[u'accession'])
+        object_type = str(new_object[u'@type'][0])
+        # if the id does not exist, assign the uuid as such
+        if new_object.has_key(u'@id'):
+            object_id = str(new_object[u'@id'])
+        else:
+            object_id = '/'+object_uuid+'/'
+        # if the accession does not exist, make it blank
+        if new_object.has_key(u'accession'):
+            object_name = str(new_object[u'accession'])
+        else:
+            object_name = ''
 
         # get relevant schema
         object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
-
-        # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PATCHED.
-        new_object = CleanJSON(new_object,object_schema)
-
-        new_object = FlatJSON(new_object,keys)
 
         # check to see if object already exists  
         # PROBLEM: SHOULD CHECK UUID AND NOT USE ANY SHORTCUT METADATA THAT MIGHT NEED TO CHANGE
@@ -82,17 +90,29 @@ if __name__ == "__main__":
 #                # post the new object(s).  SHOULD HANDLE ERRORS GRACEFULLY
 #                response = new_ENCODE(object_collection,new_object)
 
-
         # if object is not found, verify and post it
         if old_object.get(u'title') == u'Not Found':
+
+            # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET POSTED.
+            new_object = CleanJSON(new_object,object_schema,'POST')
+    
+            new_object = FlatJSON(new_object,keys)
+            print(new_object)
 
             # test the new object       
             if ValidJSON(object_type,object_id,new_object,keys):
                 # post the new object(s).  SHOULD HANDLE ERRORS GRACEFULLY
                 response = new_ENCODE(object_type,new_object,keys)
+                object_check = GetENCODE(object_id,keys)
+                print(object_check[u'@id'])
 
         # if object is found, check for differences and patch it if needed/valid.
         else:
+            # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PATCHED.
+            new_object = CleanJSON(new_object,object_schema,'PATCH')
+    
+            new_object = FlatJSON(new_object,keys)
+
             # flatten original (to match new)
             old_object = FlatJSON(old_object,keys)
             
@@ -101,12 +121,12 @@ if __name__ == "__main__":
                 if new_object.get(key) == old_object.get(key):
                     new_object.pop(key)
 
+            #print(old_object)
             # if there are any different fields, patch them.  SHOULD ALLOW FOR USER TO VIEW/APPROVE DIFFERENCES
             if new_object:
                 
                 # inform user of the updates
                 print(object_id + ' has updates.')
-                #print(new_object)
                 
                 # patch each field to object individually
                 for key,value in new_object.items():
@@ -119,4 +139,4 @@ if __name__ == "__main__":
             else:
                 print(object_id + ' has no updates.')
 
-
+    print('Done. ')
