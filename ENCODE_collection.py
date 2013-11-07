@@ -13,8 +13,6 @@ import sys, os.path
 EPILOG = '''Limitations:
 
 Gets all objects, no searching implemented yet.
-Bug #822 makes this not work for characterizations, datasets, documents, experiments and software
-	(I can write a workaround but only if 822 takes long to fix)
 Arrays of strings come back with the items quoted, SO NOT SUITABLE FOR DIRECT PATCH back
 
 Examples:
@@ -156,10 +154,19 @@ def main():
 		if object_schema["properties"][schema_property]["type"] == 'string':
 			headings.append(schema_property)
 		elif object_schema["properties"][schema_property]["type"] == 'array':
-			if object_schema["properties"][schema_property]["items"]["type"] == 'string':
+			if 'items' in object_schema["properties"][schema_property].keys():
+				whateveritscalled = "items"
+			elif 'reference' in object_schema["properties"][schema_property].keys():
+				whateveritscalled = "reference"
+			elif 'url' in object_schema["properties"][schema_property].keys():
+				whateveritscalled = "url"
+			else:
+				print object_schema["properties"][schema_property].keys()
+				raise NameError("None of these match anything I know")
+			if object_schema["properties"][schema_property][whateveritscalled]["type"] == 'string':
 				headings.append(schema_property + ':array')
 			else:
-				headings.append(schema_property + ':' + object_schema["properties"][schema_property]["items"]["type"] + ':array')
+				headings.append(schema_property + ':' + object_schema["properties"][schema_property][whateveritscalled]["type"] + ':array')
 		else:
 			headings.append(schema_property + ':' + object_schema["properties"][schema_property]["type"])
 	headings.sort()
@@ -179,7 +186,8 @@ def main():
 	headstring = headstring.rstrip()
 	print headstring
 
-	for obj in [get_ENCODE(item['@id']) for item in collected_items]:
+	for item in collected_items:
+		obj = get_ENCODE(item['@id'])
 		obj = flat_ENCODE(obj)
 		rowstring = ""
 		for header in headstring.split('\t'):
