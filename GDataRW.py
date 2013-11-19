@@ -7,7 +7,7 @@ password = "abcxyz"
 spreadname = 'Import Test Sheet'
 workname = 'antitestset'
 
-updates = {'B4':'21','B6':'69'}
+updates = {'B4':'42','B6':'21'}
 
 
 # start a connection
