@@ -83,7 +83,13 @@ def ReadJSON(json_file):
     json_load = open(json_file)
     json_read = json.load(json_load)
     json_load.close()
-    return json_read
+    # if the returned json object is not a list, put it in one
+    if type(json_read) is dict:
+        json_list = []
+        json_list.append(json_read)
+    elif type(json_read) is list:
+        json_list = json_read
+    return json_list
 
 # write new json obect.  SHOULD BE MODIFIED TO CUSTOM OUTPUT FORMAT (FOR HUMAN VIEWING)
 def WriteJSON(new_object,object_file):

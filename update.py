@@ -32,13 +32,6 @@ if __name__ == "__main__":
     # load object  SHOULD HANDLE ERRORS GRACEFULLY
     print('Opening ' + data_file)
     json_object = ReadJSON(data_file)
-    
-    # if the returned json object is not a list, put it in one
-    if type(json_object) is dict:
-        object_list = []
-        object_list.append(json_object)
-    elif type(json_object) is list:
-        object_list = json_object
 
     counter_post_success = 0
     counter_post_fail = 0
