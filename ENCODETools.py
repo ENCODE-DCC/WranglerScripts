@@ -207,24 +207,31 @@ def LoginGSheet(email,password):
     sheetclient.ProgrammaticLogin()
     return sheetclient
 
-def FindGSheet(sheetclient,spreadname,workname):    
+def FindGSpreadSheet(sheetclient,spreadname):    
     # find a specific spreadsheet and get the id
     query = gdata.spreadsheet.service.DocumentQuery()
     query.title = spreadname
     query.title_exact = 'true'
     spreadfeed = sheetclient.GetSpreadsheetsFeed(query=query)
-    if len(spreadfeed) > 1:
-        spreadid = spreadfeed.entry[0].id.text.rsplit('/',1)[1]
+    if len(spreadfeed.entry) >= 1:
+        spreadsheet = spreadfeed.entry[0]
+        spreadid = spreadsheet.id.text.rsplit('/',1)[1]
     else:
+        spreadsheet = ''
         spreadid = ''
+    return(spreadid,spreadsheet)
+
+def FindGWorkSheet(sheetclient,spreadid,workname):
     # find a specific worksheet and get the id
     query = gdata.spreadsheet.service.DocumentQuery()
     query.title = workname
     query.title_exact = 'true'
     workfeed = sheetclient.GetWorksheetsFeed(spreadid,query=query)
-    if len(workfeed) > 1:
-        workid = workfeed.entry[0].id.text.rsplit('/',1)[1]
+    if len(workfeed.entry) >= 1:
+        worksheet = workfeed.entry[0]
+        workid = worksheet.id.text.rsplit('/',1)[1]
     else:
+        worksheet = ''
         workid = ''
-    return(spreadid,workid)
+    return(workid,worksheet)
 
