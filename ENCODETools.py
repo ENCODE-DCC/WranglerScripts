@@ -8,6 +8,9 @@ from pyelasticsearch import ElasticSearch
 import xlrd
 import xlwt
 from base64 import b64encode
+import gdata
+import gdata.spreadsheet.service
+
 
 # set headers.  UNCLEAR IF THIS IS USED PROPERLY
 HEADERS = {'content-type': 'application/json'}
@@ -196,5 +199,32 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
         json_objects.append(result_object[u'_source'])
     return json_objects
 
+def LoginGSheet(email,password):
+    # start a connection
+    sheetclient = gdata.spreadsheet.service.SpreadsheetsService()
+    sheetclient.email = email
+    sheetclient.password = password
+    sheetclient.ProgrammaticLogin()
+    return sheetclient
 
+def FindGSheet(sheetclient,spreadname,workname):    
+    # find a specific spreadsheet and get the id
+    query = gdata.spreadsheet.service.DocumentQuery()
+    query.title = spreadname
+    query.title_exact = 'true'
+    spreadfeed = sheetclient.GetSpreadsheetsFeed(query=query)
+    if len(spreadfeed) > 1:
+        spreadid = spreadfeed.entry[0].id.text.rsplit('/',1)[1]
+    else:
+        spreadid = ''
+    # find a specific worksheet and get the id
+    query = gdata.spreadsheet.service.DocumentQuery()
+    query.title = workname
+    query.title_exact = 'true'
+    workfeed = sheetclient.GetWorksheetsFeed(spreadid,query=query)
+    if len(workfeed) > 1:
+        workid = workfeed.entry[0].id.text.rsplit('/',1)[1]
+    else:
+        workid = ''
+    return(spreadid,workid)
 
