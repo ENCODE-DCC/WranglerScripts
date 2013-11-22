@@ -1,6 +1,3 @@
-import gdata
-import gdata.spreadsheet.service
-
 from ENCODETools import ReadJSON
 from ENCODETools import GetENCODE
 from ENCODETools import FlatJSON
