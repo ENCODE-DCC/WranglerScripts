@@ -125,7 +125,7 @@ def CleanJSON(new_object,object_schema,action):
     for key in new_object.keys():
         if not object_schema[u'properties'].get(key):
             new_object.pop(key)
-        elif object_schema[u'properties'][key].get(u'requestMethod'):
+        elif object_schema[u'properties'][key].has_key(u'requestMethod'):
             if object_schema[u'properties'][key][u'requestMethod'] is []:
                 new_object.pop(key)
             elif action not in object_schema[u'properties'][key][u'requestMethod']:
