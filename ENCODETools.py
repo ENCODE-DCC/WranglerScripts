@@ -184,6 +184,7 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
     query: a dict formatted as specified by elasticsearch.
         the default match_all query is {'query': {'match_all': {}}}
     object_type: the name of the object type.  for example 'biosample'
+        this can also be a list of object types
     hitnum: the maximum number of returned json objects
         set this as high as you can take it (10000 will do for now)
     '''
@@ -234,4 +235,12 @@ def FindGWorkSheet(sheetclient,spreadid,workname):
         worksheet = ''
         workid = ''
     return(workid,worksheet)
+
+def FindGSheetCells(sheetclient,spreadid,workid):
+    # find specified cells (currently returns all, including empty)
+    query = gdata.spreadsheet.service.CellQuery()
+    query.return_empty = "true" 
+    cells = sheetclient.GetCellsFeed(spreadid,workid,query=query).entry
+    return(cells)
+
 
