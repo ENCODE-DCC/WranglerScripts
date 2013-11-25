@@ -78,19 +78,25 @@ if __name__ == "__main__":
             sheetclient.AddWorksheet(workname,rowsize,colsize,spreadid)
             [workid,worksheet] = FindGWorkSheet(sheetclient,spreadid,workname)
 
-        # make first row the column headers
+        # make first row the column headers. also, make compressed column name list.
         print('Add Headers')
+        colcomp = []
         for indexcol,column in enumerate(columns):
             #print(indexcol,column,spreadid,workid)
             response = sheetclient.UpdateCell(1,indexcol+1,column,spreadid,workid)
+            colcomp.append(column.replace('_','').lower())
 
         # add rows for those objects that match the worksheet title
         print('Add Rows')
         for json_object in object_list:
+            #print(json_object)
+            for name,value in json_object.items():
+                if name is not name.replace('_','').lower():
+                    json_object.update({name.replace('_','').lower():value})
             if json_object.has_key('@type'):
                 if workname in json_object['@type']:
                     for name,value in json_object.items():
-                        if name not in columns:
+                        if name not in colcomp:
                             json_object.pop(name)
                     print(json_object)
                     response = sheetclient.InsertRow(json_object, spreadid, workid)
