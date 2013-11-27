@@ -200,6 +200,41 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
         json_objects.append(result_object[u'_source'])
     return json_objects
 
+# find a particular key value pair in an object, including its embedded objects.
+def FindValue(jsonobjects,searchkey,searchvalue,returnset):
+    foundobjects = []
+    subobjects = []
+    for jsonobject in jsonobjects:
+        subobjects = []
+        foundobject = {}
+        #print('Checking...')
+        for key,value in jsonobject.items():
+            if type(value) is dict:
+                #print('Dictionary')
+                for obj in FindValue([value],searchkey,searchvalue,returnset):
+                    subobjects.append(obj)
+            elif value and (type(value) is list) and (type(value[0]) is dict):
+                #print('Dictionary List')
+                for item in value:
+                    for obj in FindValue([item],searchkey,searchvalue,returnset):
+                        subobjects.append(obj)
+            elif value and ((type(value) is list) and (type(value[0]) is not dict)) or (type(value) is not dict) or (type(value) is not list):
+                #print('Checking...')
+                if searchkey in str(key):
+                    if searchvalue in str(value):
+                        print('Found.')
+                        foundobject = jsonobject
+                        break
+        if foundobject:
+            foundobjects.append(foundobject)
+        elif subobjects and ((returnset == 'all') or (returnset == 'original')):
+            foundobjects.append(jsonobject)
+        if subobjects and (returnset == 'all'):
+            for subobject in subobjects:
+                foundobjects.append(subobject)
+    foundobjects = {v['@id']:v for v in foundobjects}.values()
+    return foundobjects
+
 def LoginGSheet(email,password):
     # start a connection
     sheetclient = gdata.spreadsheet.service.SpreadsheetsService()
