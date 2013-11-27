@@ -1,7 +1,7 @@
 from ENCODETools import ElasticSearchJSON
 from ENCODETools import FlatJSON
 from ENCODETools import WriteJSON
-from ENCODETools import FindValue
+from ENCODETools import FindSets
 
 from identity import keys
 
@@ -22,8 +22,8 @@ if __name__ == "__main__":
     object_type = 'antibody_approval'
 
     # search criteria
-    search_value_string = 'bing-ren'
-    search_key_string = 'lab'
+    search_value_string = 'ENCAB000AJM'
+    search_key_string = 'accession'
 
     # file name for saved objects
     find_file = 'find.json'
@@ -32,35 +32,14 @@ if __name__ == "__main__":
     # retrieve the relevant objects
     master_objects = ElasticSearchJSON(server,query,object_type,hitnum)
 
-    # find the relevant objects
-    object_list = FindValue(master_objects,search_key_string,search_value_string,'all')
-
-    # flatten objects and select based on search criteria
-#    object_list = []
-#    for master_object in master_objects:
-#        #master_object = FlatJSON(master_object,keys)
-#        for key,value in master_object.items():
-#            if search_key_string in str(key):
-#                #print(key)
-#                if type(value) is unicode:
-#                    if search_value_string in str(value):
-#                        print('Object ' + master_object[u'@id'] + ' Selected.  ' + str(key) + ' - ' + value)
-#                        master_object = FlatJSON(master_object,keys)
-#                        object_list.append(master_object)
-#                        break
-#                if type(value) is list:
-#                    for entry in value:
-#                        if search_value_string in str(entry):
-#                            print('Object ' + master_object[u'@id'] + ' Selected.  ' + str(key) + ' - ' + entry)
-#                            master_object = FlatJSON(master_object,keys)
-#                            object_list.append(master_object)
-#                            break
+    # find the relevant objects based on search criteria
+    [object_list,other_list] = FindSets(master_objects,search_key_string,search_value_string,'only')
     print(str(len(object_list)) + ' of ' + str(len(master_objects)) + ' Objects Found.')
 
     print('Flattening...')
     #print(object_list)
     for item in object_list:
-        print item
+        #print item
         item = FlatJSON(item,keys)
 
     # write object to file
