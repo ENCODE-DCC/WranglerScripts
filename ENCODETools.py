@@ -135,9 +135,12 @@ def CleanJSON(new_object,object_schema,action):
 # flatten embedded json objects to their ID
 def FlatJSON(json_object,keys):
     json_object = EmbedJSON(json_object,keys)
+    #print json_object
     for key,value in json_object.items():
         if type(value) is dict:
-            json_object[key] = json_object[key][u'@id']
+            #print key,value
+            if json_object[key].has_key(u'@id'):
+                json_object[key] = json_object[key][u'@id']
         if type(value) is list:
             #print("Found List: " + key)
             value_new = []
@@ -145,7 +148,8 @@ def FlatJSON(json_object,keys):
                 #print("Checking...")
                 if type(value_check) is dict:
                     #print("Found Object")
-                    value_check = value_check[u'@id']
+                    if value_check.has_key(u'@id'):
+                        value_check = value_check[u'@id']
                     #print(value_check)
                 value_new.append(value_check)
             json_object[key] = value_new
