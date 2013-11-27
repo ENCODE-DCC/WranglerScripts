@@ -218,43 +218,73 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
         json_objects.append(result_object[u'_source'])
     return json_objects
 
-def FindValue(jsonobjects,searchkey,searchvalue,returnset):
+def FindSets(jsonobjects,searchkey,searchvalue,returnset):
     '''
     find a particular key value pair in an object, including its embedded objects.
     can return original object, or include the relevant embedded objects
     '''
     foundobjects = []
-    subobjects = []
+    otherobjects = []
     for jsonobject in jsonobjects:
-        subobjects = []
-        foundobject = {}
-        #print('Checking...')
-        for key,value in jsonobject.items():
-            if type(value) is dict:
-                #print('Dictionary')
-                for obj in FindValue([value],searchkey,searchvalue,returnset):
-                    subobjects.append(obj)
-            elif value and (type(value) is list) and (type(value[0]) is dict):
-                #print('Dictionary List')
-                for item in value:
-                    for obj in FindValue([item],searchkey,searchvalue,returnset):
-                        subobjects.append(obj)
-            elif value and ((type(value) is list) and (type(value[0]) is not dict)) or (type(value) is not dict) or (type(value) is not list):
-                #print('Checking...')
-                if searchkey in str(key):
-                    if searchvalue in str(value):
-                        #print('Found.')
-                        foundobject = jsonobject
-                        #break
-        if foundobject:
-            foundobjects.append(foundobject)
-        elif subobjects and ((returnset == 'all') or (returnset == 'original')):
-            foundobjects.append(jsonobject)
-        if subobjects and (returnset == 'all'):
-            for subobject in subobjects:
-                foundobjects.append(subobject)
-    foundobjects = {v['@id']:v for v in foundobjects}.values()
-    return foundobjects
+        if jsonobject.has_key(u'@id'):
+            subfoundobjects = []
+            subotherobjects = []
+            foundobject = False
+            #print('Checking...')
+            for key,value in jsonobject.items():
+                if type(value) is dict:
+                    #print('Dictionary')
+                    #print value
+                    [sfobjs,soobjs] = FindSets([value],searchkey,searchvalue,returnset)
+                    if sfobjs:
+                        for sfobj in sfobjs:
+                            subfoundobjects.append(sfobj)
+                    if soobjs:
+                        for soobj in soobjs:
+                            subotherobjects.append(soobj)
+                elif value and (type(value) is list) and (type(value[0]) is dict):
+                    #print('Dictionary List')
+                    for item in value:
+                        [sfobjs,soobjs] = FindSets([item],searchkey,searchvalue,returnset)
+                        if sfobjs:
+                            for sfobj in sfobjs:
+                                subfoundobjects.append(sfobj)
+                        if soobjs:
+                            for soobj in soobjs:
+                                subotherobjects.append(soobj)
+                elif value and ((type(value) is list) and (type(value[0]) is not dict)) or (type(value) is not dict) or (type(value) is not list):
+                    #print('Checking...')
+                    if searchkey in str(key):
+                        if searchvalue in str(value):
+                            #print('Found.')
+                            foundobject = True
+                            #break
+    
+            if foundobject:
+                foundobjects.append(jsonobject)
+            elif subfoundobjects and ((returnset == 'all') or (returnset == 'original')):
+                foundobjects.append(jsonobject)
+            else:
+                otherobjects.append(jsonobject)
+    
+            if subfoundobjects and ((returnset == 'all') or (returnset == 'only')):
+                for subfoundobject in subfoundobjects:
+                    foundobjects.append(subfoundobject)
+    
+            if subfoundobjects and subotherobjects and (returnset == 'all'):
+                for subotherobject in subotherobjects:
+                    foundobjects.append(subotherobject)
+            else:
+                for subotherobject in subotherobjects:
+                    otherobjects.append(subotherobject)
+
+    #print len(foundobjects)
+    #print len(otherobjects)
+    if foundobjects:
+        foundobjects = {foundobj['@id']:foundobj for foundobj in foundobjects}.values()
+    if otherobjects:
+        otherobjects = {otherobj['@id']:otherobj for otherobj in otherobjects}.values()
+    return foundobjects,otherobjects
 
 def LoginGSheet(email,password):
     '''
