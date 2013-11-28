@@ -10,7 +10,7 @@ if __name__ == "__main__":
     This script will find a set of JSON objects based on specified criteria and save them to find.json.
     Specifically, it will retrieve all of the specified object types from the database, then search that list with the set of criteria.
     '''
-    # FUTURE CHANGES: Nikhil will soon implement the updates to the elasticsearch query which should allow more accurate return results.
+    # FUTURE CHANGES: Nikhil may implement updates to the elasticsearch query which should allow more accurate return results.
     # At that point, this script may not be needed, as the main function may be able to handle it all in the query.
 
     # elasticsearch settings
@@ -22,8 +22,8 @@ if __name__ == "__main__":
     object_type = 'antibody_approval'
 
     # search criteria
-    search_value_string = 'ENCAB000AJM'
-    search_key_string = 'accession'
+    searchquery1 = {'accession':'ENCAB000AJM'}
+    searchquery2 = {'name':'human'}
 
     # file name for saved objects
     find_file = 'find.json'
@@ -33,7 +33,9 @@ if __name__ == "__main__":
     master_objects = ElasticSearchJSON(server,query,object_type,hitnum)
 
     # find the relevant objects based on search criteria
-    [object_list,other_list] = FindSets(master_objects,search_key_string,search_value_string,'only')
+    [object_list1,other_list] = FindSets(master_objects,searchquery1,'original')
+    [object_list,other_list] = FindSets(object_list1,searchquery2,'all')
+
     print(str(len(object_list)) + ' of ' + str(len(master_objects)) + ' Objects Found.')
 
     print('Flattening...')
