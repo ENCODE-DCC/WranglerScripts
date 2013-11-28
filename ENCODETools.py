@@ -218,10 +218,24 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
         json_objects.append(result_object[u'_source'])
     return json_objects
 
-def FindSets(jsonobjects,searchkey,searchvalue,returnset):
+def FindSets(jsonobjects,query,returnset):
     '''
-    find a particular key value pair in an object, including its embedded objects.
-    can return original object, or include the relevant embedded objects
+    Find a set of objects that contain a particular key value pair in any part of the set.
+    
+    Input
+    jsonobjects: a list of JSON objects that will be searched.
+    This can either be a uniform collection or not, but each object
+    will be treated as a set.
+    query: a dict with key:value pair(s) to search for.
+    Currently, only works as an 'OR' search.
+    returnset: a string to indicate how to return values
+        'original': returns only root object
+        'only': returns only objects containing the match
+        'all': returns all objects from the set with the match
+    
+    Output
+    foundobjects: a list of JSON objects that match the search parameters.
+    otherobjects: a list of JSON objects that don't match.
     '''
     foundobjects = []
     otherobjects = []
@@ -230,12 +244,13 @@ def FindSets(jsonobjects,searchkey,searchvalue,returnset):
             subfoundobjects = []
             subotherobjects = []
             foundobject = False
+            querycheck = {}
             #print('Checking...')
             for key,value in jsonobject.items():
                 if type(value) is dict:
                     #print('Dictionary')
                     #print value
-                    [sfobjs,soobjs] = FindSets([value],searchkey,searchvalue,returnset)
+                    [sfobjs,soobjs] = FindSets([value],query,returnset)
                     if sfobjs:
                         for sfobj in sfobjs:
                             subfoundobjects.append(sfobj)
@@ -245,7 +260,7 @@ def FindSets(jsonobjects,searchkey,searchvalue,returnset):
                 elif value and (type(value) is list) and (type(value[0]) is dict):
                     #print('Dictionary List')
                     for item in value:
-                        [sfobjs,soobjs] = FindSets([item],searchkey,searchvalue,returnset)
+                        [sfobjs,soobjs] = FindSets([item],query,returnset)
                         if sfobjs:
                             for sfobj in sfobjs:
                                 subfoundobjects.append(sfobj)
@@ -254,12 +269,18 @@ def FindSets(jsonobjects,searchkey,searchvalue,returnset):
                                 subotherobjects.append(soobj)
                 elif value and ((type(value) is list) and (type(value[0]) is not dict)) or (type(value) is not dict) or (type(value) is not list):
                     #print('Checking...')
-                    if searchkey in str(key):
-                        if searchvalue in str(value):
-                            #print('Found.')
-                            foundobject = True
-                            #break
-    
+                    for searchkey,searchvalue in query.items():
+                        if searchkey in str(key):
+                            #print 'inkey',key,value
+                            if searchvalue in str(value):
+                                #print 'invalue',value
+                                querycheck.update({searchkey:searchvalue})
+
+            # CURRENTLY ONLY CHECKS FOR ANY HIT.  WORKS LIKE 'OR' INSTEAD OF 'AND'.
+            if querycheck:
+                print 'Found.'
+                foundobject = True
+
             if foundobject:
                 foundobjects.append(jsonobject)
             elif subfoundobjects and ((returnset == 'all') or (returnset == 'original')):
@@ -278,8 +299,6 @@ def FindSets(jsonobjects,searchkey,searchvalue,returnset):
                 for subotherobject in subotherobjects:
                     otherobjects.append(subotherobject)
 
-    #print len(foundobjects)
-    #print len(otherobjects)
     if foundobjects:
         foundobjects = {foundobj['@id']:foundobj for foundobj in foundobjects}.values()
     if otherobjects:
