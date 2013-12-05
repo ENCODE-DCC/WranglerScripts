@@ -28,6 +28,7 @@ if __name__ == "__main__":
     [spreadid,spreadsheet] = FindGSpreadSheet(sheetclient,spreadname)
 
     # check for data of each potential object type
+    object_list = []
     for workname in typelist:
         print workname
         # find the worksheet
@@ -49,12 +50,24 @@ if __name__ == "__main__":
 
             # for each row, load in each key/value pair that has a value assigned
             # convert value to schema defined type
-            object_list = []
+
             for row in rows:
-                new_object = {}
+                new_object = {u'@type':[workname,u'item']}
                 for header in headers:
                     value = row.custom[header.replace('_','').lower()].text
                     if value is not None:
+                        # need to fix dates before adding them.  Google API does not allow disabling of autoformat.
+                        # use regexp to check for dates (MM/DD/YYYY)
+                        # then format them as we enter them (YYYY-MM-DD)
+                        if object_schema[u'properties'][header].has_key(u'format') and object_schema[u'properties'][header][u'format'] == 'date':
+                            #print value
+                            date = value.split('/')
+                            if len(date[0]) is 1:
+                                date[0] = '0' + date[0]
+                            if len(date[1]) is 1:
+                                date[1] = '0' + date[1]
+                            value = date[2] + '-' + date[0] + '-' + date[1]
+                            #print value
                         if object_schema[u'properties'][header][u'type'] == 'string':
                             new_object.update({header:value})
                         elif object_schema[u'properties'][header][u'type'] == 'integer':
@@ -70,4 +83,5 @@ if __name__ == "__main__":
 
     # write object to file
     WriteJSON(object_list,json_file)
+    print('Done.')
 
