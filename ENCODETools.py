@@ -51,6 +51,23 @@ def patch_ENCODE(obj_id,patch_json,keys):
         print >> sys.stderr, response.text
     return response.json()
 
+def replace_ENCODE(obj_id,put_json,keys):
+    '''PUT an existing ENCODE object and return the response JSON
+    '''
+#    if isinstance(put_json, dict):
+    json_payload = json.dumps(put_json)
+#    elif isinstance(put_json, basestring):
+#        json_payload = put_json
+#    else:
+#        print >> sys.stderr, 'Datatype to put is not string or dict.'
+    url = keys['server']+obj_id
+    response = requests.put(url, auth=(keys['authid'],keys['authpw']), data=json_payload)
+    print json.dumps(response.json(), indent=4, separators=(',', ': '))    
+    if not response.status_code == 200:
+        print >> sys.stderr, response.text
+    print response.text
+    return response.json()
+
 def new_ENCODE(collection_id, object_json,keys):
     '''POST an ENCODE object as JSON and return the resppnse JSON'''
     url = keys['server'] +'/'+collection_id+'/'
