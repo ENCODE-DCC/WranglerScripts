@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     # elasticsearch settings
     server = 'http://submit.encodedcc.org:9200'
-    query = {'query': {'match_all': {}}}
+    query = {'query': {'match_all': {}}}  # currently, can also specify a single field/value pair: {'query':{'field':{'biosample_term_name':'MCF-7'}}}
     hitnum = 10000
     
     # the particular object types you want to return
