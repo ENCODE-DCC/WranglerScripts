@@ -35,12 +35,15 @@ if __name__ == "__main__":
         typelist.append(typetemp)
         for name,value in json_object.items():
             if type(value) is list:
-                if value is []:
+                if value == []:
                     json_object[name] = ''
+                elif type(value[0]) is dict:
+                    json_object[name] = str(value)
                 else:
                     json_object[name] = ', '.join(value)
-            elif type(value) is int:
+            elif (type(value) is int) | (type(value) is float):
                 json_object[name] = str(value)
+
     typelist = list(set(typelist))
     typelist.sort()
 
