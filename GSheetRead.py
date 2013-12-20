@@ -54,30 +54,37 @@ if __name__ == "__main__":
             for row in rows:
                 new_object = {u'@type':[workname,u'item']}
                 for header in headers:
-                    value = row.custom[header.replace('_','').lower()].text
-                    if value is not None:
-                        # need to fix dates before adding them.  Google API does not allow disabling of autoformat.
-                        # use regexp to check for dates (MM/DD/YYYY)
-                        # then format them as we enter them (YYYY-MM-DD)
-                        if object_schema[u'properties'][header].has_key(u'format') and object_schema[u'properties'][header][u'format'] == 'date':
-                            #print value
-                            date = value.split('/')
-                            if len(date[0]) is 1:
-                                date[0] = '0' + date[0]
-                            if len(date[1]) is 1:
-                                date[1] = '0' + date[1]
-                            value = date[2] + '-' + date[0] + '-' + date[1]
-                            #print value
-                        if object_schema[u'properties'][header][u'type'] == 'string':
-                            new_object.update({header:value})
-                        elif object_schema[u'properties'][header][u'type'] == 'integer':
-                            new_object.update({header:int(value)})
-                        elif object_schema[u'properties'][header][u'type'] == 'array':
-                            value = value.split(', ')
-                            if object_schema[u'properties'][header][u'items'][u'type'] == 'string':
-                                new_object.update({header:value})
-#                            elif object_schema[u'properties'][header][u'items'][u'type'] is 'integer':
-#                                new_object.update({header:int(value)})
+                    if object_schema[u'properties'].has_key(header):
+                        value = row.custom[header.replace('_','').lower()].text
+                        if value is not None:
+                            # need to fix dates before adding them.  Google API does not allow disabling of autoformat.
+                            # use regexp to check for dates (MM/DD/YYYY)
+                            # then format them as we enter them (YYYY-MM-DD)
+#                            if "\u03bc" in value:
+#                                value = unicode(value)
+#                                print value
+#                                print type(value)
+                            if object_schema[u'properties'][header].has_key(u'format') and object_schema[u'properties'][header][u'format'] == 'date':
+                                #print value
+                                date = value.split('/')
+                                if len(date[0]) is 1:
+                                    date[0] = '0' + date[0]
+                                if len(date[1]) is 1:
+                                    date[1] = '0' + date[1]
+                                value = date[2] + '-' + date[0] + '-' + date[1]
+                                #print value
+                            if object_schema[u'properties'][header][u'type'] == 'string':
+                                new_object.update({header:unicode(value)})
+                            elif object_schema[u'properties'][header][u'type'] == 'integer':
+                                new_object.update({header:int(value)})
+                            elif object_schema[u'properties'][header][u'type'] == 'float':
+                                new_object.update({header:float(value)})
+                            elif object_schema[u'properties'][header][u'type'] == 'array':
+                                value = value.split(', ')
+                                if object_schema[u'properties'][header][u'items'][u'type'] == 'string':
+                                    new_object.update({header:value})
+    #                            elif object_schema[u'properties'][header][u'items'][u'type'] is 'integer':
+    #                                new_object.update({header:int(value)})
                     
                 object_list.append(new_object)
 
