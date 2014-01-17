@@ -45,6 +45,7 @@ def patch_ENCODE(obj_id,patch_json,keys):
     url = keys['server']+obj_id
     json_payload = json.dumps(patch_json)
     response = requests.patch(url, auth=(keys['authid'],keys['authpw']), data=json_payload)
+    response = requests.patch(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS, data=json_payload)
     print "Patch:"
     print response.status_code
     if not response.status_code == 200:
@@ -62,6 +63,7 @@ def replace_ENCODE(obj_id,put_json,keys):
 #        print >> sys.stderr, 'Datatype to put is not string or dict.'
     url = keys['server']+obj_id
     response = requests.put(url, auth=(keys['authid'],keys['authpw']), data=json_payload)
+    response = requests.put(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS, data=json_payload)
     print json.dumps(response.json(), indent=4, separators=(',', ': '))    
     if not response.status_code == 200:
         print >> sys.stderr, response.text
