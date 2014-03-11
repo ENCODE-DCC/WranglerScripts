@@ -33,7 +33,10 @@ HEADERS = {'content-type': 'application/json'}
 
 def get_ENCODE(obj_id):
 	'''GET an ENCODE object as JSON and return as dict'''
-	url = SERVER+obj_id+'?limit=all'
+	if obj_id.rfind('?') == -1:
+		url = SERVER+obj_id+'?limit=all'
+	else:
+		url = SERVER+obj_id+'&limit=all'
 	if DEBUG:
 		print "DEBUG: GET %s" %(url)
 	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
@@ -75,9 +78,12 @@ def processkeys(args):
 		SERVER += "/"
 
 def flat_one(JSON_obj):
-	return [JSON_obj[identifier] for identifier in \
-				['accession', 'name', 'email', 'title', 'uuid', 'href'] \
-				if identifier in JSON_obj][0]
+	try:
+		return [JSON_obj[identifier] for identifier in \
+					['accession', 'name', 'email', 'title', 'uuid', 'href'] \
+					if identifier in JSON_obj][0]
+	except:
+		return JSON_obj
 
 def flat_ENCODE(JSON_obj):
 	flat_obj = {}
@@ -110,6 +116,10 @@ def main():
 
 	parser.add_argument('collection',
 		help="The collection to get")
+	parser.add_argument('--es',
+		default=False,
+		action='store_true',
+		help="Use elasticsearch")
 	parser.add_argument('--submittable',
 		default=False,
 		action='store_true',
@@ -170,10 +180,21 @@ def main():
 		else:
 			headings.append(schema_property + ':' + object_schema["properties"][schema_property]["type"])
 	headings.sort()
+	if 'file' in supplied_name or 'dataset' in supplied_name or 'source' in supplied_name or 'award' in supplied_name:
+		pass
+	else:
+		headings.append('award.rfa')
+	if 'file' in supplied_name:
+		headings.append('replicate.biological_replicate_number')
+		headings.append('replicate.technical_replicate_number')
+	if 'biosample' in supplied_name:
+		headings.append('organ_slims')
 
 	exclude_unsubmittable = ['accession', 'uuid', 'schema_version', 'alternate_accessions', 'submitted_by']
 
-	global collection
+	if args.es:
+		supplied_name = '/search/?format=json&limit=all&type=' + supplied_name
+	global collectionn
 	collection = get_ENCODE(supplied_name)
 	collected_items = collection['@graph']
 
@@ -197,6 +218,19 @@ def main():
 				if tempstring == '[]':
 					tempstring = ""
 				rowstring += tempstring + '\t'
+			elif '.' in prop_key:
+				try:
+					embedded_key = obj[prop_key.split('.')[0]]
+					if '/' in embedded_key:
+						embedded_obj = get_ENCODE(embedded_key)
+					else:
+						embedded_obj = get_ENCODE(prop_key.split('.')[0] + '/' + obj[prop_key.split('.')[0]])
+					embedded_value_string = json.dumps(embedded_obj[prop_key.split('.')[1]]).lstrip('"').rstrip('"')
+					if embedded_value_string == '[]':
+						embedded_value_string = ""
+				except KeyError:
+					embedded_value_string = ""
+				rowstring += embedded_value_string + '\t'
 			else:
 				rowstring += '\t'
 		rowstring = rowstring.rstrip()
