@@ -8,6 +8,9 @@ import sys
 import os.path
 from base64 import b64encode
 from copy import deepcopy
+import magic
+import mimetypes
+
 
 EPILOG = '''Examples:
 
@@ -78,7 +81,7 @@ def patch_ENCODE(obj_id, patch_input):
 	if DEBUG_ON:
 		print "DEBUG: PATCH URL : %s" %(url)
 		print "DEBUG: PATCH data: %s" %(json_payload)
-	response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload)
+	response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
 	if DEBUG_ON:
 		print "DEBUG: PATCH RESPONSE"
 		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
@@ -99,7 +102,7 @@ def replace_ENCODE(obj_id, put_input):
 	if DEBUG_ON:
 		print "DEBUG: PUT URL : %s" %(url)
 		print "DEBUG: PUT data: %s" %(json_payload)
-	response = requests.put(url, auth=(AUTHID, AUTHPW), data=json_payload)
+	response = requests.put(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
 	if DEBUG_ON:
 		print "DEBUG: PUT RESPONSE"
 		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
@@ -117,6 +120,9 @@ def new_ENCODE(collection_id, post_input):
 		json_payload = post_input
 	else:
 		print >> sys.stderr, 'Datatype to post is not string or dict.'
+	if DEBUG_ON:
+		print "DEBUG: SERVER = %s" %(SERVER)
+		print "DEBUG: collection = %s" %(collection_id)
 	url = SERVER+collection_id
 	if DEBUG_ON:
 		print "DEBUG: POST URL : %s" %(url)
@@ -134,7 +140,7 @@ def new_ENCODE(collection_id, post_input):
 
 def flat_one(JSON_obj):
 	return [JSON_obj[identifier] for identifier in \
-				['accession', 'name', 'email', 'title', 'uuid', 'href'] \
+				['accession', 'name', 'email', 'title', 'uuid', 'href','download'] \
 				if identifier in JSON_obj][0]
 
 def flat_ENCODE(JSON_obj):
@@ -322,6 +328,37 @@ def main():
 			identifier = '/' + collection + new_json['accession'] + '/'
 		else:
 			identifier = '/' + new_json['accession'] + '/'
+	if 'attachment' in new_json:
+		if 'href' in new_json['attachment']:
+			pass
+		else:
+			try:
+				filename = new_json['attachment']['download']
+				print "Setting filename to %s" %(filename)
+			except:
+				print >> sys.stderr, "Must specify either href or filename for attachment"
+			try:
+				mime_type, encoding = mimetypes.guess_type(filename)
+				major, minor = mime_type.split('/')
+				detected_type = magic.from_file(filename, mime=True)
+				print "Detected mime type %s" %(mime_type)
+			except:
+				print >> sys.stderr, "Failed to detect mime type in file %s" %(filename)
+			try:
+				with open(filename, 'rb') as stream:
+					print "opened"
+					newvalue = {
+						'download': filename, #Just echoes the given filename as the download name
+						'type': mime_type,
+						'href': 'data:%s;base64,%s' % (mime_type, b64encode(stream.read()))
+					}
+				f = open('tmp', 'w')
+				print >> f, newvalue
+				new_json.update({'attachment':newvalue}) # add
+			except:
+				print >> sys.stderr, "Cannot open file %s" %(filename)
+
+
 	if object_exists:
 		if args.force_put:
 			if not GET_ONLY:

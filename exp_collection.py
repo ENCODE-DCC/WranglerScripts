@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-'''GET an ENCODE collection and output a tsv of all objects and their properties suitable for spreadsheet import'''
+'''GET the ENCODE experiment collection and output a tsv of all objects and their properties suitable for spreadsheet import'''
 
 '''use requests to handle the HTTP connection'''
 import requests
@@ -17,14 +17,10 @@ Arrays of strings come back with the items quoted, SO NOT SUITABLE FOR DIRECT PA
 
 Examples:
 
-Dump all the biosamples, with all schema properties, from the default server with default keypair and save to a file
+Dump all the experiments, with all schema properties, from the default server with default keypair and save to a file
 
 	# be patient, this takes some time to run
-	%(prog)s biosamples > biosamples.tsv
-
-Same for human-donors
-
-	%(prog)s human-donors > human-donors.tsv
+	%(prog)s > biosamples.tsv
 
 '''
 
@@ -114,8 +110,6 @@ def main():
 	    formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 
-	parser.add_argument('collection',
-		help="The collection to get")
 	parser.add_argument('--es',
 		default=False,
 		action='store_true',
@@ -148,7 +142,8 @@ def main():
 	global DEBUG
 	DEBUG = args.debug
 
-	supplied_name = args.collection
+	#this script only works for the experiments collection
+	supplied_name = 'experiments'
 
 	if supplied_name.endswith('s'):
 		schema_name = supplied_name.rstrip('s').replace('-','_') + '.json'
@@ -180,21 +175,16 @@ def main():
 		else:
 			headings.append(schema_property + ':' + object_schema["properties"][schema_property]["type"])
 	headings.sort()
-	if 'file' in supplied_name or 'dataset' in supplied_name or 'source' in supplied_name or 'award' in supplied_name:
-		pass
-	else:
-		headings.append('award.rfa')
-	if 'file' in supplied_name:
-		headings.append('replicate.biological_replicate_number')
-		headings.append('replicate.technical_replicate_number')
-	if 'biosample' in supplied_name:
-		headings.append('organ_slims')
+	headings.append('award.rfa')
+	#this is for experiments only
+	headings.append('organism')
+	headings.append('organ_slims')
 
 	exclude_unsubmittable = ['accession', 'uuid', 'schema_version', 'alternate_accessions', 'submitted_by']
 
 	if args.es:
 		supplied_name = '/search/?format=json&limit=all&type=' + supplied_name
-	global collectionn
+	global collection
 	collection = get_ENCODE(supplied_name)
 	collected_items = collection['@graph']
 
@@ -209,6 +199,51 @@ def main():
 
 	for item in collected_items:
 		obj = get_ENCODE(item['@id'])
+		# starting here is code to pull the organisms and organ slims for the experiment
+		replicates = obj['replicates']
+		organism_list = []
+		slims_list = []
+		for rep in replicates:
+			try:
+				organism = rep['library']['biosample']['organism']['name']
+			except KeyError:
+				organism = 'none in rep'
+			if organism in organism_list:
+				pass
+			else:
+				organism_list.append(organism)
+			try:
+				first_slim = rep['library']['biosample']['organ_slims'][0]
+			except (KeyError, IndexError):
+				first_slim = ''
+			if first_slim in slims_list:
+				pass
+			else:
+				slims_list.append(first_slim)
+
+		organism = ''
+		if len(organism_list) > 1:
+			for org in organism_list:
+				organism += org + ','
+			organism = organism.rstrip(',')
+		elif len(organism_list) == 1:
+			organism = organism_list[0]
+		else:
+			organism = 'no reps'
+
+		slims = ''
+		if len(slims_list) > 1:
+			for slim in slims_list:
+				slims += slim + ','
+			slims = slims.rstrip(',')
+		elif len(slims_list) == 1:
+			slims = slims_list[0]
+		else:
+			slims = ''
+
+		obj['organism'] = organism
+		obj['organ_slims'] = slims
+		# end code to pull the organisms for the experiment
 		obj = flat_ENCODE(obj)
 		rowstring = ""
 		for header in headstring.split('\t'):
@@ -219,16 +254,9 @@ def main():
 					tempstring = ""
 				rowstring += tempstring + '\t'
 			elif '.' in prop_key:
-				try:
-					embedded_key = obj[prop_key.split('.')[0]]
-					if '/' in embedded_key:
-						embedded_obj = get_ENCODE(embedded_key)
-					else:
-						embedded_obj = get_ENCODE(prop_key.split('.')[0] + '/' + obj[prop_key.split('.')[0]])
-					embedded_value_string = json.dumps(embedded_obj[prop_key.split('.')[1]]).lstrip('"').rstrip('"')
-					if embedded_value_string == '[]':
-						embedded_value_string = ""
-				except KeyError:
+				embedded_obj = get_ENCODE(prop_key.split('.')[0] + '/' + obj[prop_key.split('.')[0]])
+				embedded_value_string = json.dumps(embedded_obj[prop_key.split('.')[1]]).lstrip('"').rstrip('"')
+				if embedded_value_string == '[]':
 					embedded_value_string = ""
 				rowstring += embedded_value_string + '\t'
 			else:

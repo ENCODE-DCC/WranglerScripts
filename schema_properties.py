@@ -134,7 +134,11 @@ def main():
 		if object_schema["properties"][schema_property]["type"] == 'string':
 			headings.append(schema_property)
 		elif object_schema["properties"][schema_property]["type"] == 'array':
-			if object_schema["properties"][schema_property]["items"]["type"] == 'string':
+			try:
+				bug_822_workaround = object_schema["properties"][schema_property]["items"]["type"]
+			except KeyError:
+				bug_822_workaround = object_schema["properties"][schema_property]["reference"]["type"]
+			if bug_822_workaround == 'string':
 				headings.append(schema_property + ':array')
 			else:
 				headings.append(schema_property + ':' + object_schema["properties"][schema_property]["items"]["type"] + ':array')

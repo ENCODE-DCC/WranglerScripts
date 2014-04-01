@@ -15,7 +15,6 @@ import gdata.spreadsheet.service
 # set headers.  UNCLEAR IF THIS IS USED PROPERLY
 HEADERS = {'content-type': 'application/json'}
 
-# get object from server
 def get_ENCODE(obj_id,keys):
     '''GET an ENCODE object as JSON and return as dict'''
     url = keys['server']+obj_id+'?limit=all'
@@ -24,7 +23,6 @@ def get_ENCODE(obj_id,keys):
         print >> sys.stderr, response.text
     return response.json()
 
-# get object from server
 def GetENCODE(object_id,keys):
     '''GET an ENCODE object as JSON and return as dict'''
     if type(object_id) is str:
@@ -42,20 +40,34 @@ def GetENCODE(object_id,keys):
         else:
             return response.json()
 
-
-# patch object to server
 def patch_ENCODE(obj_id,patch_json,keys):
     '''PATCH an existing ENCODE object and return the response JSON'''
     url = keys['server']+obj_id
     json_payload = json.dumps(patch_json)
-    response = requests.patch(url, auth=(keys['authid'],keys['authpw']), data=json_payload)
+    response = requests.patch(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS, data=json_payload)
     print "Patch:"
     print response.status_code
     if not response.status_code == 200:
         print >> sys.stderr, response.text
     return response.json()
 
-# post object to server
+def replace_ENCODE(obj_id,put_json,keys):
+    '''PUT an existing ENCODE object and return the response JSON
+    '''
+#    if isinstance(put_json, dict):
+    json_payload = json.dumps(put_json)
+#    elif isinstance(put_json, basestring):
+#        json_payload = put_json
+#    else:
+#        print >> sys.stderr, 'Datatype to put is not string or dict.'
+    url = keys['server']+obj_id
+    response = requests.put(url, auth=(keys['authid'],keys['authpw']), headers=HEADERS, data=json_payload)
+    print json.dumps(response.json(), indent=4, separators=(',', ': '))    
+    if not response.status_code == 200:
+        print >> sys.stderr, response.text
+    print response.text
+    return response.json()
+
 def new_ENCODE(collection_id, object_json,keys):
     '''POST an ENCODE object as JSON and return the resppnse JSON'''
     url = keys['server'] +'/'+collection_id+'/'
@@ -66,8 +78,10 @@ def new_ENCODE(collection_id, object_json,keys):
         print >> sys.stderr, response.text
     return response.json()
 
-# get keys from file
 def KeyENCODE(key_file,user_name,server_name):
+    '''
+    get keys from file
+    '''
     key_open = open(key_file)
     keys = csv.DictReader(key_open,delimiter = '\t')
     for key in keys:
@@ -81,8 +95,10 @@ def KeyENCODE(key_file,user_name,server_name):
     key_open.close()
     return(key_info)
 
-# read json objects from file
 def ReadJSON(json_file):
+    '''
+    read json objects from file
+    '''
     json_load = open(json_file)
     json_read = json.load(json_load)
     json_load.close()
@@ -94,15 +110,21 @@ def ReadJSON(json_file):
         json_list = json_read
     return json_list
 
-# write new json obect.  SHOULD BE MODIFIED TO CUSTOM OUTPUT FORMAT (FOR HUMAN VIEWING)
 def WriteJSON(new_object,object_file):
+    '''
+    write new json obect.
+    '''
+    # SHOULD BE MODIFIED TO CUSTOM OUTPUT FORMAT (FOR HUMAN VIEWING)
     with open(object_file, 'w') as outfile:
         json.dump(new_object, outfile)
         outfile.close()
 
-# check json object for validity.  SHOULD ONLY NEED OBJECT.  NEED DEF TO EXTRACT VALUE (LIKE TYPE) FROM JSON OBJECT GRACEFULLY.
 def ValidJSON(object_type,object_id,new_object,keys):
-    #get the relevant schema
+    '''
+    check json object for validity
+    '''
+    # SHOULD ONLY NEED OBJECT.  NEED DEF TO EXTRACT VALUE (LIKE TYPE) FROM JSON OBJECT GRACEFULLY.
+    # get the relevant schema
     object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
 
     # test the new object.  SHOULD HANDLE ERRORS GRACEFULLY        
@@ -120,24 +142,34 @@ def ValidJSON(object_type,object_id,new_object,keys):
         print('Validation of ' + object_id + ' succeeded.')
         return True
 
-# intended to fix invalid JSON.  removes unexpected or unpatchable properties.  DOES NOT REMOVE ITEMS THAT CAN ONLY BE POSTED
 def CleanJSON(new_object,object_schema,action):
+    '''
+    intended to fix invalid JSON.  removes unexpected or unpatchable properties
+    '''
+    # DOES NOT REMOVE ITEMS THAT CAN ONLY BE POSTED
     for key in new_object.keys():
         if not object_schema[u'properties'].get(key):
             new_object.pop(key)
-        elif object_schema[u'properties'][key].get(u'requestMethod'):
+        elif object_schema[u'properties'][key].has_key(u'requestMethod'):
             if object_schema[u'properties'][key][u'requestMethod'] is []:
                 new_object.pop(key)
             elif action not in object_schema[u'properties'][key][u'requestMethod']:
                 new_object.pop(key)
     return new_object
 
-# flatten embedded json objects to their ID
 def FlatJSON(json_object,keys):
+    '''
+    flatten embedded json objects to their ID
+    '''
     json_object = EmbedJSON(json_object,keys)
+    #print json_object
     for key,value in json_object.items():
         if type(value) is dict:
-            json_object[key] = json_object[key][u'@id']
+            #print key,value
+            if json_object[key].has_key(u'@id'):
+                json_object[key] = json_object[key][u'@id']
+            elif json_object[key].has_key(u'href'):
+                json_object[key] = json_object[key][u'href']
         if type(value) is list:
             #print("Found List: " + key)
             value_new = []
@@ -145,14 +177,19 @@ def FlatJSON(json_object,keys):
                 #print("Checking...")
                 if type(value_check) is dict:
                     #print("Found Object")
-                    value_check = value_check[u'@id']
+                    if value_check.has_key(u'@id'):
+                        value_check = value_check[u'@id']
+                    elif value_check.has_key(u'href'):
+                        value_check = value_check[u'href']
                     #print(value_check)
                 value_new.append(value_check)
             json_object[key] = value_new
     return json_object
 
-# expand json object
 def EmbedJSON(json_object,keys):
+    '''
+    expand json object
+    '''
     for key,value in json_object.items():
         if (type(value) is unicode):
             if (len(value) > 1):
@@ -175,8 +212,6 @@ def EmbedJSON(json_object,keys):
                 json_object[key] = values_embed
     return json_object
 
-
-# run an elasticsearch query.  SHOULD BE EXPANDED TO CONSTRUCT THE QUERY OBJECT.
 def ElasticSearchJSON(server,query,object_type,hitnum):
     '''
     Run an elasticsearch query and return JSON objects
@@ -184,6 +219,7 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
     query: a dict formatted as specified by elasticsearch.
         the default match_all query is {'query': {'match_all': {}}}
     object_type: the name of the object type.  for example 'biosample'
+        this can also be a list of object types
     hitnum: the maximum number of returned json objects
         set this as high as you can take it (10000 will do for now)
     '''
@@ -199,16 +235,107 @@ def ElasticSearchJSON(server,query,object_type,hitnum):
         json_objects.append(result_object[u'_source'])
     return json_objects
 
+def FindSets(jsonobjects,query,returnset):
+    '''
+    Find a set of objects that contain a particular key value pair in any part of the set.
+    
+    Input
+    jsonobjects: a list of JSON objects that will be searched.
+    This can either be a uniform collection or not, but each object
+    will be treated as a set.
+    query: a dict with key:value pair(s) to search for.
+    Currently, only works as an 'OR' search.
+    returnset: a string to indicate how to return values
+        'original': returns only root object
+        'only': returns only objects containing the match
+        'all': returns all objects from the set with the match
+    
+    Output
+    foundobjects: a list of JSON objects that match the search parameters.
+    otherobjects: a list of JSON objects that don't match.
+    '''
+    foundobjects = []
+    otherobjects = []
+    for jsonobject in jsonobjects:
+        if jsonobject.has_key(u'@id'):
+            subfoundobjects = []
+            subotherobjects = []
+            foundobject = False
+            querycheck = {}
+            #print('Checking...')
+            for key,value in jsonobject.items():
+                if type(value) is dict:
+                    #print('Dictionary')
+                    #print value
+                    [sfobjs,soobjs] = FindSets([value],query,returnset)
+                    if sfobjs:
+                        for sfobj in sfobjs:
+                            subfoundobjects.append(sfobj)
+                    if soobjs:
+                        for soobj in soobjs:
+                            subotherobjects.append(soobj)
+                elif value and (type(value) is list) and (type(value[0]) is dict):
+                    #print('Dictionary List')
+                    for item in value:
+                        [sfobjs,soobjs] = FindSets([item],query,returnset)
+                        if sfobjs:
+                            for sfobj in sfobjs:
+                                subfoundobjects.append(sfobj)
+                        if soobjs:
+                            for soobj in soobjs:
+                                subotherobjects.append(soobj)
+                elif value and ((type(value) is list) and (type(value[0]) is not dict)) or (type(value) is not dict) or (type(value) is not list):
+                    #print('Checking...')
+                    for searchkey,searchvalue in query.items():
+                        if searchkey in str(key):
+                            #print 'inkey',key,value
+                            if searchvalue in str(value):
+                                #print 'invalue',value
+                                querycheck.update({searchkey:searchvalue})
+
+            # CURRENTLY ONLY CHECKS FOR ANY HIT.  WORKS LIKE 'OR' INSTEAD OF 'AND'.
+            if querycheck:
+                print 'Found.'
+                foundobject = True
+
+            if foundobject:
+                foundobjects.append(jsonobject)
+            elif subfoundobjects and ((returnset == 'all') or (returnset == 'original')):
+                foundobjects.append(jsonobject)
+            else:
+                otherobjects.append(jsonobject)
+    
+            if subfoundobjects and ((returnset == 'all') or (returnset == 'only')):
+                for subfoundobject in subfoundobjects:
+                    foundobjects.append(subfoundobject)
+    
+            if subfoundobjects and subotherobjects and (returnset == 'all'):
+                for subotherobject in subotherobjects:
+                    foundobjects.append(subotherobject)
+            else:
+                for subotherobject in subotherobjects:
+                    otherobjects.append(subotherobject)
+
+    if foundobjects:
+        foundobjects = {foundobj['@id']:foundobj for foundobj in foundobjects}.values()
+    if otherobjects:
+        otherobjects = {otherobj['@id']:otherobj for otherobj in otherobjects}.values()
+    return foundobjects,otherobjects
+
 def LoginGSheet(email,password):
-    # start a connection
+    '''
+    start a connection
+    '''
     sheetclient = gdata.spreadsheet.service.SpreadsheetsService()
     sheetclient.email = email
     sheetclient.password = password
     sheetclient.ProgrammaticLogin()
     return sheetclient
 
-def FindGSpreadSheet(sheetclient,spreadname):    
-    # find a specific spreadsheet and get the id
+def FindGSpreadSheet(sheetclient,spreadname):
+    '''
+    find a specific spreadsheet and get the id
+    '''
     query = gdata.spreadsheet.service.DocumentQuery()
     query.title = spreadname
     query.title_exact = 'true'
@@ -222,7 +349,9 @@ def FindGSpreadSheet(sheetclient,spreadname):
     return(spreadid,spreadsheet)
 
 def FindGWorkSheet(sheetclient,spreadid,workname):
-    # find a specific worksheet and get the id
+    '''
+    find a specific worksheet and get the id
+    '''
     query = gdata.spreadsheet.service.DocumentQuery()
     query.title = workname
     query.title_exact = 'true'
@@ -234,4 +363,14 @@ def FindGWorkSheet(sheetclient,spreadid,workname):
         worksheet = ''
         workid = ''
     return(workid,worksheet)
+
+def FindGSheetCells(sheetclient,spreadid,workid):
+    '''
+    find specified cells (currently returns all, including empty)
+    '''
+    query = gdata.spreadsheet.service.CellQuery()
+    query.return_empty = "true" 
+    cells = sheetclient.GetCellsFeed(spreadid,workid,query=query).entry
+    return(cells)
+
 

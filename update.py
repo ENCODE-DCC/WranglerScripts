@@ -1,6 +1,7 @@
 # ENCODE Tools functions
 from ENCODETools import get_ENCODE
 from ENCODETools import patch_ENCODE
+from ENCODETools import replace_ENCODE
 from ENCODETools import new_ENCODE
 from ENCODETools import GetENCODE
 #from ENCODETools import KeyENCODE
@@ -31,7 +32,10 @@ if __name__ == "__main__":
 
     # load object  SHOULD HANDLE ERRORS GRACEFULLY
     print('Opening ' + data_file)
-    json_object = ReadJSON(data_file)
+    object_list = ReadJSON(data_file)
+
+    # PUT OVERRIDE: SET THIS TO TRUE IF YOU WANT TO PUT INSTEAD OF PATCH
+    put_status = False
 
     counter_post_success = 0
     counter_post_fail = 0
@@ -41,27 +45,36 @@ if __name__ == "__main__":
     for new_object in object_list:
         
         # define object parameters.  NEEDS TO RUN A CHECK TO CONFIRM THESE EXIST FIRST.
-        object_uuid = str(new_object[u'uuid'])
         object_type = str(new_object[u'@type'][0])
-        # if the id does not exist, assign the uuid as such
-        if new_object.has_key(u'@id'):
-            object_id = str(new_object[u'@id'])
-        else:
-            object_id = '/'+object_uuid+'/'
         # if the accession does not exist, make it blank
         if new_object.has_key(u'accession'):
             object_name = str(new_object[u'accession'])
         else:
             object_name = ''
+        if new_object.has_key(u'uuid'):
+            object_uuid = str(new_object[u'uuid'])
+        else:
+            object_uuid = ''
+        # if the id does not exist, assign the uuid.  if no uuid, blank.
+        if new_object.has_key(u'@id'):
+            object_id = str(new_object[u'@id'])
+        elif object_name is not '':
+            object_id = '/'+object_name+'/'
+        elif object_uuid is not '':
+            object_id = '/'+object_uuid+'/'
+        else:
+            object_id = '/' # THIS DOESN"T WORK
 
         # get relevant schema
+        #print('Getting Schema.')
         object_schema = GetENCODE(('/profiles/' + object_type + '.json'),keys)
 
         # check to see if object already exists  
         # PROBLEM: SHOULD CHECK UUID AND NOT USE ANY SHORTCUT METADATA THAT MIGHT NEED TO CHANGE
         # BUT CAN'T USE UUID IF NEW... HENCE PROBLEM
+        #print('Checking Object.')
         old_object = GetENCODE(object_id,keys)
-
+        #print old_object
 #        # test the validity of new object
 #        if not ValidJSON(object_type,object_id,new_object):
 #            # get relevant schema
@@ -84,7 +97,7 @@ if __name__ == "__main__":
 #                response = new_ENCODE(object_collection,new_object)
 
         # if object is not found, verify and post it
-        if old_object.get(u'title') == u'Not Found':
+        if (old_object.get(u'title') == u'Not Found') | (old_object.get(u'title') == u'Home'):
 
             # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET POSTED.
             new_object = CleanJSON(new_object,object_schema,'POST')
@@ -95,11 +108,23 @@ if __name__ == "__main__":
             # test the new object       
             if ValidJSON(object_type,object_id,new_object,keys):
                 # post the new object(s).  SHOULD HANDLE ERRORS GRACEFULLY
+                new_object = CleanJSON(new_object,object_schema,'POST')
                 response = new_ENCODE(object_type,new_object,keys)
-                object_check = GetENCODE(object_id,keys)
-                print(object_check[u'@id'])
+                
+                object_check = GetENCODE(str(response[u'@graph'][0][u'@id']),keys)
+                print(object_check[u'@id'], object_check[u'uuid'])
 
         # if object is found, check for differences and patch it if needed/valid.
+        elif put_status:
+            # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PUT.
+            new_object = CleanJSON(new_object,object_schema,'POST')
+
+            new_object = FlatJSON(new_object,keys)
+
+            print('Running a put.')
+            print(new_object)
+            response = replace_ENCODE(object_id,new_object,keys)
+ 
         else:
             # clean object of unpatchable or nonexistent properties.  SHOULD INFORM USER OF ANYTHING THAT DOESN"T GET PATCHED.
             new_object = CleanJSON(new_object,object_schema,'PATCH')
@@ -120,7 +145,7 @@ if __name__ == "__main__":
                 
                 # inform user of the updates
                 print(object_id + ' has updates.')
-                
+
                 # patch each field to object individually
                 for key,value in new_object.items():
                     patch_single = {}
@@ -129,7 +154,7 @@ if __name__ == "__main__":
                     response = patch_ENCODE(object_id,patch_single,keys)
 
             # inform user there are no updates            
-            else:
-                print(object_id + ' has no updates.')
+#            else:
+#                print(object_id + ' has no updates.')
 
     print('Done. ')
