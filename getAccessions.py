@@ -159,8 +159,13 @@ def main():
         for i in lines:
             key = i.strip()
             object = get_ENCODE(key)
-            #print key,"\t", object['accession']
-            print key,"\t", object['description']
+            print key,"\t", object['accession']
+
+
+            #This could be made into get replicates or get a field
+            #for j in object['replicates']:
+            #     print key, "\t", j['uuid']
+            #print key,"\t", object['description']
 
 
 
