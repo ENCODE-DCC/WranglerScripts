@@ -334,7 +334,7 @@ def main():
 
             files_count = {}
             for i in range(0, len(exp['files'])):
-                item = ob['files'][i]
+                item = exp['files'][i]
                 if 'replicate' in item:
                     repId = item['replicate']['uuid']
                 else:
