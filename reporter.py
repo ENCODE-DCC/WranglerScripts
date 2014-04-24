@@ -7,8 +7,6 @@ import json
 import sys
 import os.path
 import argparse
-from base64 import b64encode
-from copy import deepcopy
 
 HEADERS = {'content-type': 'application/json'}
 DEBUG_ON = False
@@ -20,28 +18,25 @@ To use a different key from the default keypair file:
 '''
 
 
-
-
 def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
-        #url = SERVER+obj_id+'?limit=all'
+        # url = SERVER+obj_id+'?limit=all'
         url = SERVER+obj_id
         if DEBUG_ON:
-                print "DEBUG: GET %s" %(url)
+                print "DEBUG: GET %s" % (url)
         response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
         if DEBUG_ON:
-                print "DEBUG: GET RESPONSE code %s" %(response.status_code)
+                print "DEBUG: GET RESPONSE code %s" % (response.status_code)
                 try:
                         if response.json():
                                 print "DEBUG: GET RESPONSE JSON"
                                 print json.dumps(response.json(), indent=4, separators=(',', ': '))
                 except:
-                        print "DEBUG: GET RESPONSE text %s" %(response.text)
+                        print "DEBUG: GET RESPONSE text %s" % (response.text)
         if not response.status_code == requests.codes.ok:
                 response.raise_for_status()
         return response.json()
-
 
 
 def patch_ENCODE(obj_id, patch_input):
@@ -55,8 +50,8 @@ def patch_ENCODE(obj_id, patch_input):
                 print >> sys.stderr, 'Datatype to patch is not string or dict.'
         url = SERVER+obj_id
         if DEBUG_ON:
-                print "DEBUG: PATCH URL : %s" %(url)
-                print "DEBUG: PATCH data: %s" %(json_payload)
+                print "DEBUG: PATCH URL : %s" % (url)
+                print "DEBUG: PATCH data: %s" % (json_payload)
         response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
         if DEBUG_ON:
                 print "DEBUG: PATCH RESPONSE"
@@ -77,7 +72,7 @@ def post_ENCODE(collection_id, post_input):
                 print >> sys.stderr, 'Datatype to post is not string or dict.'
         url = SERVER+collection_id
         if DEBUG_ON:
-                print "DEBUG: POST URL : %s" %(url)
+                print "DEBUG: POST URL : %s" % (url)
                 print "DEBUG: POST data:"
                 print json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))
         response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
@@ -91,68 +86,59 @@ def post_ENCODE(collection_id, post_input):
         return response.json()
 
 
-def set_ENCODE_keys(keyfile,key):
+def set_ENCODE_keys(keyfile, key):
         '''
           Set the global authentication keyds
         '''
-
-        keysf = open(keyfile,'r')
+        keysf = open(keyfile, 'r')
         keys_json_string = keysf.read()
         keysf.close()
-  
+
         keys = json.loads(keys_json_string)
         key_dict = keys[key]
-        
 
         global AUTHID
         global AUTHPW
         global SERVER
 
-
         AUTHID = key_dict['key']
-	AUTHPW = key_dict['secret']
+        AUTHPW = key_dict['secret']
         SERVER = key_dict['server']
         if not SERVER.endswith("/"):
                 SERVER += "/"
         return
 
 
-def get_experiment_list(file,search):
-
+def get_experiment_list(file, search):
 
         objList = []
         if search == "NULL":
             f = open(file)
             objList = f.readlines()
             for i in range(0, len(objList)):
-               objList[i] = objList[i].strip()
+                objList[i] = objList[i].strip()
         else:
-            
-            set = get_ENCODE(search +'&limit=all')
+            set = get_ENCODE(search + '&limit=all')
             for i in range(0, len(set['@graph'])):
-                objList.append(set['@graph'][i]['accession'] )
+                objList.append(set['@graph'][i]['accession'])
 
-        return objList 
+        return objList
 
 
-def get_antibody_approval (antibody, target):
+def get_antibody_approval(antibody, target):
 
         search = get_ENCODE('search/?searchTerm='+antibody+'&type=antibody_approval')
         for approval in search['@graph']:
             if approval['target']['name'] == target:
                 return approval['status']
-        return "UNKNOWN"  
+        return "UNKNOWN"
 
 
-
-## I need my attachment thing here
-
-
+# # I need my attachment thing here
 
 
 checkedItems = ['project',
-                'encode2_dbxrefs',
-                'geo_dbxrefs',
+                'dbxrefs',
                 'accession',
                 'aliases',
                 'status',
@@ -165,30 +151,44 @@ checkedItems = ['project',
                 'biosample_term_name',
                 'biosample_term_id',
                 'description',
-                #'document_count',
-                #'documents',
+                # 'document_count',
+                # 'documents',
                 'control_exps',
                 'theTarget',
-                'file_count' #possibly this should go in replicate as well
+                'file_count'
                 ]
 
+repCheckedItems = [
+                   'rep_file_count',
+                   'antibody',
+                   'antibody_source',
+                   'antibody_product',
+                   'antibody_lot',
+                   'antibody_status',
+                   'replicate_uuid',
+                   'replicate_aliases',
+                   'biological_replicate_number',
+                   'technical_replicate_number',
+                   'read_length',
+                   'paired_ended',
+                   'platform',
+                   ]
+
+
+
 libraryCheckedItems = [
-                       'antibody',
-                       'antibody_source',
-                       'antibody_product',
-                       'antibody_lot',
-                       'antibody_status',
                        'accession',
                        'aliases',
-                       #'replicate_aliases',
                        'nucleic_acid_term_name',
                        'nucleic_acid_term_id',
                        'depleted_in_term_name',
                        'size_range',
+                       'lysis_method',
+                       'fragmentation_method',
+                       'extraction_method',
+                       'library_size_selection_method',
                        'library_treatments',
                        'protocols',
-                       'biological_replicate_number',
-                       'technical_replicate_number',
                        'biosample_accession',
                        'subcellular_fraction',
                        'phase',
@@ -198,11 +198,9 @@ libraryCheckedItems = [
                        'age',
                        'age_units',
                        'life_stage',
-                       'read_length',
-                       'paired_ended',
                        'strand_specificity',
-                       'platform',
                        ]
+
 
 def main():
 
@@ -212,218 +210,227 @@ def main():
         )
 
         parser.add_argument('--infile', '-i',
-                default='objList',
-                help="File containing a list of ENCSRs.")
+                            default='objList',
+                            help="File containing a list of ENCSRs.")
         parser.add_argument('--search',
-                default='NULL',
-                help="The search parameters.")
+                            default='NULL',
+                            help="The search parameters.")
         parser.add_argument('--datatype',
-                default='OTHER',
-                help="The datatype format to print your report. (CHIP,RNA,REPLI,OTHER)")
+                            default='OTHER',
+                            help="The datatype format to print your report. (CHIP,RNA,REPLI,OTHER)")
         parser.add_argument('--key',
-                default='default',
-                help="The keypair identifier from the keyfile.  Default is --key=default")
+                            default='default',
+                            help="The keypair identifier from the keyfile.  Default is --key=default")
         parser.add_argument('--keyfile',
-                default=os.path.expanduser("~/keypairs.json"),
-                help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
+                            default=os.path.expanduser("~/keypairs.json"),
+                            help="The keypair file.  Default is --keyfile=%s" % (os.path.expanduser("~/keypairs.json")))
         parser.add_argument('--debug',
-                default=False,
-                action='store_true',
-                help="Print debug messages.  Default is False.")
+                            default=False,
+                            action='store_true',
+                            help="Print debug messages.  Default is False.")
         parser.add_argument('--details',
-                default=False,
-                action='store_true',
-                help="Print detailed report.  Default is False.")
+                            default=False,
+                            action='store_true',
+                            help="Print detailed report.  Default off")
         parser.add_argument('--mouse',
-                default=False,
-                action='store_true',
-                help="Print mouse specific information.  Default is False.")
-        parser.add_argument('--no-otherIds',
-                default=False,
-                action='store_true',
-                help="Surpress the printing of other IDs like ENCODE2 or GEO.  Default is False.")
+                            default=False,
+                            action='store_true',
+                            help="Print mouse specific details.  Default off")
+        parser.add_argument('--library',
+                            default=False,
+                            action='store_true',
+                            help="Print library details.  Default off")
+        parser.add_argument('--encode2',
+                            default=False,
+                            action='store_true',
+                            help="Print dbxrefs for ENCODE2.  Default off")
         args = parser.parse_args()
 
-        DEBUG_ON =args.debug
-   
-        set_ENCODE_keys(args.keyfile,args.key)
+        DEBUG_ON = args.debug
 
-
+        set_ENCODE_keys(args.keyfile, args.key)
 
         '''Adjust the checked list by the datatype'''
         if args.datatype != 'CHIP':
-           checkedItems.remove('theTarget')
-           checkedItems.remove('control_exps')
-           libraryCheckedItems.remove('antibody')
-           libraryCheckedItems.remove('antibody_status')
-           libraryCheckedItems.remove('antibody_source')
-           libraryCheckedItems.remove('antibody_product')
-           libraryCheckedItems.remove('antibody_lot')
-       
+            checkedItems.remove('theTarget')
+            checkedItems.remove('control_exps')
+            repCheckedItems.remove('antibody')
+            repCheckedItems.remove('antibody_status')
+            repCheckedItems.remove('antibody_source')
+            repCheckedItems.remove('antibody_product')
+            repCheckedItems.remove('antibody_lot')
+
         if args.datatype != 'REPLI':
-           libraryCheckedItems.remove('phase')
+            libraryCheckedItems.remove('phase')
 
         if args.datatype != 'RNA':
-           libraryCheckedItems.remove('subcellular_fraction')
-           libraryCheckedItems.remove('library_treatments')
-           libraryCheckedItems.remove('depleted_in_term_name')
+            libraryCheckedItems.remove('subcellular_fraction')
+            libraryCheckedItems.remove('library_treatments')
+            libraryCheckedItems.remove('depleted_in_term_name')
 
         if not args.details:
-           checkedItems.remove('project')
-           checkedItems.remove('submitter')
-           checkedItems.remove('grant')
-           checkedItems.remove('assay_term_id')
-           checkedItems.remove('biosample_term_id')
-           libraryCheckedItems.remove('nucleic_acid_term_id')
-           libraryCheckedItems.remove('size_range')
+            checkedItems.remove('project')
+            checkedItems.remove('submitter')
+            checkedItems.remove('grant')
+            checkedItems.remove('assay_term_id')
+            checkedItems.remove('biosample_term_id')
+            libraryCheckedItems.remove('nucleic_acid_term_id')
+
+        if not args.library:
+            libraryCheckedItems.remove('lysis_method')
+            libraryCheckedItems.remove('fragmentation_method')
+            libraryCheckedItems.remove('extraction_method')
+            libraryCheckedItems.remove('library_size_selection_method')
+            libraryCheckedItems.remove('size_range')
+
+        if not args.encode2:
+            checkedItems.remove('dbxrefs')
 
         if not args.mouse:
-           libraryCheckedItems.remove('strain')
+            libraryCheckedItems.remove('strain')
 
-        print '\t'.join(checkedItems+libraryCheckedItems)
-        
-
+        print '\t'.join(checkedItems+repCheckedItems+libraryCheckedItems)
 
 
 
-        #Get list of objects we are interested in
-
+        # Get list of objects we are interested in
         #search_results = get_ENCODE("search/?type=experiment&lab.title=Bing%20Ren,%20UCSD&assay_term_name=ChIP-seq&target.label=H3K4me2")
-        #search = "search/?type=experiment&assay_term_name=Repli-seq" 
-        #search = "search/?type=experiment&assay_term_name=DNase-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2"
-        #search = "search/?type=experiment&assay_term_name=RNA%20Array&lab.title=John%20Stamatoyannopoulos,%20UW"
-        #search = "search/?type=experiment&assay_term_name=DNase-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2-Mouse"
-        #search = "search/?type=experiment&assay_term_name=RNA-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2-Mouse"
-        ##search = "search/?type=experiment&assay_term_name=ChIP-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2"
-        #search = "search/?type=experiment&lab.title=Bing+Ren%2C+UCSD&award.rfa=ENCODE2-Mouse&assay_term_name=ChIP-seq"
-        #search = "search/?type=experiment&lab.title=Bing%20Ren,%20UCSD&assay_term_name=RNA-seq&award.rfa=ENCODE2-Mouse
-
-
+        # search = "search/?type=experiment&assay_term_name=Repli-seq" 
         search = args.search
 
-        objList = get_experiment_list ( args.infile, search )
-        for i in range (0, len(objList)):
+        objList = get_experiment_list(args.infile, search)
+        for i in range(0, len(objList)):
 
-           ob = get_ENCODE(objList[i])
-        
-           '''Get the counts'''
-           ob['replicate_count'] = len(ob['replicates'])
-           ob['document_count'] = len(ob['documents'])
-           ob['file_count'] = len(ob['files'])
-       
-           '''Get the experiment level ownership''' 
-           ob['lab_name']= ob['lab']['name']
-           ob ['project'] = ob['award']['rfa']
-           ob ['grant'] = ob['award']['name']
-           ob ['submitter'] = ob['submitted_by']['title']
-        
+            exp = get_ENCODE(objList[i])
+            ob = {}
 
-           if len(ob['geo_dbxrefs']) >0:
-              ob['geo_series']= ob['geo_dbxrefs'][0]
-        
-           ob['control_exps'] = ''
-           for q in ob['possible_controls']:
-               ob['control_exps'] = ob['control_exps']+' '+q['accession']
-        
-           ob['theTarget'] = ''
-           if 'target' in ob:
-              ob['theTarget'] = ob['target']['label']
-        
-        
-           ob['list_libraries'] = ''
-           ob['list_biosamples'] = ''
-           ob['species'] = ''
-           libs = []
-           for q in range(0, ob['replicate_count']):
-               rep = ob['replicates'][q]
-               if  'library' in rep:
+            for i in checkedItems:
+                if i in exp:
+                    ob[i] = exp[i]
+                else:
+                    ob[i] = ''
+
+            '''Get the counts'''
+            ob['replicate_count'] = len(exp['replicates'])
+            ob['document_count'] = len(exp['documents'])
+            ob['file_count'] = len(exp['files'])
+
+            '''Get the experiment level ownership'''
+            ob['lab_name'] = exp['lab']['name']
+            ob['project'] = exp['award']['rfa']
+            ob['grant'] = exp['award']['name']
+            ob['submitter'] = exp['submitted_by']['title']
+
+            temp = ''
+            for i in range(0, len(exp['dbxrefs'])):
+                temp = temp + ' ; ' + ob['dbxrefs'][i]
+            exp['dbxrefs'] = temp
+
+            for q in exp['possible_controls']:
+                exp['control_exps'] = exp['control_exps']+' '+q['accession']
+
+            if 'target' in ob:
+                ob['theTarget'] = exp['target']['label']
+
+            files_count = {}
+            for i in range(0, len(exp['files'])):
+                item = ob['files'][i]
+                if 'replicate' in item:
+                    repId = item['replicate']['uuid']
+                else:
+                    repId = 'no rep'
+                if repId in files_count:
+                    files_count[repId] = files_count[repId] + 1
+                else:
+                    files_count[repId] = 1
+
+            libs = []
+
+            for q in range(0, ob['replicate_count']):
+                rep = exp['replicates'][q]
+
+                '''Inititalize rep object'''
+                repOb = {}
+                for field in libraryCheckedItems:
+                    repOb[field] = ''
+                for field in repCheckedItems:
+                    if field in rep:
+                        repOb[field] = rep[field]
+                    else:
+                        repOb[field] = ''
+                if rep['uuid'] in files_count:
+                    repOb['rep_file_count'] = files_count[rep['uuid']]
+                else:
+                    repOb['rep_file_count'] = 0
+                repOb['replicate_aliases'] = rep['aliases']
+                repOb['replicate_uuid'] = rep['uuid']
+                if 'platform' in rep:
+                    repOb['platform'] = rep['platform']['term_name']
+                if 'antibody' in rep:
+                        repOb['antibody'] = rep['antibody']['accession']
+                        repOb['antibody_status'] = rep['antibody']['status']
+                        repOb['antibody_source'] = rep['antibody']['source']
+                        repOb['antibody_product'] = rep['antibody']['product_id']
+                        repOb['antibody_lot'] = rep['antibody']['lot_id']
+                lib = []
+
+                # inititalize the lib with repItems
+                for i in repCheckedItems:
+                    if i in repOb:
+                        lib.append(str(repOb[i]))
+
+                if 'library' in rep:
+
+                    for field in libraryCheckedItems:
+                        if field in rep['library']:
+                            repOb[field] = rep['library'][field]
+                    repOb['protocols'] = []
+                    for i in range(0, len(rep['library']['documents'])):
+                        repOb['protocols'].append(rep['library']['documents'][i]['attachment']['download'])
+                    temp = ' '.join(repOb['protocols'])
+                    repOb['protocols'] = temp
+
+                    if 'biosample' in rep['library']:
+                        bs = rep['library']['biosample']
+                        repOb['biosample_accession'] = bs['accession']
+                        ob['species'] = bs['organism']['name']
+                        if 'subcellular_fraction' in bs:
+                            repOb['subcellular_fraction'] = bs['subcellular_fraction']
+                        else:
+                            repOb['subcellular_fraction'] = 'unfractionated'
+
+                        if bs['treatments'] != []:
+                            repOb['biological_treatment'] = bs['treatments'][0]
+                            # Note, we would have to pull the treatments individually
+                            # rep['library']['biological_treatment'] = bs['treatments'][0]['dbxrefs'] 
+                        if 'donor' in bs:
+                            repOb['donor'] = bs['donor']['accession']
+                            if 'strain_background' in bs['donor']:
+                                repOb['strain'] = bs['donor']['strain_background']
+                        for term in ('phase', 'age', 'age_units', 'life_stage'):
+                            if term in bs:
+                                repOb[term] = bs[term]
+
+                    temp = ' '.join(rep['library']['aliases'])
+                    repOb['aliases'] = temp
+                    ob['list_libraries'] = ''
+                    ob['list_libraries'] = ob['list_libraries']+' '+rep['library']['accession']
+
+                    for i in libraryCheckedItems:
+                        if i in repOb:
+                            lib.append(str(repOb[i]))
+                        else:
+                            lib.append( '')
+                libs.append(lib)
+
+            row = []
+            for j in checkedItems:
+                row.append(str(ob[j]))
+            if len(libs) == 0:
+                print '\t'.join(row)
+            for k in range(0, len(libs)):
+                print '\t'.join(row+libs[k])
 
 
-                  '''Inititalize'''
-                  rep['library']['replicate_aliases'] = rep['aliases']
-                  rep['library']['antibody'] = ''
-                  rep['library']['antibody_status'] = ''
-                  rep['library']['platform'] = ''
-                  rep['library']['read_length'] = ''
-
-                  if 'antibody' in rep:
-                      rep['library']['antibody'] = rep['antibody']['accession']
-                      rep['library']['antibody_status'] = rep['antibody']['status']
-                      rep['library']['antibody_source'] = rep['antibody']['source']
-                      rep['library']['antibody_product'] = rep['antibody']['product_id']
-                      rep['library']['antibody_lot'] = rep['antibody']['lot_id']
-
-                  if 'platform' in rep:
-                      rep['library']['platform'] = rep['platform']['term_name']
-        
-                  rep['library']['biological_replicate_number'] = rep['biological_replicate_number']
-                  rep['library']['technical_replicate_number'] = rep['technical_replicate_number']
-                  if 'read_length' in rep:
-                      rep['library']['read_length'] = rep['read_length']
-        
-                  rep['library']['protocols'] = []
-                  for i in range (0, len(rep['library']['documents'])):
-                      rep['library']['protocols'].append (rep['library']['documents'][i]['attachment']['download'])
-                  temp = ' '.join(rep['library']['protocols'])
-                  rep['library']['protocols'] = temp
-        
-        
-                  if 'biosample' in rep['library']:
-                      bs = rep['library']['biosample']
-                      rep['library']['biosample_accession'] = rep['library']['biosample']['accession']
-
-                      if 'subcellular_fraction' in rep['library']['biosample']:
-                          rep['library']['subcellular_fraction'] = rep['library']['biosample']['subcellular_fraction']
-                      else:
-                          rep['library']['subcellular_fraction'] = 'unfractionated'
-
-                      if bs['treatments'] != []:
-                          rep['library']['biological_treatment'] = bs['treatments'][0]
-                          #Note, we would have to pull the treatments individually
-                          #rep['library']['biological_treatment'] = bs['treatments'][0]['encode2_dbxrefs'] 
-                      if 'donor' in bs:
-                          rep['library']['donor'] = bs['donor']['accession']
-                          if 'strain_background' in bs['donor']:
-                              rep['library']['strain'] = bs ['donor']['strain_background']
-                      for term in ('phase','age', 'age_units', 'life_stage'):
-                          if term in rep['library']['biosample']:
-                             rep['library'][term] = rep['library']['biosample'][term]
-        
-        
-        
-        
-                  temp = ' '.join(rep['library']['aliases'])
-                  rep['library']['aliases'] = temp
-        
-        
-        
-                  lib = []
-                  for i in libraryCheckedItems:
-                      if i in rep['library']:
-                          lib.append(str(rep['library'][i]))
-                      else:
-                          lib.append( '')
-                  libs.append(lib)
-                  ob['list_libraries'] = ob['list_libraries']+' '+rep['library']['accession']
-        
-        
-                  ''' Does every library have a valid biosample?  Does it match each other?  Does it match experiment?'''
-                  if 'biosample' in rep['library']:
-                     ob['list_biosamples'] = ob['list_biosamples']+' '+rep['library']['biosample']['accession']
-                     if ob['species'] == '':
-                        ob['species'] = rep['library']['biosample']['organism']['name']
-                     elif ob['species'] != rep['library']['biosample']['organism']['name']:
-                        ob['species'] = 'ERROR'
-                  else:
-                     ob['list_biosamples'] = ob['list_biosamples']+' '+ 'ERROR'
-           row =[]
-           for j in checkedItems:
-              row.append(str(ob[j]))
-           if len(libs) ==0:
-               print '\t'.join(row)
-           for k in range(0,len(libs)):
-               print '\t'.join(row+libs[k])
-        
-        
 if __name__ == '__main__':
-     main()
+    main()

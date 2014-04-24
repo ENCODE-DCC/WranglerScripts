@@ -8,7 +8,6 @@ import sys
 import os.path
 import argparse
 from base64 import b64encode
-from copy import deepcopy
 
 HEADERS = {'content-type': 'application/json'}
 DEBUG_ON = False
@@ -20,12 +19,10 @@ To use a different key from the default keypair file:
 '''
 
 
-
-
 def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
-        #url = SERVER+obj_id+'?limit=all'
+        # url = SERVER+obj_id+'?limit=all'
         url = SERVER+obj_id
         if DEBUG_ON:
                 print "DEBUG: GET %s" %(url)
@@ -39,6 +36,7 @@ def get_ENCODE(obj_id):
                 except:
                         print "DEBUG: GET RESPONSE text %s" %(response.text)
         if not response.status_code == requests.codes.ok:
+                return ''               
                 response.raise_for_status()
         return response.json()
 
@@ -200,10 +198,14 @@ def main():
         for i in range (0, len(objList)):
 
            ob = get_ENCODE(objList[i])
-           id = ob['uuid']
-           field = str(ob[args.field])
+           field = ''     
+           if ob != '':
+                id = ob['uuid']
+                if args.field in ob:
+                    field = str(ob[args.field])
+           else:
+              id = objList[i]
            print '\t'.join([id,field])
-        
-        
+
 if __name__ == '__main__':
      main()
