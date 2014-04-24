@@ -323,13 +323,13 @@ def main():
 
             temp = ''
             for i in range(0, len(exp['dbxrefs'])):
-                temp = temp + ' ; ' + ob['dbxrefs'][i]
-            exp['dbxrefs'] = temp
+                temp = temp + ' ; ' + exp['dbxrefs'][i]
+            ob['dbxrefs'] = temp
 
             for q in exp['possible_controls']:
-                exp['control_exps'] = exp['control_exps']+' '+q['accession']
+                ob['control_exps'] = ob['control_exps']+' '+q['accession']
 
-            if 'target' in ob:
+            if 'target' in exp:
                 ob['theTarget'] = exp['target']['label']
 
             files_count = {}
