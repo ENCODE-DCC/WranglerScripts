@@ -22,8 +22,7 @@ EPILOG = '''Notes:
 	The accession must exist and the properties must be in its schema.
 	If the property does not exist in the object it is added with the specified value.
 	If the property exists in the object, its value is over-written.
-	If the property exists and the value is "", the property will be removed altogether.
-	Whitespace is stripped from the supplied value.
+	If the property exists and the new value is "", the property will be removed altogether.
 
 	Each accession is echo'ed to stdout as the script works on it.
 
