@@ -15,17 +15,17 @@ EPILOG = '''Notes:
 	Requires comma-delimited, double quote-quoted (for values containing commas or newlines)
 	csv's should have a header as below and data rows in the form:
 
-	accession, property1, property2, property3 ...
-	ENCBSxyzabc, value1, value2, value3 ...
+	accession,property1,property2,property3 ...
+	ENCBSxyzabc,value1,value2,value3 ...
 	...
 
-	The accession must exist and the properties must be in it's schema
-	If the property does not exist in the object it will be added with the specified value.
-	If the property does exist in the object, its value is over-written
-	If the property does exist and the value is "", the property will be removed altogether.
-	Leading and trailing whitespace are stripped from the supplied value.
+	The accession must exist and the properties must be in its schema.
+	If the property does not exist in the object it is added with the specified value.
+	If the property exists in the object, its value is over-written.
+	If the property exists and the value is "", the property will be removed altogether.
+	Whitespace is stripped from the supplied value.
 
-	Each accession is echo'ed to stdout as the script works on it
+	Each accession is echo'ed to stdout as the script works on it.
 
 Examples:
 
@@ -297,7 +297,7 @@ def main():
 		default=os.path.expanduser("~/keypairs.json"),
 		help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
 	parser.add_argument('--infile', '-i',
-		help="File containing the JSON object as a JSON string.")
+		help="CSV file with metadata to update")
 	parser.add_argument('--dryrun',
 		default=False,
 		action='store_true',
