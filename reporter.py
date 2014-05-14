@@ -134,6 +134,16 @@ def get_antibody_approval(antibody, target):
         return "UNKNOWN"
 
 
+def get_doc_list(documents):
+   
+    list = []
+    for i in range(0, len(documents)):
+        if 'attachment' in documents[i]:
+            list.append(documents[i]['attachment']['download'])
+        else:
+            list.append(documents[i]['uuid'])
+    return ' '.join(list)
+                    
 # # I need my attachment thing here
 
 
@@ -150,9 +160,10 @@ checkedItems = ['project',
                 'species',
                 'biosample_term_name',
                 'biosample_term_id',
+                'biosample_type',
                 'description',
                 # 'document_count',
-                # 'documents',
+                'experiment_documents',
                 'control_exps',
                 'theTarget',
                 'file_count'
@@ -167,6 +178,7 @@ repCheckedItems = [
                    'antibody_status',
                    'replicate_uuid',
                    'replicate_aliases',
+                   'rep_status',
                    'biological_replicate_number',
                    'technical_replicate_number',
                    'read_length',
@@ -179,6 +191,7 @@ repCheckedItems = [
 libraryCheckedItems = [
                        'accession',
                        'aliases',
+                       'library_status',
                        'nucleic_acid_term_name',
                        'nucleic_acid_term_id',
                        'depleted_in_term_name',
@@ -190,10 +203,15 @@ libraryCheckedItems = [
                        'library_treatments',
                        'protocols',
                        'biosample_accession',
+                       'biosample_status',
+                       'biosample_biosample_term',
+                       'biosample_biosample_id',
+                       'biosample_biosample_type',
                        'subcellular_fraction',
                        'phase',
                        'biological_treatment',
                        'donor',
+                       'donor_status',
                        'strain',
                        'age',
                        'age_units',
@@ -232,6 +250,10 @@ def main():
                             default=False,
                             action='store_true',
                             help="Print detailed report.  Default off")
+        parser.add_argument('--status',
+                            default=False,
+                            action='store_true',
+                            help="Print statuses of each object.  Default off")
         parser.add_argument('--mouse',
                             default=False,
                             action='store_true',
@@ -275,6 +297,9 @@ def main():
             checkedItems.remove('assay_term_id')
             checkedItems.remove('biosample_term_id')
             libraryCheckedItems.remove('nucleic_acid_term_id')
+            libraryCheckedItems.remove('biosample_biosample_term')
+            libraryCheckedItems.remove('biosample_biosample_id')
+            libraryCheckedItems.remove('biosample_biosample_type')
 
         if not args.library:
             libraryCheckedItems.remove('lysis_method')
@@ -282,6 +307,13 @@ def main():
             libraryCheckedItems.remove('extraction_method')
             libraryCheckedItems.remove('library_size_selection_method')
             libraryCheckedItems.remove('size_range')
+        
+        if not args.status:
+            libraryCheckedItems.remove('library_status')
+            libraryCheckedItems.remove('biosample_status')
+            libraryCheckedItems.remove('donor_status')
+            repCheckedItems.remove('rep_status')
+            checkedItems.remove('status')
 
         if not args.encode2:
             checkedItems.remove('dbxrefs')
@@ -320,12 +352,15 @@ def main():
             ob['project'] = exp['award']['rfa']
             ob['grant'] = exp['award']['name']
             ob['submitter'] = exp['submitted_by']['title']
+            ob['experiment_documents'] = get_doc_list(exp['documents'])
+
 
             temp = ''
             for i in range(0, len(exp['dbxrefs'])):
                 temp = temp + ' ; ' + exp['dbxrefs'][i]
             ob['dbxrefs'] = temp
 
+            ob['control_exps'] = ''
             for q in exp['possible_controls']:
                 ob['control_exps'] = ob['control_exps']+' '+q['accession']
 
@@ -364,6 +399,7 @@ def main():
                     repOb['rep_file_count'] = 0
                 repOb['replicate_aliases'] = rep['aliases']
                 repOb['replicate_uuid'] = rep['uuid']
+                repOb['rep_status'] = rep['status']
                 if 'platform' in rep:
                     repOb['platform'] = rep['platform']['term_name']
                 if 'antibody' in rep:
@@ -384,15 +420,15 @@ def main():
                     for field in libraryCheckedItems:
                         if field in rep['library']:
                             repOb[field] = rep['library'][field]
-                    repOb['protocols'] = []
-                    for i in range(0, len(rep['library']['documents'])):
-                        repOb['protocols'].append(rep['library']['documents'][i]['attachment']['download'])
-                    temp = ' '.join(repOb['protocols'])
-                    repOb['protocols'] = temp
-
+                    repOb['protocols'] = get_doc_list (rep['library']['documents'])
+                    repOb['library_status'] = rep['library']['status']
                     if 'biosample' in rep['library']:
                         bs = rep['library']['biosample']
                         repOb['biosample_accession'] = bs['accession']
+                        repOb['biosample_status'] = bs['status']
+                        repOb['biosample_biosample_term'] = bs['biosample_term_name']
+                        repOb['biosample_biosample_id'] = bs['biosample_term_id']
+                        repOb['biosample_biosample_type'] = bs['biosample_type']
                         ob['species'] = bs['organism']['name']
                         if 'subcellular_fraction' in bs:
                             repOb['subcellular_fraction'] = bs['subcellular_fraction']
@@ -405,6 +441,7 @@ def main():
                             # rep['library']['biological_treatment'] = bs['treatments'][0]['dbxrefs'] 
                         if 'donor' in bs:
                             repOb['donor'] = bs['donor']['accession']
+                            repOb['donor_status'] = bs['donor']['status']
                             if 'strain_background' in bs['donor']:
                                 repOb['strain'] = bs['donor']['strain_background']
                         for term in ('phase', 'age', 'age_units', 'life_stage'):
