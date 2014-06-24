@@ -22,8 +22,6 @@ Examples:
 
 '''
 
-'''force return from the server in JSON format'''
-
 DOWNLOAD_URL_BASE = 'http://encodedcc.sdsc.edu/warehouse/'
 
 class ENC_Key:
@@ -97,6 +95,8 @@ def main():
 		formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument('url',
 		help="Any valid ENCODE url to GET, including searches.  If no server is specified, it will be inferred from key.")
+	parser.add_argument('outfile',
+		help="Output file in which to save the results")
 	parser.add_argument('--key',
 		default=None,
 		help="The keypair identifier from the keyfile for the server.  Necessary to retrieve unreleased data.  Defaults to None, in which case requests will be made with no authentication.")
@@ -186,7 +186,7 @@ def main():
 
 	
 	headers = ['ENCSR','biosample','target','treatment','biorep num','techrep num','file','output type','file format','download link','lab','phase']
-	f = codecs.open('out.csv', encoding='utf-8', mode='wb')
+	f = codecs.open(args.outfile, encoding='utf-8', mode='wb')
 	writer = DictWriter(f,fieldnames=headers)
 	writer.writeheader()
 	#writer.writerows(rows) can't use this becuase it doesn't support unicode
@@ -198,6 +198,7 @@ def main():
 			else:
 				row_str += unicode(row[field]) + u','
 		row_str = row_str.rstrip()
+		row_str = row_str.rstrip(',')
 		row_str += u'\n'
 		f.write(row_str)
 	f.close()
