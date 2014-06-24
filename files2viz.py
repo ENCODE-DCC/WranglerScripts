@@ -102,9 +102,9 @@ def files2viz(files_to_visualize):
 	GENOME = 'hg19'
 
 	hub = Hub(
-		hub='Selected ENCODE Tracks',
-		short_label='Selected ENCODE Tracks',
-		long_label='Selected ENCODE Tracks',
+		hub='Selected_ENCODE_Tracks',
+		short_label='Selected_ENCODE_Tracks_short',
+		long_label='Selected_ENCODE_Tracks_long',
 		email='jseth@stanford.edu')
 
 	genomes_file = GenomesFile()
@@ -144,9 +144,10 @@ def files2viz(files_to_visualize):
 	subprocess.call("cd .. && rsync -r trackhub jseth@cherry-vm45.stanford.edu:/www/html/trackhubs", shell=True)
 	import webbrowser
 	hubfile = str(hub.hub) + '.hub.txt'
-	UCSC_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks?udcTimeout=1&db-hg19' + \
-				'&hubUrl=' + os.path.join(HUBHOST,HUBDIR,'trackhub',hubfile) # + \
-				#'&hsS_doLoadUrl=submit&hgS_loadUrlName=' + os.path.join(HUBHOST,HUBDIR,'trackhub','session.txt')
+	UCSC_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks?udcTimeout=1&db=hg19' + \
+				'&hubUrl=' + os.path.join(HUBHOST,HUBDIR,'trackhub',hubfile) #  + \
+				#'&hsS_doLoadUrl=submit' + '&hgS_loadUrlName=' + os.path.join(HUBHOST,HUBDIR,'trackhub','session.txt')
+	print UCSC_url
 	webbrowser.open(UCSC_url)
 
 def main():
