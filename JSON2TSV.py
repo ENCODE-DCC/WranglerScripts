@@ -7,7 +7,7 @@ import json
 import csv
 import sys
 
-EPILOG = ''' Usage: %(prog)s -i [input JSON file] > [output TSV file] '''
+EPILOG = '''Usage: %(prog)s -i [input JSON file] > [output TSV file]'''
 
 def main():
 	import argparse
@@ -24,7 +24,8 @@ def main():
 			for line in f:
 				lines.append(line)
 	else:
-		print >> sys.stderr, "Please supply an input JSON file with -i"
+		print >> sys.stderr, "Usage: JSON2TSV.py -i [input JSON file] > [output TSV file]"
+		sys.exit(0)
 
 	new_json = json.loads(''.join(lines))
 	keys = {}
