@@ -33,10 +33,15 @@ HEADERS = {'content-type': 'application/json'}
 
 def get_ENCODE(obj_id):
 	'''GET an ENCODE object as JSON and return as dict'''
-	if obj_id.rfind('?') == -1:
-		url = SERVER+obj_id+'?limit=all'
+	url = SERVER+obj_id
+	if 'search' in obj_id: #assume that a search query is complete except for &limit=all
+		pass
 	else:
-		url = SERVER+obj_id+'&limit=all'
+		if '?' in obj_id: # have to do this because it might be the first directive in the URL
+			url += '&datastore=database'
+		else:
+			url += '?datastore=database'
+	url += '&limit=all'
 	if DEBUG:
 		print "DEBUG: GET %s" %(url)
 	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
@@ -120,6 +125,9 @@ def main():
 		default=False,
 		action='store_true',
 		help="Use elasticsearch")
+	parser.add_argument('--query',
+		help="A complete query to run rather than GET the whole collection.  \
+		E.g. \"search/?type=biosample&lab.title=Ross Hardison, PennState\".  Implies --es.")
 	parser.add_argument('--submittable',
 		default=False,
 		action='store_true',
@@ -183,7 +191,8 @@ def main():
 	if 'file' in supplied_name or 'dataset' in supplied_name or 'source' in supplied_name or 'award' in supplied_name:
 		pass
 	else:
-		headings.append('award.rfa')
+		#headings.append('award.rfa') #need to add a parameter to specify additional properties
+		pass
 	if 'file' in supplied_name:
 		headings.append('replicate.biological_replicate_number')
 		headings.append('replicate.technical_replicate_number')
@@ -192,10 +201,15 @@ def main():
 
 	exclude_unsubmittable = ['accession', 'uuid', 'schema_version', 'alternate_accessions', 'submitted_by']
 
-	if args.es:
-		supplied_name = '/search/?format=json&limit=all&type=' + supplied_name
-	global collectionn
-	collection = get_ENCODE(supplied_name)
+	if args.query:
+		uri = args.query
+	elif args.es:
+		uri = '/search/?format=json&limit=all&type=' + supplied_name
+	else:
+		uri = supplied_name
+
+	global collection
+	collection = get_ENCODE(uri)
 	collected_items = collection['@graph']
 
 	headstring = ""
@@ -208,7 +222,8 @@ def main():
 	print headstring
 
 	for item in collected_items:
-		obj = get_ENCODE(item['@id'])
+		#obj = get_ENCODE(item['@id'])
+		obj = item
 		obj = flat_ENCODE(obj)
 		rowstring = ""
 		for header in headstring.split('\t'):

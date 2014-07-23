@@ -19,7 +19,7 @@ if __name__ == "__main__":
     password = "abc123"
 
     spreadname = 'Import Test Sheet'
-    typelist = ['biosample']
+    typelist = ['biosample', 'construct', 'fly-donor', 'replicate', 'experiment', 'library', 'document']
 
     # start a spreadsheet login
     sheetclient = LoginGSheet(email,password)
@@ -83,6 +83,12 @@ if __name__ == "__main__":
                                 value = value.split(', ')
                                 if object_schema[u'properties'][header][u'items'][u'type'] == 'string':
                                     new_object.update({header:value})
+                                elif object_schema[u'properties'][header][u'items'][u'type'] == 'object':
+                                    sub_object = dict()
+                                    for prop_value_pair in value:
+                                        pair = prop_value_pair.split(': ')
+                                        sub_object[pair[0]] = pair[1]
+                                    new_object.update({header: [sub_object]})
     #                            elif object_schema[u'properties'][header][u'items'][u'type'] is 'integer':
     #                                new_object.update({header:int(value)})
                     

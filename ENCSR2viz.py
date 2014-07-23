@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
-'''Take a list of ENCODE files and visualize them'''
+'''Take a list of ENCODE experiments and visualize them'''
 
 import requests
 import json
@@ -13,12 +13,12 @@ EPILOG = '''Examples:
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
 
-def get_ENCODE(obj_id):
+def get_ENCODE(obj_id, frame='object'):
 	'''GET an ENCODE object as JSON and return as dict'''
 	if obj_id.rfind('?') == -1:
-		url = ENCODED_SERVER+obj_id+'?limit=all'
+		url = ENCODED_SERVER+obj_id+'?limit=all&frame=%s' %(frame)
 	else:
-		url = ENCODED_SERVER+obj_id+'&limit=all'
+		url = ENCODED_SERVER+obj_id+'&limit=all&frame=%s' %(frame)
 	if DEBUG:
 		print "DEBUG: GET %s" %(url)
 	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
@@ -87,44 +87,53 @@ def pprint_ENCODE(JSON_obj):
 	else:
 		print json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': '))
 
-def files2viz(files_to_visualize):
+def ENCSR2viz(experiments_to_visualize):
 	if DEBUG:
 		print "Visualizing"
-		print files_to_visualize
+		print experiments_to_visualize
 
 	from trackhub import Hub, GenomesFile, Genome, TrackDb, Track
 	from trackhub.upload import upload_hub
 	HUBHOST = 'http://cherry-vm45.stanford.edu'
-	HUBDIR = 'trackhubs'
+	HUBDIR = 'jseth/trackhubs'
 	USER = 'jseth'
 	URLBASE = os.path.join(HUBHOST, HUBDIR)
 	EDWBASE = 'http://encodedcc.sdsc.edu/warehouse'
 	GENOME = 'hg19'
 
 	hub = Hub(
-		hub='Selected_ENCODE_Tracks',
-		short_label='Selected_ENCODE_Tracks_short',
-		long_label='Selected_ENCODE_Tracks_long',
+		hub='ENCODE',
+		short_label='ENCODE',
+		long_label='ENCODE',
 		email='jseth@stanford.edu')
 
 	genomes_file = GenomesFile()
 	genome = Genome(GENOME)
 	trackdb = TrackDb()
 
-	for accession in files_to_visualize:
-		file_obj = get_ENCODE(accession)
+	for accession in experiments_to_visualize:
+		experiment_obj = get_ENCODE(accession)
 		if DEBUG:
-			print file_obj
-		if file_obj['file_format'] == 'bigWig':
-			track = Track(
-				name=accession,
-				url=os.path.join(EDWBASE, str(file_obj['download_path'])),
-				tracktype='bigWig',
-				short_label=accession,
-				long_label=accession,
-				color='128,0,0',
-				visibility='full')
-			trackdb.add_tracks([track])
+			print experiment_obj
+		for file_id in experiment_obj['files']:
+			file_obj = get_ENCODE(file_id)
+			if file_obj['file_format'] in ['bigWig', 'bigBed', 'broadPeak', 'narrowPeak']:
+				if file_obj['file_format'] in ['bigWig']:
+					track_type = 'bigWig'
+				elif file_obj['file_format'] in ['bigBed', 'broadPeak', 'narrowPeak']:
+					track_type = 'bigBed'
+				track = Track(
+					name=str(file_obj['accession']),
+					url=os.path.join(EDWBASE, str(file_obj['download_path'])),
+					tracktype=track_type,
+					long_label=str(file_obj['accession']),
+					short_label=str(file_obj['output_type']),
+					color='128,0,0',
+					visibility='dense',
+					metadata='cell_type=primary')
+				print file_obj['accession']
+
+				trackdb.add_tracks([track])
 
 	genome.add_trackdb(trackdb)
 	genomes_file.add_genome(genome)
@@ -141,12 +150,12 @@ def files2viz(files_to_visualize):
 		print trackdb
 	#upload_hub(hub=hub, host=HUBHOST, user=USER) #doesn't seem to work
 	import subprocess
-	subprocess.call("cd .. && rsync -r trackhub jseth@cherry-vm45.stanford.edu:/www/html/trackhubs", shell=True)
+	subprocess.call("cd .. && rsync -r trackhub jseth@cherry-vm45.stanford.edu:/www/html/jseth/trackhubs", shell=True)
 	import webbrowser
 	hubfile = str(hub.hub) + '.hub.txt'
 	UCSC_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks?udcTimeout=1&db=hg19' + \
-				'&hubUrl=' + os.path.join(HUBHOST,HUBDIR,'trackhub',hubfile) #  + \
-				#'&hsS_doLoadUrl=submit' + '&hgS_loadUrlName=' + os.path.join(HUBHOST,HUBDIR,'trackhub','session.txt')
+				'&hubUrl=' + os.path.join(HUBHOST,HUBDIR,'trackhub',hubfile) # + \
+				#'&hsS_doLoadUrl=submit&hgS_loadUrlName=' + os.path.join(HUBHOST,HUBDIR,'trackhub','session.txt')
 	print UCSC_url
 	webbrowser.open(UCSC_url)
 
@@ -157,11 +166,11 @@ def main():
 	    description=__doc__, epilog=EPILOG,
 	    formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
-	parser.add_argument('files', metavar='ENCFF', nargs='*',
+	parser.add_argument('experiments', metavar='ENCSR', nargs='*',
 		default=None,
-		help="File(s) to visualize by ENCODE file accession, (default or '-': take list of files from stdin)")
+		help="Experiment(s) to visualize by ENCODE experiment accession, (default or '-': take list from stdin)")
 	parser.add_argument('--infile', '-i', metavar='file', nargs='*',
-		help="File(s) containing a (possibly multi-line) whitspace-delimited list of ENCODE file accessions")
+		help="File(s) containing a (possibly multi-line) whitspace-delimited list of ENCODE experiment accessions")
 	parser.add_argument('--server',
 		help="Full URL of the server.")
 	parser.add_argument('--key',
@@ -190,17 +199,17 @@ def main():
 		infilenames = []
 	else:
 		infilenames = args.infile
-	if args.files == '-':
+	if args.experiments == '-':
 		infilenames.append('-')
 	if infilenames != []:
 		import fileinput
-		ENCODE_files = []
+		ENCODE_experiments = []
 		for line in fileinput.input(infilenames):
-			ENCODE_files.extend(line.split())
+			ENCODE_experiments.extend(line.split())
 	else:
-		ENCODE_files = args.files
+		ENCODE_experiments = args.experiments
 
-	result = files2viz(ENCODE_files)
+	result = ENCSR2viz(ENCODE_experiments)
 
 if __name__ == '__main__':
 	main()
