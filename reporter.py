@@ -9,6 +9,7 @@ import os.path
 import argparse
 
 HEADERS = {'content-type': 'application/json'}
+global DEBUG_ON
 DEBUG_ON = False
 EPILOG = '''Examples:
 
@@ -143,7 +144,7 @@ def get_doc_list(documents):
         else:
             list.append(documents[i]['uuid'])
     return ' '.join(list)
-                    
+
 # # I need my attachment thing here
 
 
@@ -184,9 +185,21 @@ repCheckedItems = [
                    'read_length',
                    'paired_ended',
                    'platform',
+                   'files'
                    ]
 
-
+fileCheckedItems = ['accession',
+                    'submitted_file_name',
+                    'file_format',
+                    'dataset',
+                    'experiment',
+                    'alias',
+                    'replicate_alias',
+                    'biological_replicate',
+                    'technical_replicate',
+                    'status',
+                    'paired_end',
+                    ]
 
 libraryCheckedItems = [
                        'accession',
@@ -209,13 +222,14 @@ libraryCheckedItems = [
                        'biosample_biosample_type',
                        'subcellular_fraction',
                        'phase',
-                       'biological_treatment',
+                       #'biological_treatment',
                        'donor',
                        'donor_status',
                        'strain',
                        'age',
                        'age_units',
                        'life_stage',
+                       'library_paired_ended',
                        'strand_specificity',
                        ]
 
@@ -258,10 +272,18 @@ def main():
                             default=False,
                             action='store_true',
                             help="Print mouse specific details.  Default off")
+        parser.add_argument('--simple',
+                            default=False,
+                            action='store_true',
+                            help="Very simple output.  Default off")
         parser.add_argument('--library',
                             default=False,
                             action='store_true',
                             help="Print library details.  Default off")
+        parser.add_argument('--files',
+                            default=False,
+                            action='store_true',
+                            help="Print a file based report versus a replicate based one.  Default off")
         parser.add_argument('--encode2',
                             default=False,
                             action='store_true',
@@ -281,7 +303,7 @@ def main():
             repCheckedItems.remove('antibody_source')
             repCheckedItems.remove('antibody_product')
             repCheckedItems.remove('antibody_lot')
-
+        
         if args.datatype != 'REPLI':
             libraryCheckedItems.remove('phase')
 
@@ -289,6 +311,13 @@ def main():
             libraryCheckedItems.remove('subcellular_fraction')
             libraryCheckedItems.remove('library_treatments')
             libraryCheckedItems.remove('depleted_in_term_name')
+         
+        if args.simple:
+            if args.datatype == 'CHIP': 
+                repCheckedItems.remove('antibody_status')
+                repCheckedItems.remove('antibody_source')
+                repCheckedItems.remove('antibody_product')
+                repCheckedItems.remove('antibody_lot')
 
         if not args.details:
             checkedItems.remove('project')
@@ -307,6 +336,7 @@ def main():
             libraryCheckedItems.remove('extraction_method')
             libraryCheckedItems.remove('library_size_selection_method')
             libraryCheckedItems.remove('size_range')
+            libraryCheckedItems.remove('library_paired_ended')
         
         if not args.status:
             libraryCheckedItems.remove('library_status')
@@ -321,16 +351,37 @@ def main():
         if not args.mouse:
             libraryCheckedItems.remove('strain')
 
-        print '\t'.join(checkedItems+repCheckedItems+libraryCheckedItems)
+        if args.files:
+            print '\t'.join(fileCheckedItems)
+        else:
+            print '\t'.join(checkedItems+repCheckedItems+libraryCheckedItems)
 
 
 
         # Get list of objects we are interested in
-        #search_results = get_ENCODE("search/?type=experiment&lab.title=Bing%20Ren,%20UCSD&assay_term_name=ChIP-seq&target.label=H3K4me2")
-        # search = "search/?type=experiment&assay_term_name=Repli-seq" 
         search = args.search
-
         objList = get_experiment_list(args.infile, search)
+
+
+        if args.files:
+            for i in range(0, len(objList)):
+                exp = get_ENCODE(objList[i])
+                for i in range(0, len(exp['files'])):
+                    fileob = {}
+                    file = exp['files'][i]
+                    for field in fileCheckedItems:
+                        fileob[field] = file.get(field)
+                    fileob['experiment'] = exp['accession']
+                    fileob['alias'] = exp['aliases'][0]    
+                    fileob['biological_replicate'] = file['replicate']['biological_replicate_number']
+                    fileob['technical_replicate'] = file['replicate']['technical_replicate_number']
+                    fileob['replicate_alias'] = file['replicate'].get('aliases')
+                    row = []
+                    for j in fileCheckedItems:
+                        row.append(str(fileob[j]))
+                    print '\t'.join(row)
+            return
+
         for i in range(0, len(objList)):
 
             exp = get_ENCODE(objList[i])
@@ -368,12 +419,19 @@ def main():
                 ob['theTarget'] = exp['target']['label']
 
             files_count = {}
+            files_list = {}
             for i in range(0, len(exp['files'])):
                 item = exp['files'][i]
                 if 'replicate' in item:
                     repId = item['replicate']['uuid']
                 else:
                     repId = 'no rep'
+
+                if repId in files_list:
+                   files_list[repId].append(item['accession'])
+                elif repId != 'no rep':
+                   files_list[repId] = [item['accession']]
+
                 if repId in files_count:
                     files_count[repId] = files_count[repId] + 1
                 else:
@@ -394,9 +452,11 @@ def main():
                     else:
                         repOb[field] = ''
                 if rep['uuid'] in files_count:
+                    repOb['files'] = files_list[rep['uuid']]
                     repOb['rep_file_count'] = files_count[rep['uuid']]
                 else:
                     repOb['rep_file_count'] = 0
+                    repOb['files'] =[]
                 repOb['replicate_aliases'] = rep['aliases']
                 repOb['replicate_uuid'] = rep['uuid']
                 repOb['rep_status'] = rep['status']
@@ -404,7 +464,7 @@ def main():
                     repOb['platform'] = rep['platform']['term_name']
                 if 'antibody' in rep:
                         repOb['antibody'] = rep['antibody']['accession']
-                        repOb['antibody_status'] = rep['antibody']['status']
+                        #repOb['antibody_status'] = rep['antibody']['approvals'][0]['status']
                         repOb['antibody_source'] = rep['antibody']['source']
                         repOb['antibody_product'] = rep['antibody']['product_id']
                         repOb['antibody_lot'] = rep['antibody']['lot_id']
@@ -422,6 +482,7 @@ def main():
                             repOb[field] = rep['library'][field]
                     repOb['protocols'] = get_doc_list (rep['library']['documents'])
                     repOb['library_status'] = rep['library']['status']
+                    repOb['library_paired_ended'] = rep['library']['paired_ended']
                     if 'biosample' in rep['library']:
                         bs = rep['library']['biosample']
                         repOb['biosample_accession'] = bs['accession']
