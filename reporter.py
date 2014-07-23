@@ -372,10 +372,16 @@ def main():
                     for field in fileCheckedItems:
                         fileob[field] = file.get(field)
                     fileob['experiment'] = exp['accession']
-                    fileob['alias'] = exp['aliases'][0]    
-                    fileob['biological_replicate'] = file['replicate']['biological_replicate_number']
-                    fileob['technical_replicate'] = file['replicate']['technical_replicate_number']
-                    fileob['replicate_alias'] = file['replicate'].get('aliases')
+                    if 'alias' in exp:
+                        fileob['alias'] = exp['aliases'][0]    
+                    else:
+                        fileob['alias'] = ''
+                    if 'replicate' in file:
+                        fileob['biological_replicate'] = file['replicate']['biological_replicate_number']
+                        fileob['technical_replicate'] = file['replicate']['technical_replicate_number']
+                        fileob['replicate_alias'] = file['replicate'].get('aliases')
+                    else:
+                        fileob['biological_replicate'] = fileob['technical_replicate'] = fileob['replicate_alias'] = ''
                     row = []
                     for j in fileCheckedItems:
                         row.append(str(fileob[j]))
