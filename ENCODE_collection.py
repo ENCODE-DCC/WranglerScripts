@@ -169,9 +169,12 @@ def main():
 	object_schema = get_ENCODE(schema_uri)
 	headings = []
 	for schema_property in object_schema["properties"]:
-		if object_schema["properties"][schema_property]["type"] == 'string':
+		property_type = object_schema["properties"][schema_property]["type"]
+		if isinstance(property_type, list): # hack to deal with multi-typed properties, just pick the first one
+			property_type = property_type[0]
+		if property_type == 'string': #if it's a string type, the heading is just the property name
 			headings.append(schema_property)
-		elif object_schema["properties"][schema_property]["type"] == 'array':
+		elif property_type == 'array': #format the heading to be property_name:type:array or, if an array of strings, property_name:array
 			if 'items' in object_schema["properties"][schema_property].keys():
 				whateveritscalled = "items"
 			elif 'reference' in object_schema["properties"][schema_property].keys():
@@ -185,8 +188,8 @@ def main():
 				headings.append(schema_property + ':array')
 			else:
 				headings.append(schema_property + ':' + object_schema["properties"][schema_property][whateveritscalled]["type"] + ':array')
-		else:
-			headings.append(schema_property + ':' + object_schema["properties"][schema_property]["type"])
+		else: #it isn't a string, and it isn't an array, so make the heading property_name:type
+			headings.append(schema_property + ':' + property_type)
 	headings.sort()
 	if 'file' in supplied_name or 'dataset' in supplied_name or 'source' in supplied_name or 'award' in supplied_name:
 		pass
