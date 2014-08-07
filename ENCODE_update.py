@@ -19,12 +19,12 @@ EPILOG = '''Notes:
 	ENCBSxyzabc,value1,value2,value3 ...
 	...
 
-	The accession must exist and the properties must be in its schema.
+	The accession (or uuid or other valid identifier) must exist and the properties must be in its schema.
 	If the property does not exist in the object it is added with the specified value.
 	If the property exists in the object, its value is over-written.
 	If the property exists and the new value is "", the property will be removed altogether.
 
-	Each accession is echo'ed to stdout as the script works on it.
+	Each object's identifier is echo'ed to stdout as the script works on it.
 
 Examples:
 
@@ -322,15 +322,21 @@ def main():
 	with open(args.infile,'rU') as f:
 		reader = csv.DictReader(f, delimiter=',', quotechar='"')
 		for new_metadata in reader:
-			accession = new_metadata.pop('accession')
-			print accession
-			enc_object = ENC_Item(connection, accession)
+			if 'uuid' in new_metadata and 'accession' in new_metadata:
+				obj_id = new_metadata.pop('uuid') #use uuid
+				new_metadata.pop('accession') #ignore accession if there is a uuid
+			elif 'uuid' in new_metadata:
+				obj_id = new_metadata.pop('uuid')
+			else:
+				obj_id = new_metadata.pop('accession')
+			print obj_id
+			enc_object = ENC_Item(connection, obj_id)
 			for prop in new_metadata:
 				if new_metadata[prop].strip() == "":
 					old_value = enc_object.properties.pop(prop,None)
 				else:
 					enc_object.properties.update({prop : new_metadata[prop]})
-			logging.info('Syncing %s' %(accession))
+			logging.info('Syncing %s' %(obj_id))
 			logging.info('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
 			if not args.dryrun:
 				enc_object.sync()
