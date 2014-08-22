@@ -8,7 +8,7 @@ import requests
 import json
 '''use jsonschema to validate objects against the JSON schemas'''
 import jsonschema
-import sys, os.path
+import sys, os.path, urlparse
 
 EPILOG = '''Limitations:
 
@@ -31,17 +31,17 @@ Same for human-donors
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
 
-def get_ENCODE(obj_id):
+def get_ENCODE(uri):
 	'''GET an ENCODE object as JSON and return as dict'''
-	url = SERVER+obj_id
-	if 'search' in obj_id: #assume that a search query is complete except for &limit=all
+	if 'search' in uri: #assume that a search query is complete except for &limit=all
 		pass
 	else:
-		if '?' in obj_id: # have to do this because it might be the first directive in the URL
-			url += '&datastore=database'
+		if '?' in uri: # have to do this because it might be the first directive in the URL
+			uri += '&datastore=database'
 		else:
-			url += '?datastore=database'
-	url += '&limit=all'
+			uri += '?datastore=database'
+	uri += '&limit=all'
+	url = urlparse.urljoin(SERVER, uri)
 	if DEBUG:
 		print "DEBUG: GET %s" %(url)
 	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
