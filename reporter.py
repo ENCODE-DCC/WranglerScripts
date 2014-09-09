@@ -167,7 +167,8 @@ checkedItems = ['project',
                 'experiment_documents',
                 'control_exps',
                 'theTarget',
-                'file_count'
+                'file_count',
+                'date_created'
                 ]
 
 repCheckedItems = [
@@ -185,7 +186,8 @@ repCheckedItems = [
                    'read_length',
                    'paired_ended',
                    'platform',
-                   'files'
+                   'files',
+                   'date_created'
                    ]
 
 fileCheckedItems = ['accession',
@@ -199,6 +201,7 @@ fileCheckedItems = ['accession',
                     'technical_replicate',
                     'status',
                     'paired_end',
+                    'date_created'
                     ]
 
 libraryCheckedItems = [
@@ -220,7 +223,7 @@ libraryCheckedItems = [
                        'biosample_biosample_term',
                        'biosample_biosample_id',
                        'biosample_biosample_type',
-                       'subcellular_fraction',
+                       'subcellular_fraction_term_name',
                        'phase',
                        #'biological_treatment',
                        'donor',
@@ -231,6 +234,7 @@ libraryCheckedItems = [
                        'life_stage',
                        'library_paired_ended',
                        'strand_specificity',
+                       'date_created'
                        ]
 
 
@@ -308,7 +312,7 @@ def main():
             libraryCheckedItems.remove('phase')
 
         if args.datatype != 'RNA':
-            libraryCheckedItems.remove('subcellular_fraction')
+            libraryCheckedItems.remove('subcellular_fraction_term_name')
             libraryCheckedItems.remove('library_treatments')
             libraryCheckedItems.remove('depleted_in_term_name')
          
@@ -497,10 +501,10 @@ def main():
                         repOb['biosample_biosample_id'] = bs['biosample_term_id']
                         repOb['biosample_biosample_type'] = bs['biosample_type']
                         ob['species'] = bs['organism']['name']
-                        if 'subcellular_fraction' in bs:
-                            repOb['subcellular_fraction'] = bs['subcellular_fraction']
+                        if 'subcellular_fraction_term_name' in bs:
+                            repOb['subcellular_fraction_term_name'] = bs['subcellular_fraction_term_name']
                         else:
-                            repOb['subcellular_fraction'] = 'unfractionated'
+                            repOb['subcellular_fraction_term_name'] = 'unfractionated'
 
                         if bs['treatments'] != []:
                             repOb['biological_treatment'] = bs['treatments'][0]
