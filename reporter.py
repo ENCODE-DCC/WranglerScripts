@@ -136,7 +136,7 @@ def get_antibody_approval(antibody, target):
 
 
 def get_doc_list(documents):
-   
+
     list = []
     for i in range(0, len(documents)):
         if 'attachment' in documents[i]:
@@ -146,6 +146,18 @@ def get_doc_list(documents):
     return ' '.join(list)
 
 # # I need my attachment thing here
+
+
+def get_treatment_list(treatments):
+
+    list = []
+    for i in range(0, len(treatments)):
+        if 'concentration' in treatments[i] and 'duration' in treatments:
+            treatment_summary = "%s - %0.2f %s, %f %s" % (treatments[i]['treatment_term_name'], treatments[i]['concentration'], treatments[i]['concentration_units'], treatments[i]['duration'], treatments[i]['duration_units'])
+        else:
+            treatment_summary = "%s" % (treatments[i]['treatment_term_name'])
+        list.append(treatment_summary)
+    return ' '.join(list)
 
 
 checkedItems = ['project',
@@ -225,7 +237,7 @@ libraryCheckedItems = [
                        'biosample_biosample_type',
                        'subcellular_fraction_term_name',
                        'phase',
-                       #'biological_treatment',
+                       'biological_treatments',
                        'donor',
                        'donor_status',
                        'strain',
@@ -415,7 +427,6 @@ def main():
             ob['submitter'] = exp['submitted_by']['title']
             ob['experiment_documents'] = get_doc_list(exp['documents'])
 
-
             temp = ''
             for i in range(0, len(exp['dbxrefs'])):
                 temp = temp + ' ; ' + exp['dbxrefs'][i]
@@ -490,7 +501,8 @@ def main():
                     for field in libraryCheckedItems:
                         if field in rep['library']:
                             repOb[field] = rep['library'][field]
-                    repOb['protocols'] = get_doc_list (rep['library']['documents'])
+                    repOb['protocols'] = get_doc_list(rep['library']['documents'])
+                    repOb['library_treatments'] = get_treatment_list(rep['library']['treatments'])
                     repOb['library_status'] = rep['library']['status']
                     repOb['library_paired_ended'] = rep['library']['paired_ended']
                     if 'biosample' in rep['library']:
@@ -507,7 +519,8 @@ def main():
                             repOb['subcellular_fraction_term_name'] = 'unfractionated'
 
                         if bs['treatments'] != []:
-                            repOb['biological_treatment'] = bs['treatments'][0]
+                            repOb['biological_treatments'] = get_treatment_list(bs['treatments'])
+                            #repOb['biological_treatment'] = bs['treatments'][0]
                             # Note, we would have to pull the treatments individually
                             # rep['library']['biological_treatment'] = bs['treatments'][0]['dbxrefs'] 
                         if 'donor' in bs:
