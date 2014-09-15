@@ -34,8 +34,9 @@ To use a different key from the default keypair file:
 def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
-        url = SERVER+obj_id+'?limit=all'
-        #url = SERVER+obj_id
+        #url = SERVER+obj_id+'?limit=all'
+        url = SERVER+obj_id
+        print url
         if DEBUG_ON:
                 print "DEBUG: GET %s" %(url)
         response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
@@ -48,7 +49,8 @@ def get_ENCODE(obj_id):
                 except:
                         print "DEBUG: GET RESPONSE text %s" %(response.text)
         if not response.status_code == requests.codes.ok:
-                response.raise_for_status()
+                print "Object missing: ", obj_id
+                #response.raise_for_status()
         return response.json()
 
 
@@ -168,6 +170,7 @@ def main():
         args = parser.parse_args()
 
         DEBUG_ON = args.debug
+        print DEBUG_ON 
 
         set_ENCODE_keys(args.keyfile, args.key)
 
@@ -179,22 +182,7 @@ def main():
 
         for key in objDict:
 
-            '''build a URL that points to an ENCODE object'''
-            URL = SERVER+'/'+key
-
-            '''GET the ENCODE object using it's resource name and store the Response'''
-            response = requests.get(URL, auth=(AUTHID, AUTHPW), headers=HEADERS)
-
-            '''act on the Response object return code'''
-            #print response.status_code
-            if not response.status_code == requests.codes.ok:
-                print response.text
-                response.raise_for_status()
-
-            '''build a python dictionary from the JSON response content'''
-            object = response.json()
-
-            '''convert NULLS to empty string'''
+            '''Interpret the new value'''
             if objDict[key].strip() == 'NULL':
                 objDict[key] = ''
             elif objDict[key].strip() == 'False':
@@ -203,19 +191,23 @@ def main():
                 objDict[key] = True 
             elif objDict[key].isdigit():
                 objDict[key] = int(objDict[key]) 
+           
+            object = get_ENCODE(key)
+            old_thing = object.get(FIELD)
 
-            old_thing = ''
-            if FIELD in object:
-                old_thing = object[FIELD]
             if args.array:
-                patch_thing = old_thing
                 if objDict[key] == '':
                    patch_thing = []
+                elif old_thing == None:
+                   patch_thing = []
                 else:
-                   patch_thing.append(objDict[key])
-                   temp = list(set(patch_thing))
-                   patch_thing = temp
-                   patch_thing = [objDict[key]]
+                   patch_thing = []
+                   for j in range(len(old_thing)):
+                       patch_thing.append(old_thing[j]['uuid'])
+                patch_thing.append(objDict[key])
+                temp = list(set(patch_thing))
+                patch_thing = temp
+                #patch_thing = [objDict[key]]
             else:
                 patch_thing = objDict[key]
 
@@ -223,34 +215,12 @@ def main():
             patchdict = {FIELD: patch_thing}
             if FIELD == 'read_length':
                patchdict.update({'read_length_units':'nt'}) 
-            '''convert the dictionary to a JSON object'''
-            json_payload = json.dumps(patchdict)
-            '''PATCH the ENCODE object with the new value'''
-            response = requests.patch(URL, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
-            '''act on the Response object return code'''
-            if not response.status_code == requests.codes.ok:
-                print response.text
-                response.raise_for_status()
-        
-            '''verify that the PATCH worked'''
-            '''GET the ENCODE object using it's resource name and store the Response'''
-            response = requests.get(URL, auth=(AUTHID, AUTHPW), headers=HEADERS)
-        
-            '''act on the Response object return code'''
-            if not response.status_code == requests.codes.ok:
-                print response.text
-                response.raise_for_status()
-        
-            '''build a python dictionary from the JSON response content'''
-            object = response.json()
-        
-            '''extract the description from the ENCODE object'''
-            new_thing = object[FIELD]
-        
+           
+            response = patch_ENCODE (key, patchdict)
+                  
             '''print what we did'''
             print "Original:  %s" %(old_thing)
             print "PATCH:     %s" %(patch_thing)
-            print "New value: %s" %(new_thing)
 
 
 if __name__ == '__main__':
