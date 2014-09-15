@@ -115,7 +115,10 @@ def main():
 	else: # use the defaulf logging level
 		logging.basicConfig(format='%(levelname)s:%(message)s')
 
-	key = ENC_Key(args.keyfile, args.key)
+	if args.key:
+		key = ENC_Key(args.keyfile, args.key)
+	else:
+		key = None
 	connection = ENC_Connection(args.url, key)
 
 	response = connection.get(frame='embedded')
@@ -133,14 +136,22 @@ def main():
 		for file_obj in experiment['files']:
 			row = {}
 			row['ENCSR'] = experiment['accession']
+			logging.info('%s' %(experiment['accession']))
 			row['file'] = file_obj['accession']
-			row['biosample'] = experiment['biosample_term_name']
-			row['target'] = experiment['target']['name']
+			if 'biosample_term_name' in experiment:
+				row['biosample'] = experiment['biosample_term_name']
+			else:
+				row['biosample'] = ""
+			if 'target' in experiment:
+				row['target'] = experiment['target']['name']
+			else:
+				row['target'] = ""
 			row['lab'] = experiment['lab']['name']
 			row['phase'] = experiment['award']['rfa']
 			row['output type'] = file_obj['output_type']
 			row['file format'] = file_obj['file_format']
 			row['download link'] = DOWNLOAD_URL_BASE + file_obj['download_path']
+			row['submitted filename'] = file_obj['submitted_file_name']
 
 			try: #if the file has a replicate
 				replicate = file_obj['replicate'] #replicate is embedded in file
@@ -185,7 +196,7 @@ def main():
 			rows.append(row)
 
 	
-	headers = ['ENCSR','biosample','target','treatment','biorep num','techrep num','file','output type','file format','download link','lab','phase']
+	headers = ['ENCSR','biosample','target','treatment','biorep num','techrep num','file','output type','file format','download link','submitted filename','lab','phase']
 	f = codecs.open(args.outfile, encoding='utf-8', mode='wb')
 	writer = DictWriter(f,fieldnames=headers)
 	writer.writeheader()
