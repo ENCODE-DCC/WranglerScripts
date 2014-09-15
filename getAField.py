@@ -127,6 +127,7 @@ def get_experiment_list(file,search):
         else:
             set = get_ENCODE(search+'&limit=all&frame=embedded')
             for i in range(0, len(set['@graph'])):
+                #print set['@graph'][i]['accession'] 
                 #objList.append(set['@graph'][i]['accession'] )
                 objList.append(set['@graph'][i]['uuid'] )
 
@@ -182,17 +183,6 @@ def main():
 
 
         #Get list of objects we are interested in
-
-        #search_results = get_ENCODE("search/?type=experiment&lab.title=Bing%20Ren,%20UCSD&assay_term_name=ChIP-seq&target.label=H3K4me2")
-        #search = "search/?type=experiment&assay_term_name=Repli-seq" 
-        #search = "search/?type=experiment&assay_term_name=DNase-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2"
-        #search = "search/?type=experiment&assay_term_name=RNA%20Array&lab.title=John%20Stamatoyannopoulos,%20UW"
-        #search = "search/?type=experiment&assay_term_name=DNase-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2-Mouse"
-        #search = "search/?type=experiment&assay_term_name=RNA-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2-Mouse"
-        ##search = "search/?type=experiment&assay_term_name=ChIP-seq&lab.title=John%20Stamatoyannopoulos,%20UW&award.rfa=ENCODE2"
-        #search = "search/?type=experiment&lab.title=Bing+Ren%2C+UCSD&award.rfa=ENCODE2-Mouse&assay_term_name=ChIP-seq"
-        #search = "search/?type=experiment&lab.title=Bing%20Ren,%20UCSD&assay_term_name=RNA-seq&award.rfa=ENCODE2-Mouse
-
 
         objList = get_experiment_list ( args.infile, args.search )
         for i in range (0, len(objList)):
