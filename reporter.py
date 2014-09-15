@@ -180,6 +180,8 @@ repCheckedItems = [
                    'replicate_uuid',
                    'replicate_aliases',
                    'rep_status',
+                   'rep_date',
+                   'rep_user',
                    'biological_replicate_number',
                    'technical_replicate_number',
                    'read_length',
@@ -190,9 +192,12 @@ repCheckedItems = [
 
 fileCheckedItems = ['accession',
                     'submitted_file_name',
+                    'submitted_by',
                     'file_format',
                     'dataset',
                     'experiment',
+                    'experiment-lab',
+                    'lab',
                     'alias',
                     'replicate_alias',
                     'biological_replicate',
@@ -225,7 +230,9 @@ libraryCheckedItems = [
                        #'biological_treatment',
                        'donor',
                        'donor_status',
+                       'strain_background',
                        'strain',
+                       'sex',
                        'age',
                        'age_units',
                        'life_stage',
@@ -350,6 +357,7 @@ def main():
 
         if not args.mouse:
             libraryCheckedItems.remove('strain')
+            libraryCheckedItems.remove('strain_background')
 
         if args.files:
             print '\t'.join(fileCheckedItems)
@@ -371,7 +379,9 @@ def main():
                     file = exp['files'][i]
                     for field in fileCheckedItems:
                         fileob[field] = file.get(field)
+                    fileob['submitted_by'] = file['submitted_by']['title']
                     fileob['experiment'] = exp['accession']
+                    fileob['experiment-lab'] = exp['lab']['name']
                     if 'alias' in exp:
                         fileob['alias'] = exp['aliases'][0]    
                     else:
@@ -400,17 +410,25 @@ def main():
                     ob[i] = ''
 
             '''Get the counts'''
-            ob['replicate_count'] = len(exp['replicates'])
-            ob['document_count'] = len(exp['documents'])
-            ob['file_count'] = len(exp['files'])
-
+            if 'replicates' in exp:
+                ob['replicate_count'] = len(exp['replicates'])
+            else:
+                ob['replicate_count'] = 0
+            if 'documents' in exp:
+                ob['document_count'] = len(exp['documents'])
+                ob['experiment_documents'] = get_doc_list(exp['documents'])
+            else:
+                ob['document_count'] = 0
+                ob['experiment_documents'] = []
+            if 'files' in exp:
+                ob['file_count'] = len(exp['files'])
+            else:
+                ob['file_count'] = 0
             '''Get the experiment level ownership'''
             ob['lab_name'] = exp['lab']['name']
             ob['project'] = exp['award']['rfa']
             ob['grant'] = exp['award']['name']
             ob['submitter'] = exp['submitted_by']['title']
-            ob['experiment_documents'] = get_doc_list(exp['documents'])
-
 
             temp = ''
             for i in range(0, len(exp['dbxrefs'])):
@@ -418,8 +436,11 @@ def main():
             ob['dbxrefs'] = temp
 
             ob['control_exps'] = ''
-            for q in exp['possible_controls']:
-                ob['control_exps'] = ob['control_exps']+' '+q['accession']
+            if 'possible_controls' in exp:
+                for q in exp['possible_controls']:
+                    ob['control_exps'] = ob['control_exps']+' '+q['accession']
+            else:
+                ob['control_exps'] = []
 
             if 'target' in exp:
                 ob['theTarget'] = exp['target']['label']
@@ -466,6 +487,8 @@ def main():
                 repOb['replicate_aliases'] = rep['aliases']
                 repOb['replicate_uuid'] = rep['uuid']
                 repOb['rep_status'] = rep['status']
+                repOb['rep_date'] = rep.get('date_created')
+                repOb['rep_user'] = rep.get('submitted_by')
                 if 'platform' in rep:
                     repOb['platform'] = rep['platform']['term_name']
                 if 'antibody' in rep:
@@ -488,7 +511,7 @@ def main():
                             repOb[field] = rep['library'][field]
                     repOb['protocols'] = get_doc_list (rep['library']['documents'])
                     repOb['library_status'] = rep['library']['status']
-                    repOb['library_paired_ended'] = rep['library']['paired_ended']
+                    repOb['library_paired_ended'] = rep['library'].get('paired_ended')
                     if 'biosample' in rep['library']:
                         bs = rep['library']['biosample']
                         repOb['biosample_accession'] = bs['accession']
@@ -509,11 +532,10 @@ def main():
                         if 'donor' in bs:
                             repOb['donor'] = bs['donor']['accession']
                             repOb['donor_status'] = bs['donor']['status']
-                            if 'strain_background' in bs['donor']:
-                                repOb['strain'] = bs['donor']['strain_background']
-                        for term in ('phase', 'age', 'age_units', 'life_stage'):
-                            if term in bs:
-                                repOb[term] = bs[term]
+                            repOb['strain'] = bs['donor'].get('strain')
+                            repOb['strain_background'] = bs['donor'].get('strain_background')
+                        for term in ('sex','phase', 'age', 'age_units', 'life_stage'):
+                            repOb[term] = bs.get(term)
 
                     temp = ' '.join(rep['library']['aliases'])
                     repOb['aliases'] = temp
