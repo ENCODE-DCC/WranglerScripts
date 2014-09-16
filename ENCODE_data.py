@@ -22,7 +22,7 @@ Examples:
 
 '''
 
-DOWNLOAD_URL_BASE = 'http://encodedcc.sdsc.edu/warehouse/'
+DOWNLOAD_URL_BASE = 'https://www.encodeproject.org'
 
 class ENC_Key:
 	def __init__(self, keyfile, keyname):
@@ -150,7 +150,7 @@ def main():
 			row['phase'] = experiment['award']['rfa']
 			row['output type'] = file_obj['output_type']
 			row['file format'] = file_obj['file_format']
-			row['download link'] = DOWNLOAD_URL_BASE + file_obj['download_path']
+			row['download link'] = DOWNLOAD_URL_BASE + file_obj['href']
 			row['submitted filename'] = file_obj['submitted_file_name']
 
 			try: #if the file has a replicate
