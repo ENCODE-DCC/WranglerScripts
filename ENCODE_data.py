@@ -18,7 +18,7 @@ Todo: Link in controls
 
 Examples:
 
-	%(prog)s "https://www.encodedcc.org/search/?type=experiment&assay_term_name=ChIP-seq&status=released&organ_slims=skin%%20of%%20body" > data_files.tsv
+	%(prog)s "https://www.encodedcc.org/search/?type=experiment&assay_term_name=ChIP-seq&status=released&organ_slims=skin%%20of%%20body" data_files.tsv
 
 '''
 
