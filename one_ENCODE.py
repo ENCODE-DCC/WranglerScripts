@@ -81,6 +81,7 @@ def patch_ENCODE(obj_id, patch_input):
 	if DEBUG_ON:
 		print "DEBUG: PATCH URL : %s" %(url)
 		print "DEBUG: PATCH data: %s" %(json_payload)
+		print "DEBUG: headers: %s" %(HEADERS)
 	response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
 	if DEBUG_ON:
 		print "DEBUG: PATCH RESPONSE"

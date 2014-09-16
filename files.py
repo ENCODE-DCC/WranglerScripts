@@ -13,8 +13,8 @@ EPILOG = '''Examples:
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
 ENCODED_SERVER = 'https://www.encodedcc.org'
-AUTHID = '***REMOVED***'
-AUTHPW = '***REMOVED***'
+AUTHID = '...'
+AUTHPW = '...'
 DEBUG = False
 
 def get_ENCODE(obj_id, frame='object'):
