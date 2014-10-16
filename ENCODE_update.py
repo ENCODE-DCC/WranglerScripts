@@ -10,7 +10,7 @@ import json
 import jsonschema
 import sys, os.path, pdb, csv
 import logging
-import encodedcc
+from encodedcc import ENC_Key, ENC_Connection, ENC_Item
 
 EPILOG = '''Notes:
 	Requires comma-delimited, double quote-quoted (for values containing commas or newlines)
