@@ -1,6 +1,6 @@
 import requests, subprocess, shlex, urlparse, os, sys
 
-AUTHID='RESTAPIuser'; AUTHPW='RESTAPIpasswd'; HEADERS = {'content-type': 'application/json'}; SERVER = 'https://www.encodeproject.org/'
+AUTHID='...'; AUTHPW='...'; HEADERS = {'content-type': 'application/json'}; SERVER = 'https://www.encodeproject.org/'
 S3_SERVER='s3://encode-files/'
 
 files = requests.get(
@@ -18,7 +18,10 @@ for f_obj in files:
 print statuses
 
 #iter_files = [f for f in files if f.get('lab') == '/labs/brenton-graveley/']
-iter_files = [f for f in files if f.get('status') == 'uploading']
+#iter_files = [f for f in files if f.get('status') == 'uploading']
+#iter_files = [f for f in files if f.get('status') == 'uploading' and f.get('lab') == '/labs/richard-myers/']
+#iter_files = [f for f in files if f.get('status') == 'uploading' and f.get('lab') == '/labs/bradley-bernstein/']
+iter_files = [f for f in files if f.get('status') == 'uploading' and f.get('lab') == '/labs/john-stamatoyannopoulos/']
 
 for f_obj in iter_files:
 	#make the URL that will get redirected
