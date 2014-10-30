@@ -76,10 +76,18 @@ def main():
 			if 'uuid' in new_metadata and 'accession' in new_metadata:
 				obj_id = new_metadata.pop('uuid') #use uuid
 				new_metadata.pop('accession') #ignore accession if there is a uuid
+				if obj_id == "":
+					obj_id = None
 			elif 'uuid' in new_metadata:
 				obj_id = new_metadata.pop('uuid')
-			else:
+				if obj_id == "":
+					obj_id = None
+			elif 'accession' in new_metadata:
 				obj_id = new_metadata.pop('accession')
+				if obj_id == "":
+					obj_id = None
+			else:
+				obj_id = None
 			print obj_id
 			enc_object = ENC_Item(connection, obj_id)
 			for prop in new_metadata:
