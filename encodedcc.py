@@ -117,14 +117,18 @@ class ENC_Item(object):
 		self.server = connection.server
 		self.frame = frame
 
-		if id.rfind('?') == -1:
-			get_string = id + '?'
+		if id == None:
+			self.type = None
+			self.properties = {}
 		else:
-			get_string = id + '&'
-		get_string += 'frame=%s' %(frame)
-		item = get_ENCODE(get_string, connection)
-		self.type = next(x for x in item['@type'] if x != 'item')
-		self.properties = item
+			if id.rfind('?') == -1:
+				get_string = id + '?'
+			else:
+				get_string = id + '&'
+			get_string += 'frame=%s' %(frame)
+			item = get_ENCODE(get_string, connection)
+			self.type = next(x for x in item['@type'] if x != 'item')
+			self.properties = item
 
 	def get(self, key):
 		try:
@@ -133,17 +137,9 @@ class ENC_Item(object):
 			return None
 
 	def sync(self):
-		if self.id.rfind('?') == -1:
-			get_string = self.id + '?'
-		else:
-			get_string = self.id + '&'
-		get_string += 'frame=%s' %(self.frame)
-		on_server = get_ENCODE(get_string, self.connection)
-		diff = dict_diff(on_server, self.properties)
-		if diff.same():
-			logging.info("%s: No changes to sync" %(self.id))
-		elif diff.added() or diff.removed(): #PUT
-			excluded_from_put = ['schema_version']
+		if self.id == None: #There is no id, so this is a new object to POST
+			excluded_from_post = ['schema_version']
+			self.type = self.properties.pop('@type')
 			schema_uri = '/profiles/%s.json' %(self.type)
 			try:
 				schema = next(x for x in schemas if x.uri == schema_uri)
@@ -151,23 +147,51 @@ class ENC_Item(object):
 				schema = ENC_Schema(self.connection, schema_uri)
 				schemas.append(schema)
 
-			put_payload = {}
+			post_payload = {}
 			for prop in self.properties:
-				if prop in schema.properties and prop not in excluded_from_put:
-					put_payload.update({prop : self.properties[prop]})
+				if prop in schema.properties and prop not in excluded_from_post:
+					post_payload.update({prop : self.properties[prop]})
 				else:
 					pass
 			# should probably return the new object that comes back from the patch
-			replace_ENCODE(self.id, self.connection, put_payload)
+			new_object = new_ENCODE(self.connection, self.type, post_payload)
 
-		else: #PATCH
+		else: #existing object to PATCH or PUT
+			if self.id.rfind('?') == -1:
+				get_string = self.id + '?'
+			else:
+				get_string = self.id + '&'
+			get_string += 'frame=%s' %(self.frame)
+			on_server = get_ENCODE(get_string, self.connection)
+			diff = dict_diff(on_server, self.properties)
+			if diff.same():
+				logging.info("%s: No changes to sync" %(self.id))
+			elif diff.added() or diff.removed(): #PUT
+				excluded_from_put = ['schema_version']
+				schema_uri = '/profiles/%s.json' %(self.type)
+				try:
+					schema = next(x for x in schemas if x.uri == schema_uri)
+				except StopIteration:
+					schema = ENC_Schema(self.connection, schema_uri)
+					schemas.append(schema)
 
-			excluded_from_patch = ['schema_version', 'accession', 'uuid']
-			patch_payload = {}
-			for prop in diff.changed():
-				patch_payload.update({prop : self.properties[prop]})
-			#should probably return the new object that comes back from the patch
-			patch_ENCODE(self.id, self.connection, patch_payload)
+				put_payload = {}
+				for prop in self.properties:
+					if prop in schema.properties and prop not in excluded_from_put:
+						put_payload.update({prop : self.properties[prop]})
+					else:
+						pass
+				# should probably return the new object that comes back from the patch
+				replace_ENCODE(self.id, self.connection, put_payload)
+
+			else: #PATCH
+
+				excluded_from_patch = ['schema_version', 'accession', 'uuid']
+				patch_payload = {}
+				for prop in diff.changed():
+					patch_payload.update({prop : self.properties[prop]})
+				#should probably return the new object that comes back from the patch
+				patch_ENCODE(self.id, self.connection, patch_payload)
 
 
 def get_ENCODE(obj_id, connection):
@@ -223,6 +247,25 @@ def patch_ENCODE(obj_id, connection, patch_input):
 	logging.info('PATCH RESPONSE: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
 	if not response.status_code == 200:
 	    logging.warning('PATCH failure.  Response = %s' %(response.text))
+	return response.json()
+
+def new_ENCODE(connection, collection_name, post_input):
+	'''POST an ENCODE object as JSON and return the response JSON
+	'''
+	if isinstance(post_input, dict):
+	    json_payload = json.dumps(post_input)
+	elif isinstance(post_input, basestring):
+		json_payload = post_input
+	else:
+		print >> sys.stderr, 'Datatype to post is not string or dict.'
+	url = connection.server + collection_name
+	logging.info("POST URL : %s" %(url))
+	logging.info("POST data: %s" %(json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))))
+	response = requests.post(url, auth=connection.auth, headers=connection.headers, data=json_payload)
+	logging.info("POST RESPONSE: %s" %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
+	if not response.status_code == 201:
+		logging.warning('POST failure. Response = %s' %(response.text))
+	logging.info("Return object: %s" %(json.dumps(response.json(), sort_keys=True, indent=4, separators=(',', ': '))))
 	return response.json()
 
 def flat_one(JSON_obj):
