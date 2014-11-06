@@ -85,8 +85,8 @@ def main():
 					old_value = enc_object.properties.pop(prop,None)
 				else: #new property or new value for old property
 					new_metadata_string = new_metadata[prop]
-
-					json = '{"%s" : "%s"}' %(prop, new_metadata_string)
+					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
+					json = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
 					enc_object.properties.update(json.loads(json))
 			logging.info('Syncing %s' %(obj_id))
 			logging.info('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
