@@ -547,7 +547,11 @@ def main():
                         bs = rep['library']['biosample']
                         repOb['biosample_accession'] = bs['accession']
                         repOb['biosample_status'] = bs['status']
-                        repOb['biosample_biosample_term'] = bs['biosample_term_name']
+                        try:
+                            repOb['biosample_biosample_term'] = bs['biosample_term_name']
+                        except:
+                            print >> sys.stderr, "Skipping missing biosample_term_name in %s" %(bs['accession'])
+                            repOb['biosample_biosample_term'] = ""
                         repOb['biosample_biosample_id'] = bs['biosample_term_id']
                         repOb['biosample_biosample_type'] = bs['biosample_type']
                         ob['species'] = bs['organism']['name']
