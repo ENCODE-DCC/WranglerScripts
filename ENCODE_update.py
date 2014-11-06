@@ -59,42 +59,35 @@ def main():
 
 	args = parser.parse_args()
 
-	global DEBUG
-	DEBUG = args.debug
-	if DEBUG:
+	if args.debug:
 		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 	else: # use the defaulf logging level
-		logging.basicConfig(format='%(levelname)s:%(message)s')
+		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
-	key = ENC_Key(args.keyfile,args.key)
-	connection = ENC_Connection(key)
+	key = ENC_Key(args.keyfile, args.key) #get the keypair
+	connection = ENC_Connection(key) #initialize the connection object
 	#biosample_collection = ENC_Collection(connection,'biosamples',frame='object')
 
 	with open(args.infile,'rU') as f:
 		reader = csv.DictReader(f, delimiter=',', quotechar='"')
 		for new_metadata in reader:
-			if 'uuid' in new_metadata and 'accession' in new_metadata:
-				obj_id = new_metadata.pop('uuid') #use uuid
-				new_metadata.pop('accession') #ignore accession if there is a uuid
-				if obj_id == "":
-					obj_id = None
-			elif 'uuid' in new_metadata:
-				obj_id = new_metadata.pop('uuid')
-				if obj_id == "":
-					obj_id = None
-			elif 'accession' in new_metadata:
-				obj_id = new_metadata.pop('accession')
-				if obj_id == "":
-					obj_id = None
-			else:
+			uuid = new_metadata.pop('uuid',None)
+			accession = new_metadata.pop('accession',None)
+			if uuid: #use the uuid if there is one
+				obj_id = uuid
+			elif accession: #if no uuid then use the accession
+				obj_id = accession
+			else: #if neither uuid or accession, assume this is a new object
 				obj_id = None
-			print obj_id
 			enc_object = ENC_Item(connection, obj_id)
 			for prop in new_metadata:
-				if new_metadata[prop].strip() == "":
+				if new_metadata[prop].strip() == "": #pop out the old property from the object
 					old_value = enc_object.properties.pop(prop,None)
-				else:
-					enc_object.properties.update({prop : new_metadata[prop]})
+				else: #new property or new value for old property
+					new_metadata_string = new_metadata[prop]
+					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
+					json = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
+					enc_object.properties.update(json.loads(json))
 			logging.info('Syncing %s' %(obj_id))
 			logging.info('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
 			if not args.dryrun:
