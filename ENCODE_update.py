@@ -61,7 +61,7 @@ def main():
 
 	if args.debug:
 		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-	else: # use the defaulf logging level
+	else:
 		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 
 	key = ENC_Key(args.keyfile, args.key) #get the keypair
@@ -86,10 +86,10 @@ def main():
 				else: #new property or new value for old property
 					new_metadata_string = new_metadata[prop]
 					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
-					json = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
-					enc_object.properties.update(json.loads(json))
+					json_string = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
+					enc_object.properties.update(json.loads(json_string))
 			logging.info('Syncing %s' %(obj_id))
-			logging.info('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
+			logging.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
 			if not args.dryrun:
 				enc_object.sync()
 
