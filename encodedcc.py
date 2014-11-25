@@ -165,7 +165,7 @@ class ENC_Item(object):
 			on_server = get_ENCODE(get_string, self.connection)
 			diff = dict_diff(on_server, self.properties)
 			if diff.same():
-				logging.info("%s: No changes to sync" %(self.id))
+				logging.warning("%s: No changes to sync" %(self.id))
 			elif diff.added() or diff.removed(): #PUT
 				excluded_from_put = ['schema_version']
 				schema_uri = '/profiles/%s.json' %(self.type)
@@ -200,15 +200,15 @@ def get_ENCODE(obj_id, connection):
 		url = connection.server+obj_id+'?limit=all'
 	else:
 		url = connection.server+obj_id+'&limit=all'
-	logging.info('GET %s' %(url))
+	logging.debug('GET %s' %(url))
 
 	response = requests.get(url, auth=connection.auth, headers=connection.headers)
-	logging.info('GET RESPONSE code %s' %(response.status_code))
+	logging.debug('GET RESPONSE code %s' %(response.status_code))
 	try:
 		if response.json():
-			logging.info('GET RESPONSE JSON: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
+			logging.debug('GET RESPONSE JSON: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
 	except:
-		logging.info('GET RESPONSE text %s' %(response.text))
+		logging.debug('GET RESPONSE text %s' %(response.text))
 	if not response.status_code == 200:
 		logging.warning('GET failure.  Response code = %s' %(response.text))
 	return response.json()
@@ -223,10 +223,10 @@ def replace_ENCODE(obj_id, connection, put_input):
 	else:
 		logging.warning('Datatype to put is not string or dict.')
 	url = connection.server + obj_id
-	logging.info('PUT URL : %s' %(url))
-	logging.info('PUT data: %s' %(json_payload))
+	logging.debug('PUT URL : %s' %(url))
+	logging.debug('PUT data: %s' %(json_payload))
 	response = requests.put(url, auth=connection.auth, data=json_payload, headers=connection.headers)
-	logging.info('PUT RESPONSE: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
+	logging.debug('PUT RESPONSE: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
 	if not response.status_code == 200:
 		logging.warning('PUT failure.  Response = %s' %(response.text))
 	return response.json()
@@ -241,10 +241,10 @@ def patch_ENCODE(obj_id, connection, patch_input):
 	else:
 		print >> sys.stderr, 'Datatype to patch is not string or dict.'
 	url = connection.server + obj_id
-	logging.info('PATCH URL : %s' %(url))
-	logging.info('PATCH data: %s' %(json_payload))
+	logging.debug('PATCH URL : %s' %(url))
+	logging.debug('PATCH data: %s' %(json_payload))
 	response = requests.patch(url, auth=connection.auth, data=json_payload, headers=connection.headers)
-	logging.info('PATCH RESPONSE: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
+	logging.debug('PATCH RESPONSE: %s' %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
 	if not response.status_code == 200:
 	    logging.warning('PATCH failure.  Response = %s' %(response.text))
 	return response.json()
@@ -259,13 +259,13 @@ def new_ENCODE(connection, collection_name, post_input):
 	else:
 		print >> sys.stderr, 'Datatype to post is not string or dict.'
 	url = connection.server + collection_name
-	logging.info("POST URL : %s" %(url))
-	logging.info("POST data: %s" %(json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))))
+	logging.debug("POST URL : %s" %(url))
+	logging.debug("POST data: %s" %(json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))))
 	response = requests.post(url, auth=connection.auth, headers=connection.headers, data=json_payload)
-	logging.info("POST RESPONSE: %s" %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
+	logging.debug("POST RESPONSE: %s" %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
 	if not response.status_code == 201:
 		logging.warning('POST failure. Response = %s' %(response.text))
-	logging.info("Return object: %s" %(json.dumps(response.json(), sort_keys=True, indent=4, separators=(',', ': '))))
+	logging.debug("Return object: %s" %(json.dumps(response.json(), sort_keys=True, indent=4, separators=(',', ': '))))
 	return response.json()
 
 def flat_one(JSON_obj):
