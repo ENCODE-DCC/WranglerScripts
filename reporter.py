@@ -9,6 +9,9 @@ import os.path
 import argparse
 
 HEADERS = {'content-type': 'application/json'}
+SERVER = 'http://www.encodeproject.org'  # Default
+AUTHID = 'default provided by keypairs.json'
+AUTHPW = 'default provided by keypairs.json'
 global DEBUG_ON
 DEBUG_ON = False
 EPILOG = '''Examples:
@@ -199,9 +202,7 @@ repCheckedItems = [
                    'technical_replicate_number',
                    'read_length',
                    'paired_ended',
-                   'platform',
                    'files',
-                   'date_created'
                    ]
 
 fileCheckedItems = ['accession',
@@ -220,6 +221,7 @@ fileCheckedItems = ['accession',
                     'technical_replicate',
                     'status',
                     'paired_end',
+                    'md5sum',
                     'library_size_range',
                     'date_created'
                     ]
@@ -329,7 +331,7 @@ def main():
             repCheckedItems.remove('antibody_source')
             repCheckedItems.remove('antibody_product')
             repCheckedItems.remove('antibody_lot')
-        
+
         if args.datatype != 'REPLI':
             libraryCheckedItems.remove('phase')
 
@@ -337,9 +339,9 @@ def main():
             libraryCheckedItems.remove('subcellular_fraction_term_name')
             libraryCheckedItems.remove('library_treatments')
             libraryCheckedItems.remove('depleted_in_term_name')
-         
+
         if args.simple:
-            if args.datatype == 'CHIP': 
+            if args.datatype == 'CHIP':
                 repCheckedItems.remove('antibody_status')
                 repCheckedItems.remove('antibody_source')
                 repCheckedItems.remove('antibody_product')
@@ -363,7 +365,7 @@ def main():
             libraryCheckedItems.remove('library_size_selection_method')
             libraryCheckedItems.remove('size_range')
             libraryCheckedItems.remove('library_paired_ended')
-        
+
         if not args.status:
             libraryCheckedItems.remove('library_status')
             libraryCheckedItems.remove('biosample_status')
@@ -383,12 +385,9 @@ def main():
         else:
             print '\t'.join(checkedItems+repCheckedItems+libraryCheckedItems)
 
-
-
-        # Get list of objects we are interested in
+        #  Get list of objects we are interested in
         search = args.search
         objList = get_experiment_list(args.infile, search)
-
 
         if args.files:
             for i in range(0, len(objList)):
@@ -513,7 +512,7 @@ def main():
                     repOb['rep_file_count'] = files_count[rep['uuid']]
                 else:
                     repOb['rep_file_count'] = 0
-                    repOb['files'] =[]
+                    repOb['files'] = []
                 repOb['replicate_aliases'] = rep['aliases']
                 repOb['replicate_uuid'] = rep['uuid']
                 repOb['rep_status'] = rep['status']
@@ -564,13 +563,13 @@ def main():
                             repOb['biological_treatments'] = get_treatment_list(bs['treatments'])
                             #repOb['biological_treatment'] = bs['treatments'][0]
                             # Note, we would have to pull the treatments individually
-                            # rep['library']['biological_treatment'] = bs['treatments'][0]['dbxrefs'] 
+                            # rep['library']['biological_treatment'] = bs['treatments'][0]['dbxrefs']
                         if 'donor' in bs:
                             repOb['donor'] = bs['donor']['accession']
                             repOb['donor_status'] = bs['donor']['status']
                             repOb['strain'] = bs['donor'].get('strain')
                             repOb['strain_background'] = bs['donor'].get('strain_background')
-                        for term in ('sex','phase', 'age', 'age_units', 'life_stage'):
+                        for term in ('sex', 'phase', 'age', 'age_units', 'life_stage'):
                             repOb[term] = bs.get(term)
 
                     temp = ' '.join(rep['library']['aliases'])
@@ -582,7 +581,7 @@ def main():
                         if i in repOb:
                             lib.append(str(repOb[i]))
                         else:
-                            lib.append( '')
+                            lib.append('')
                 libs.append(lib)
 
             row = []
