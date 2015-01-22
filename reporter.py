@@ -210,6 +210,8 @@ fileCheckedItems = ['accession',
                     'file_format',
                     'dataset',
                     'experiment',
+                    'biosample',
+                    'species',
                     'experiment-lab',
                     'lab',
                     'alias',
@@ -218,6 +220,7 @@ fileCheckedItems = ['accession',
                     'technical_replicate',
                     'status',
                     'paired_end',
+                    'library_size_range',
                     'date_created'
                     ]
 
@@ -398,6 +401,16 @@ def main():
                     fileob['submitted_by'] = file['submitted_by']['title']
                     fileob['experiment'] = exp['accession']
                     fileob['experiment-lab'] = exp['lab']['name']
+                    fileob['biosample'] = exp['biosample_term_name']
+                    try:
+                        fileob['species'] = exp['replicates'][0]['library']['biosample']['donor']['organism']['name']
+                    except:
+                        fileob['species'] = ''
+                    try:
+                        library = get_ENCODE(file['replicate']['library'])
+                        fileob['library_size_range'] = library['size_range']
+                    except:
+                        fileob['library_size_range'] = ''
                     if 'alias' in exp:
                         fileob['alias'] = exp['aliases'][0]    
                     else:
@@ -405,7 +418,7 @@ def main():
                     if 'replicate' in file:
                         fileob['biological_replicate'] = file['replicate']['biological_replicate_number']
                         fileob['technical_replicate'] = file['replicate']['technical_replicate_number']
-                        fileob['replicate_alias'] = file['replicate'].get('aliases')
+                        fileob['replicate_alias'] = file['replicate'].get('aliases')                            
                     else:
                         fileob['biological_replicate'] = fileob['technical_replicate'] = fileob['replicate_alias'] = ''
                     row = []
@@ -534,7 +547,11 @@ def main():
                         bs = rep['library']['biosample']
                         repOb['biosample_accession'] = bs['accession']
                         repOb['biosample_status'] = bs['status']
-                        repOb['biosample_biosample_term'] = bs['biosample_term_name']
+                        try:
+                            repOb['biosample_biosample_term'] = bs['biosample_term_name']
+                        except:
+                            print >> sys.stderr, "Skipping missing biosample_term_name in %s" %(bs['accession'])
+                            repOb['biosample_biosample_term'] = ""
                         repOb['biosample_biosample_id'] = bs['biosample_term_id']
                         repOb['biosample_biosample_type'] = bs['biosample_type']
                         ob['species'] = bs['organism']['name']
