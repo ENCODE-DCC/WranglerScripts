@@ -35,7 +35,7 @@ def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
         #url = SERVER+obj_id+'?limit=all'
-        url = SERVER+obj_id
+        url = SERVER+obj_id+'?datastore=database'
         print url
         if DEBUG_ON:
                 print "DEBUG: GET %s" %(url)
@@ -184,7 +184,7 @@ def main():
 
             '''Interpret the new value'''
             if objDict[key].strip() == 'NULL':
-                objDict[key] = ''
+                objDict[key] = None 
             elif objDict[key].strip() == 'False':
                 objDict[key] = False
             elif objDict[key].strip() == 'True':
@@ -196,14 +196,14 @@ def main():
             old_thing = object.get(FIELD)
 
             if args.array:
-                if objDict[key] == '':
+                if objDict[key] is None:
                    patch_thing = []
                 elif old_thing == None:
                    patch_thing = []
                 else:
                    patch_thing = []
                    for j in range(len(old_thing)):
-                       patch_thing.append(old_thing[j]['uuid'])
+                       patch_thing.append(old_thing[j]) #['uuid'])
                 patch_thing.append(objDict[key])
                 temp = list(set(patch_thing))
                 patch_thing = temp
