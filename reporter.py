@@ -148,6 +148,15 @@ def get_doc_list(documents):
             list.append(documents[i]['uuid'])
     return ' '.join(list)
 
+
+def get_spikeins_list(spikes):
+
+    list = []
+    if spikes is not None:
+        for set in spikes:
+            list.append(set['accession'])
+    return ' '.join(list)
+
 # # I need my attachment thing here
 
 
@@ -234,8 +243,12 @@ libraryCheckedItems = [
                        'nucleic_acid_term_id',
                        'depleted_in_term_name',
                        'size_range',
+                       'spikeins_used',
+                       'nucleic_acid_starting_quantity',
+                       'nucleic_acid_starting_quantity_units',
                        'lysis_method',
                        'fragmentation_method',
+                       'fragmentation_date',
                        'extraction_method',
                        'library_size_selection_method',
                        'library_treatments',
@@ -339,6 +352,7 @@ def main():
             libraryCheckedItems.remove('subcellular_fraction_term_name')
             libraryCheckedItems.remove('library_treatments')
             libraryCheckedItems.remove('depleted_in_term_name')
+            libraryCheckedItems.remove('spikeins_used')
 
         if args.simple:
             if args.datatype == 'CHIP':
@@ -361,10 +375,13 @@ def main():
         if not args.library:
             libraryCheckedItems.remove('lysis_method')
             libraryCheckedItems.remove('fragmentation_method')
+            libraryCheckedItems.remove('fragmentation_date')
             libraryCheckedItems.remove('extraction_method')
             libraryCheckedItems.remove('library_size_selection_method')
             libraryCheckedItems.remove('size_range')
             libraryCheckedItems.remove('library_paired_ended')
+            libraryCheckedItems.remove('nucleic_acid_starting_quantity')
+            libraryCheckedItems.remove('nucleic_acid_starting_quantity_units')
 
         if not args.status:
             libraryCheckedItems.remove('library_status')
@@ -385,7 +402,7 @@ def main():
         else:
             print '\t'.join(checkedItems+repCheckedItems+libraryCheckedItems)
 
-        #  Get list of objects we are interested in
+        # Get list of objects we are interested in
         search = args.search
         objList = get_experiment_list(args.infile, search)
 
@@ -411,13 +428,13 @@ def main():
                     except:
                         fileob['library_size_range'] = ''
                     if 'alias' in exp:
-                        fileob['alias'] = exp['aliases'][0]    
+                        fileob['alias'] = exp['aliases'][0]
                     else:
                         fileob['alias'] = ''
                     if 'replicate' in file:
                         fileob['biological_replicate'] = file['replicate']['biological_replicate_number']
                         fileob['technical_replicate'] = file['replicate']['technical_replicate_number']
-                        fileob['replicate_alias'] = file['replicate'].get('aliases')                            
+                        fileob['replicate_alias'] = file['replicate'].get('aliases')                        
                     else:
                         fileob['biological_replicate'] = fileob['technical_replicate'] = fileob['replicate_alias'] = ''
                     row = []
@@ -484,9 +501,9 @@ def main():
                     repId = 'no rep'
 
                 if repId in files_list:
-                   files_list[repId].append(item['accession'])
+                    files_list[repId].append(item['accession'])
                 elif repId != 'no rep':
-                   files_list[repId] = [item['accession']]
+                    files_list[repId] = [item['accession']]
 
                 if repId in files_count:
                     files_count[repId] = files_count[repId] + 1
@@ -522,7 +539,7 @@ def main():
                     repOb['platform'] = rep['platform']['term_name']
                 if 'antibody' in rep:
                         repOb['antibody'] = rep['antibody']['accession']
-                        #repOb['antibody_status'] = rep['antibody']['approvals'][0]['status']
+                        # repOb['antibody_status'] = rep['antibody']['approvals'][0]['status']
                         repOb['antibody_source'] = rep['antibody']['source']
                         repOb['antibody_product'] = rep['antibody']['product_id']
                         repOb['antibody_lot'] = rep['antibody']['lot_id']
@@ -540,6 +557,7 @@ def main():
                             repOb[field] = rep['library'][field]
                     repOb['protocols'] = get_doc_list(rep['library']['documents'])
                     repOb['library_treatments'] = get_treatment_list(rep['library']['treatments'])
+                    repOb['spikeins_used'] = get_spikeins_list(rep['library'].get('spikeins_used'))
                     repOb['library_status'] = rep['library']['status']
                     repOb['library_paired_ended'] = rep['library'].get('paired_ended')
                     if 'biosample' in rep['library']:
@@ -561,9 +579,7 @@ def main():
 
                         if bs['treatments'] != []:
                             repOb['biological_treatments'] = get_treatment_list(bs['treatments'])
-                            #repOb['biological_treatment'] = bs['treatments'][0]
-                            # Note, we would have to pull the treatments individually
-                            # rep['library']['biological_treatment'] = bs['treatments'][0]['dbxrefs']
+
                         if 'donor' in bs:
                             repOb['donor'] = bs['donor']['accession']
                             repOb['donor_status'] = bs['donor']['status']
