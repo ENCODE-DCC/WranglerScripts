@@ -327,7 +327,7 @@ def main():
 			identifier = '/' + new_json['uuid'] + '/'
 	elif 'accession' in new_json:
 		if collection:
-			identifier = '/' + collection + new_json['accession'] + '/'
+			identifier = '/' + collection + '/' + new_json['accession'] + '/'
 		else:
 			identifier = '/' + new_json['accession'] + '/'
 	if 'attachment' in new_json:

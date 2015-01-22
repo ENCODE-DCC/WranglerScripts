@@ -6,3 +6,9 @@ tmp.log
 ontology_report.tsv
 
 iter_files.py
+
+*.pyc
+
+*.pyc
+
+encodedcc.pyc

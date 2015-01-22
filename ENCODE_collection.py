@@ -201,6 +201,10 @@ def main():
 		headings.append('replicate.technical_replicate_number')
 	if 'biosample' in supplied_name:
 		headings.append('organ_slims')
+	if 'access-key' in supplied_name:
+		headings.append('user.title')
+	if 'user' in supplied_name:
+		headings.append('title')
 
 	exclude_unsubmittable = ['accession', 'uuid', 'schema_version', 'alternate_accessions', 'submitted_by']
 
