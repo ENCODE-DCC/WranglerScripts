@@ -148,7 +148,8 @@ def flat_ENCODE(JSON_obj):
 	flat_obj = {}
 	for key in JSON_obj:
 		if isinstance(JSON_obj[key], dict):
-			flat_obj.update({key:flat_one(JSON_obj[key])})
+                        if JSON_obj[key] != {}:
+			     flat_obj.update({key:flat_one(JSON_obj[key])})
 		elif isinstance(JSON_obj[key], list) and JSON_obj[key] != [] and isinstance(JSON_obj[key][0], dict):
 			newlist = []
 			for obj in JSON_obj[key]:
@@ -321,7 +322,7 @@ def main():
 		identifier = new_json.pop('@id')
 	elif 'uuid' in new_json:
 		if collection:
-			identifier = '/' + collection + new_json['uuid'] + '/'
+			identifier = '/' + collection + '/' + new_json['uuid'] + '/'
 		else:
 			identifier = '/' + new_json['uuid'] + '/'
 	elif 'accession' in new_json:
