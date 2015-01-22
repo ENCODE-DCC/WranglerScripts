@@ -23,7 +23,7 @@ def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
         # url = SERVER+obj_id+'?limit=all&datastore=database'
-        url = SERVER+obj_id
+        url = SERVER+obj_id+'?frame=object'
         if DEBUG_ON:
                 print "DEBUG: GET %s" %(url)
         response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
