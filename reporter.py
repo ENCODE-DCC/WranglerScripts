@@ -211,6 +211,7 @@ fileCheckedItems = ['accession',
                     'dataset',
                     'experiment',
                     'biosample',
+                    'controlled_by',
                     'species',
                     'experiment-lab',
                     'lab',
@@ -587,7 +588,7 @@ def main():
 
             row = []
             for j in checkedItems:
-                row.append(str(ob[j]))
+                row.append(unicode(ob[j]))
             if len(libs) == 0:
                 print '\t'.join(row)
             for k in range(0, len(libs)):
