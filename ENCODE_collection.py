@@ -9,6 +9,7 @@ import json
 '''use jsonschema to validate objects against the JSON schemas'''
 import jsonschema
 import sys, os.path, urlparse
+import pdb
 
 EPILOG = '''Limitations:
 
@@ -187,7 +188,10 @@ def main():
 			if object_schema["properties"][schema_property][whateveritscalled]["type"] == 'string':
 				headings.append(schema_property + ':array')
 			else:
-				headings.append(schema_property + ':' + object_schema["properties"][schema_property][whateveritscalled]["type"] + ':array')
+				try:
+					headings.append(schema_property + ':' + object_schema["properties"][schema_property][whateveritscalled]["type"] + ':array')
+				except:
+					headings.append(schema_property + ':mixed:array')
 		else: #it isn't a string, and it isn't an array, so make the heading property_name:type
 			headings.append(schema_property + ':' + property_type)
 	headings.sort()

@@ -107,7 +107,9 @@ bucket_url = S3_SERVER.rstrip('/') + o.path
 #print bucket_url
 
 #ls the file from the bucket
-s3ls_string = subprocess.check_output(shlex.split('aws s3 ls %s' %(bucket_url)))
+command_string = 'aws s3 ls %s' %(bucket_url)
+print command_string
+s3ls_string = subprocess.check_output(shlex.split(command_string))
 print s3ls_string
 if s3ls_string.rstrip() == "":
 	print >> sys.stderr, "%s not in bucket" %(bucket_url)

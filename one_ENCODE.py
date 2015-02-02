@@ -80,7 +80,7 @@ def patch_ENCODE(obj_id, patch_input):
 	url = SERVER+obj_id
 	if DEBUG_ON:
 		print "DEBUG: PATCH URL : %s" %(url)
-		print "DEBUG: PATCH data: %s" %(json_payload)
+		print "DEBUG: PATCH data: nik! %s" %(json_payload)
 		print "DEBUG: headers: %s" %(HEADERS)
 	response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
 	if DEBUG_ON:
@@ -350,7 +350,7 @@ def main():
 					print "opened"
 					newvalue = {
 						'download': filename, #Just echoes the given filename as the download name
-						'type': mime_type,
+						#'type': mime_type,
 						'href': 'data:%s;base64,%s' % (mime_type, b64encode(stream.read()))
 					}
 				f = open('tmp', 'w')

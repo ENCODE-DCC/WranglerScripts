@@ -87,7 +87,8 @@ def main():
 					new_metadata_string = new_metadata[prop]
 					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
 					json_string = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
-					enc_object.properties.update(json.loads(json_string))
+					#enc_object.properties.update(json.loads(json_string))
+					enc_object.properties.update({prop: new_metadata[prop]})
 			logging.info('Syncing %s' %(obj_id))
 			logging.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
 			if not args.dryrun:
