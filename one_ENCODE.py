@@ -310,7 +310,8 @@ def main():
 							'construct', 'construct_characterization', 'dataset', 'document', 'donor',\
 							'edw_key', 'experiment', 'file', 'file_relationship', 'human_donor', 'lab',\
 							'library', 'mouse_donor', 'organism', 'platform', 'replicate', 'rnai',\
-							'rnai_characterization', 'software', 'source', 'target', 'treatment', 'user']
+							'rnai_characterization', 'software', 'source', 'target', 'treatment', 'user',\
+                                                        'analysis_step_run', 'analysis_step']
 	type_list = new_json.pop('@type',[])
 	possible_collections = [x for x in type_list if x in supported_collections]
 	if possible_collections:
