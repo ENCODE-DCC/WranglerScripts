@@ -12,29 +12,41 @@ import argparse, logging
 
 def processkeys(args):
 
-	keysf = open(args.keyfile,'r')
-	keys_json_string = keysf.read()
-	keysf.close()
-	keys = json.loads(keys_json_string)
-	key_dict = keys[args.key]
+	if args.key:
+		keysf = open(args.keyfile,'r')
+		keys_json_string = keysf.read()
+		keysf.close()
+		keys = json.loads(keys_json_string)
+		key_dict = keys[args.key]
+	else:
+		key_dict = {}
 	global AUTHID
 	global AUTHPW
 	global SERVER
 	if not args.authid:
-		AUTHID = key_dict['key']
+		AUTHID = key_dict.get('key')
 	else:
 		AUTHID = args.authid
 	if not args.authpw:
-		AUTHPW = key_dict['secret']
+		AUTHPW = key_dict.get('secret')
 	else:
 		AUTHPW = args.authpw
-	if not args.server:
-		SERVER = key_dict['server']
-	else:
+	if args.server:
 		SERVER = args.server
+	elif key_dict:
+		SERVER = key_dict.get('server')
+	else:
+		SERVER = 'https://www.encodeproject.org/'
+
 	if not SERVER.endswith("/"):
 		SERVER += "/"
 
+def encoded_get(url):
+	if AUTHID and AUTHPW:
+		response = requests.get(url, auth=(AUTHID,AUTHPW), headers=HEADERS)
+	else:
+		response = requests.get(url, headers=HEADERS)
+	return response
 
 parser = argparse.ArgumentParser(
 	description=__doc__, epilog=EPILOG,
@@ -42,10 +54,13 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument('file_accession',
 	help="The file accession you're looking for")
+parser.add_argument('destination',
+	help="The desination path for the file",
+	default='.')
 parser.add_argument('--server',
 	help="Full URL of the server.")
 parser.add_argument('--key',
-	default='default',
+	default=None,
 	help="The keypair identifier from the keyfile.  Default is --key=default")
 parser.add_argument('--keyfile',
 	default=os.path.expanduser("~/keypairs.json"),
@@ -71,13 +86,12 @@ else: # use the defaulf logging level
 S3_SERVER='s3://encode-files/'
 HEADERS = {'content-type': 'application/json'}
 
-#get all the file objects
-response = requests.get(
-	'https://www.encodeproject.org/search/?type=file&accession=%s&frame=embedded&limit=all' %(args.file_accession),
-	auth=(AUTHID,AUTHPW), headers=HEADERS).json()['@graph']
+url = SERVER + 'search/?type=file&accession=%s&format=json&frame=embedded&limit=all' %(args.file_accession)
+#get the file object
+response = encoded_get(url)
 
 #select your file
-f_obj = response[0]
+f_obj = response.json()['@graph'][0]
 
 #make the URL that will get redirected - get it from the file object's href property
 encode_url = urlparse.urljoin(SERVER,f_obj.get('href'))
@@ -106,12 +120,5 @@ filename = os.path.basename(o.path)
 bucket_url = S3_SERVER.rstrip('/') + o.path
 #print bucket_url
 
-#ls the file from the bucket
-command_string = 'aws s3 ls %s' %(bucket_url)
-print command_string
-s3ls_string = subprocess.check_output(shlex.split(command_string))
-print s3ls_string
-if s3ls_string.rstrip() == "":
-	print >> sys.stderr, "%s not in bucket" %(bucket_url)
-else:
-	print "%s %s" %(f_obj.get('accession'), s3ls_string.rstrip())
+#cp the file from the bucket
+print subprocess.check_output(shlex.split('aws s3 cp %s %s' %(bucket_url, args.destination)))
