@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, shutil, shlex, sys, subprocess, logging, re, json, urlparse, requests, time
-import magic, mimetypes
+import magic, mimetypes, hashlib
 
 EPILOG = '''Notes:
 
@@ -67,26 +67,33 @@ def encoded_get(url, headers={'accept': 'application/json'}, **kwargs):
 			return r
 
 def encoded_patch(url, headers={'content-type': 'application/json', 'accept': 'application/json'}, **kwargs):
-	return requests.patch(url, headers=headers, **kwargs)
+	for count in range(5):
+		try:
+			r = requests.patch(url, headers=headers, **kwargs)
+		except requests.ConnectionError:
+			continue
+		else:
+			return r
 
-def gzip_and_post(f_obj, path, server, keypair):
+
+def gzip_and_post(f_obj, original_path, server, keypair):
 
 	ungzipped_md5 = hashlib.md5()
-	with open(path, 'rb') as f:
+	with open(original_path, 'rb') as f:
 		for chunk in iter(lambda: f.read(1024*1024), ''):
 			ungzipped_md5.update(chunk)
 
-	ungzipped_name = path.rpartition('.gz')[0]
+	work_path = os.path.join('/external/encode/fix_ungzipped',original_path.lstrip('/'))
+	#print "Copying %s to %s" %(original_path, work_path)
+	work_dir = os.path.dirname(work_path)
+	if not os.path.exists(work_dir):
+		os.makedirs(work_dir)
+	shutil.copyfile(original_path, work_path)
 
-	print "Backing up %s" %(path)
-	backup_path = os.path.join('/external/backup',path.lstrip('/'))
-	backup_dir = os.path.dirname(backup_path)
-	if not os.path.exists(backup_dir):
-		os.mkdirs(backup_dir)
-	shutil.copy2(path, backup_path)
+	ungzipped_name = work_path.rpartition('.gz')[0]
 
-	print "Renaming %s to %s" %(path,ungzipped_name)
-	os.rename(path,ungzipped_name)
+	#print "Renaming %s to %s" %(work_path,ungzipped_name)
+	os.rename(work_path,ungzipped_name)
 
 	try:
 		print "Gzipping",
@@ -98,30 +105,11 @@ def gzip_and_post(f_obj, path, server, keypair):
 		print "complete"
 
 	gzipped_md5 = hashlib.md5()
-	with open(path, 'rb') as f:
+	with open(work_path, 'rb') as f:
 		for chunk in iter(lambda: f.read(1024*1024), ''):
 			gzipped_md5.update(chunk)
-
-	'''
-	query = '/files/%s/upload' %(f_obj.get('accession')
-	url = urlparse.urljoin(server,query)
-	r = encoded_post(url, auth=keypair, data='{}')
-	try:
-		r.raise_for_status
-	except:
-		print "GET credentials failed: %s %s" %(r.status_code, r.reason)
-		print r.text
-		return
-	creds = r.json()['@graph'][0].get('upload_credentials')
-	env = os.environ.copy()
-	env.update({
-		'AWS_ACCESS_KEY_ID': creds['access_key'],
-		'AWS_SECRET_ACCESS_KEY': creds['secret_key'],
-		'AWS_SECURITY_TOKEN': creds['session_token'],
-		})
-	'''
-
-	print "Uploading %s" %(path)
+	
+	#print "Uploading %s" %(work_path)
 	params = {'soft': True}
 	url = urlparse.urljoin(server,f_obj.get('href'))
 	r = encoded_get(url, auth=keypair, params=params)
@@ -131,38 +119,32 @@ def gzip_and_post(f_obj, path, server, keypair):
 		print "GET soft redirect failed: %s %s" %(r.status_code, r.reason)
 		print r.text
 		return
-	full_url = r.json().['location']
+	full_url = r.json()['location']
 	s3_filename = urlparse.urlparse(full_url).path
 	s3_path = S3_BUCKET + s3_filename
-	print path, s3_path
+	#print work_path, s3_path
 	try:
-		subprocess.check_call(shlex.split("aws s3 --profile encode-prod cp %s %s" %(path, s3_path)))
+		out = subprocess.check_output(shlex.split("aws s3 cp %s s3://%s --profile encode-prod" %(work_path, s3_path)))
+		print out.rstrip()
 	except subprocess.CalledProcessError as e:
 		print("Upload failed with exit code %d" % e.returncode)
 		return
 
 	print "Patching %s" %(f_obj.get('accession'))
-	notes_text = "ungzipped_md5=%s" %(ungzipped_md5.hexdigest())
-	notes = f_obj.get('notes')
-	if not notes:
-		new_notes = notes_text
-	else:
-		new_notes = '%s; %s' %(notes, notes_text)
 	patch_data = {
-		"file_size": os.path.getsize(path),
-		"md5sum": zipped_md5.hexdigest(),
-		"notes": new_notes
+		"file_size": os.path.getsize(work_path),
+		"md5sum": gzipped_md5.hexdigest()
 	}
 	uri = "/files/%s" %(f_obj.get('accession'))
 	url = urlparse.urljoin(server,uri)
-	r = encode_patch(url, auth=keypair, data=json.dumps(patch_data))
+	r = encoded_patch(url, auth=keypair, data=json.dumps(patch_data))
 	try:
 		r.raise_for_status
 	except:
 		print "PATCH failed: %s %s" %(r.status_code, r.reason)
 		print r.text
 		return
-
+	
 def main():
 	global args
 	args = get_args()
@@ -170,8 +152,8 @@ def main():
 	authid, authpw, server = processkey(args.key)
 	keypair = (authid,authpw)
 
-	file_formats = ['bed'] #this should pull from the file object schema file_format_file_extension
-
+	#file_formats = ['bed'] #this should pull from the file object schema file_format_file_extension
+	file_formats = ['bed_narrowPeak'] #this should pull from the file object schema file_format_file_extension
 	for file_format in file_formats:
 		print file_format,
 		query = '/search/?type=file&file_format=%s&frame=embedded&limit=all' %(file_format)
@@ -182,7 +164,9 @@ def main():
 		files = response.json()['@graph']
 		print "found %d files total." %(len(files))
 
-		for f_obj in [f for f in files if f.get('accession') == 'ENCFF002DDZ'] :
+		#for f_obj in [f for f in files if f.get('accession') == 'ENCFF915YMM']: #.bed.gz E3 from Ren
+		#for f_obj in [f for f in files if f.get('accession') in ['ENCFF002END', 'ENCFF915YMM']]:
+		for f_obj in files:
 			url = urlparse.urljoin(server,f_obj.get('href'))
 			r = encoded_get(url, auth=keypair, allow_redirects=True, stream=True)
 			try:
@@ -206,7 +190,7 @@ def main():
 					if magic_number == 'ch':
 						print "%s not gzipped" %(path)
 						if not args.dryrun:
-							gzip_and_post(f_obj, path, server, keypair, s3_url)
+							gzip_and_post(f_obj, path, server, keypair)
 					else:
 						print "%s not gzipped and does not start with ch" %(path)
 
