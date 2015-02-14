@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 
 import requests, json, jsonschema
-import sys, logging, pdb
+import sys, logging
 
 class dict_diff(object):
 	"""
