@@ -16,18 +16,14 @@ EPILOG = '''Notes:
 	Requires comma-delimited, double quote-quoted (for values containing commas or newlines)
 	csv's should have a header as below and data rows in the form:
 
-	accession,property1:array,property2,property3 ...
-	ENCBSxyzabc,"[value1.1,value2.1]",value2,value3 ...
+	accession,property1,property2,property3 ...
+	ENCBSxyzabc,value1,value2,value3 ...
 	...
 
-	To update an existing object, the accession (or uuid or other valid identifier) must be given,
-	must exist, and the properties must be in its schema.
+	The accession (or uuid or other valid identifier) must exist and the properties must be in its schema.
 	If the property does not exist in the object it is added with the specified value.
 	If the property exists in the object, its value is over-written.
 	If the property exists and the new value is "", the property will be removed altogether.
-
-	To create new objects, omit uuid and accession, but add @type, which must be the object schema
-	name (like human_donor, not human-donors).
 
 	Each object's identifier is echo'ed to stdout as the script works on it.
 
@@ -90,25 +86,9 @@ def main():
 				else: #new property or new value for old property
 					new_metadata_string = new_metadata[prop]
 					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
-<<<<<<< HEAD
 					json_string = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
 					#enc_object.properties.update(json.loads(json_string))
 					enc_object.properties.update({prop: new_metadata[prop]})
-=======
-					if ':' in prop:
-						prop_name,sep,prop_type = prop.partition(':')
-					else:
-						prop_name = prop
-						prop_type = 'string'
-					if prop_type == 'array':
-						new_metadata_string = new_metadata_string.strip("\'\"")
-						json_str = '{"%s" : %s}' %(prop_name, new_metadata_string)
-					else:
-						json_str = '{"%s" : "%s"}' %(prop_name, new_metadata_string) #this assumes string
-					logging.debug("%s" %(json_str))
-					logging.debug("%s" %(json.loads(json_str)))
-					enc_object.properties.update(json.loads(json_str))
->>>>>>> ENCODE_update-supports-arrays,-JSON
 			logging.info('Syncing %s' %(obj_id))
 			logging.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
 			if not args.dryrun:
