@@ -91,13 +91,10 @@ def main():
 					new_metadata_string = new_metadata[prop]
 					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
 <<<<<<< HEAD
-<<<<<<< HEAD
 					json_string = '{"%s" : "%s"}' %(prop, new_metadata_string) #this assumes string
 					#enc_object.properties.update(json.loads(json_string))
 					enc_object.properties.update({prop: new_metadata[prop]})
 =======
-=======
->>>>>>> ENCODE_update-supports-arrays,-JSON
 					if ':' in prop:
 						prop_name,sep,prop_type = prop.partition(':')
 					else:
@@ -111,9 +108,6 @@ def main():
 					logging.debug("%s" %(json_str))
 					logging.debug("%s" %(json.loads(json_str)))
 					enc_object.properties.update(json.loads(json_str))
-<<<<<<< HEAD
->>>>>>> ENCODE_update-supports-arrays,-JSON
-=======
 >>>>>>> ENCODE_update-supports-arrays,-JSON
 			logging.info('Syncing %s' %(obj_id))
 			logging.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
