@@ -5,6 +5,9 @@ import os.path
 
 HEADERS = {'content-type': 'application/json'}
 DEBUG_ON = False
+SERVER = 'http://www.encodeproject.org'
+AUTHID = 'default provided by keypairs.json'
+AUTHPW = 'default provided by keypairs.json'
 EPILOG = ''' Provide a list of experiments that need a
 controlled_by for thier fastqs.  Assumptions are:
 If the file has a value in controlled_by then leave it alone.
@@ -89,6 +92,9 @@ def get_fastq_dictionary(exp):
     for ff in control['files']:
         if ff.get('file_format') != 'fastq':
             continue
+        if 'replicate' not in ff:
+            print "Missing replicate error"
+            continue
         biorep = str(ff['replicate']['biological_replicate_number'])
         techrep = str(ff['replicate']['technical_replicate_number'])
         pair = str(ff.get('paired_end'))
@@ -96,21 +102,50 @@ def get_fastq_dictionary(exp):
         key = rep + '-' + pair
         biokey = biorep + '-' + pair
 
-        if key in controlfiles:
+        if key not in controlfiles:
+            controlfiles[key] = [ff['accession']]
+        else:
             print "error: replicate-pair has multiple files"
             controlfiles[key].append(ff['accession'])
             controlfiles[key].append('multiple-files-error')
-            # need to find a way to get pairs
-        else:
-            controlfiles[key] = [ff['accession']]
 
-         #There is a logic error here
-        if biokey in controlfiles:
+        if biokey not in controlfiles:
+            controlfiles[biokey] = [ff['accession']]
+        else:
             if ff['accession'] not in controlfiles[biokey]:
                 print 'error: control has technical reps'
-                controlfiles[biorep] = ['error']
-        else:
-            controlfiles[biokey] = [ff['accession']]
+                controlfiles[biokey].append(ff['accession'])
+                controlfiles[biokey].append('tech-reps')
+    return controlfiles
+
+
+def get_HAIB_fastq_dictionary(controls):
+
+    controlfiles = {}
+    for i in controls:
+        control = get_ENCODE(i)
+        for ff in control['files']:
+            if ff.get('file_format') != 'fastq':
+                continue
+            if 'replicate' not in ff:
+                print "Missing replicate error"
+                continue
+            try:
+                lib = get_ENCODE(ff['replicate']['library'])
+                biosample = lib['biosample']['accession']
+            except:
+                print 'Cannot find biosample'
+                biosample = ''
+            pair = str(ff.get('paired_end'))
+            key = biosample + '-' + pair
+
+            if key not in controlfiles:
+                controlfiles[key] = [ff['accession']]
+            else:
+                print "error: biosample has multiple files"
+                controlfiles[key].append(ff['accession'])
+                controlfiles[key].append('same-biosample-error')
+
     return controlfiles
 
 
@@ -142,11 +177,17 @@ def main():
         default=False,
         action='store_true',
         help="Print debug messages.  Default is False.")
+    parser.add_argument(
+        '--existing',
+        default=False,
+        action='store_true',
+        help="Print debug messages.  Default is False.")
     args = parser.parse_args()
 
     DEBUG_ON = args.debug
 
     set_ENCODE_keys(args.keyfile, args.key)
+
 
     objList = get_experiment_list(args.infile, args.search)
 
@@ -154,31 +195,67 @@ def main():
         print "Experiment:" + item
         obj = get_ENCODE(item)
         controlfiles = {}
-        if len(obj['possible_controls']) == 1:
-            # Only one possible control to deal with
+        controlIds = []
+        for i in obj['possible_controls']:
+            controlIds.append(i['accession'])
+
+        # Missing possible controls, bail out
+        if 'possible_controls' not in obj or len(obj['possible_controls']) == 0:
+            print 'error: {} has no possible_controls'.format(obj['accession'])
+            continue
+
+        # If it is HAIB
+        elif obj['lab']['name'] == 'richard-myers':
+            controlfiles = get_HAIB_fastq_dictionary(controlIds)
+
+        # Single possible control
+        elif len(obj['possible_controls']) == 1:
             controlId = obj['possible_controls'][0]['accession']
             controlfiles = get_fastq_dictionary(controlId)
+
+        # Double possible controls
+        elif len(obj['possible_controls']) == 2:
+            controlId1 = obj['possible_controls'][0]['accession']
+            controlfiles1 = get_fastq_dictionary(controlId1)
+            controlId2 = obj['possible_controls'][1]['accession']
+            controlfiles2 = get_fastq_dictionary(controlId2)
+            for x in controlfiles1:
+                if x in controlfiles2:
+                    controlfiles[x] = controlfiles1[x] + controlfiles2[x]
+                else:
+                    controlfiles[x] = controlfiles1[x]
+
+        # More than 2 possible controls
+        else:
+            print 'error: {} has more than 2 possible_controls'.format(obj['accession'])
+            continue
+
+        if DEBUG_ON:
             print controlfiles
 
-            for ff in obj['files']:
-                if ff.get('file_format') == 'fastq' and (ff.get('controlled_by') == [] or ff.get('controlled_by') is None):
-                    biorep = str(ff['replicate']['biological_replicate_number'])
-                    techrep = str(ff['replicate']['technical_replicate_number'])
-                    pair = str(ff.get('paired_end'))
-                    rep = biorep + '-' + techrep + '-' + pair
+        # Now find the experiment fastqs
+        for ff in obj['files']:
+            findold = args.existing or (ff.get('controlled_by') == [] or ff.get('controlled_by') is None)
+            if ff.get('file_format') == 'fastq' and findold:
+                biorep = str(ff['replicate']['biological_replicate_number'])
+                techrep = str(ff['replicate']['technical_replicate_number'])
+                pair = str(ff.get('paired_end'))
+                rep = biorep + '-' + techrep + '-' + pair
+                biokey = biorep + '-' + pair
+                print ff['lab']
+                if ff['lab'] == '/lab/richard-myers/':
+                    print ff['replicate']['library']
+                    lib = get_ENCODE(ff['replicate']['library'])
 
-                    if rep in controlfiles:
-                        answer = controlfiles[rep]
-                    elif biorep in controlfiles:
-                        answer = controlfiles[biorep]
-                    else:
-                        answer = 'error: control had no corresponding replicate'
+                if rep in controlfiles:
+                    answer = controlfiles[rep]
+                elif biokey in controlfiles:
+                    answer = controlfiles[biokey]
+                else:
+                    answer = 'error: control had no corresponding replicate'
 
-                    print item, controlId, rep, ff['accession'], answer
-            print ''
-        elif len(obj['possible_controls']) == 2:
-            print 'boo'
-
+                print item, controlIds, rep, ff['accession'], answer
+        print ''
 
 
 if __name__ == '__main__':
