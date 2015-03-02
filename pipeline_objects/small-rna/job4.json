@@ -1,8 +1,9 @@
 {
     "@type": ["analysis_step_run", "item"],
     "aliases": [
-        "DNANexus:job-BX5fV5j0F1G3X12J59PVYKBB"
+        "dnanexus:job-BX5fV5j0F1G3X12J59PVYKBB"
     ],
-    "analysis_step": "DNANexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0",
+    "workflow_run": "Cricket:Workflow-small-RNA",
+    "analysis_step": "dnanexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0",
     "status": "finished"
 }
