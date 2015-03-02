@@ -1,0 +1,11 @@
+    {
+        "@type": ["analysis_step"],
+        "aliases":["cricket:peakseq peak calling"],
+        "name": "peakseq-peak-calling",
+        "input_file_types": ["bam"],
+        "output_file_types": ["bed"],
+        "analysis_step_types": ["peak calling"],
+        "software_versions": [
+            "encode:spp 1.10.1"
+        ]
+    }

@@ -1,0 +1,10 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "prep-star",
+        "aliases":["encode:prep-star-v-1-0-1"],
+        "input_file_types": ["fasta"],
+        "output_file_types": [],
+        "parents": [],
+        "analysis_step_types": ["genome indexing"],
+        "software_versions": ["encode:star 2.4.0h"]
+    }

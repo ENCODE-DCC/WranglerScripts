@@ -1,0 +1,9 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "Cricket:job-B"
+    ],
+    "notes": "This is a test for the extract bismark as a signal calling step",
+    "analysis_step": "encode:extract-bismark-v1",
+    "status": "finished"
+}

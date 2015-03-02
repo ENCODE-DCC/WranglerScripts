@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:peakseq 1.25"],
+        "software": "peakseq",
+        "version": "1.25",
+        "downloaded_url": "ttp://wiki.encodedcc.org/index.php/PeakSeq"
+}

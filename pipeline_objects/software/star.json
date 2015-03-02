@@ -1,0 +1,9 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:star 2.4.0d"],
+        "software": "star",
+        "uuid": "834e3145-b752-4486-a613-c0c625262051",
+        "version": "2.4.0d",
+        "download_checksum": "fc3df4ae49108c7837cae85925e0819a65eddc73",
+        "downloaded_url": "https://github.com/alexdobin/STAR/releases/tag/STAR_2.4.0d"
+}

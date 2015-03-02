@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:gem 2.4.1"],
+        "software": "gem",
+        "version": "2.4.1",
+        "downloaded_url": "http://cgs.csail.mit.edu/gem/"
+}

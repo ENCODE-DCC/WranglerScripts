@@ -1,0 +1,23 @@
+{
+    "@type":["analysis_step", "item"],
+    "aliases": [
+        "barbara-wold:rna-eval-signal-calling"
+    ],
+    "analysis_step_types": [
+        "signal calling"
+    ],
+    "input_file_types": [
+        "bam"
+    ],
+    "name": "star-signal-calling",
+    "output_file_types": [
+        "bigWig"
+    ],
+    "parents": [
+        "barbara-wold:rna-eval-alignment"
+    ],
+    "software_versions": [
+        "/software-versions/encode:bedGraphToBigWigV4"
+    ],
+    "status": "in progress"
+}

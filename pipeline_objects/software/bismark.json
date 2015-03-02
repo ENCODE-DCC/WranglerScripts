@@ -1,0 +1,9 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:bismark 0.10.0"],
+        "software": "bismark",
+        "uuid": "cf999bd4-0a93-453d-9e0e-69d1cfe6292d",
+        "version": "0.10.0",
+        "download_checksum": "c27647bd3608a1f7414400055c5ac52a",
+        "downloaded_url": "http://www.bioinformatics.babraham.ac.uk/projects/bismark/bismark_v0.10.0.tar.gz"
+}

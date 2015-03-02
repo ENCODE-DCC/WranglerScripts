@@ -1,0 +1,8 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "barbara-wold:rna-eval-alignment-run"
+    ],
+    "analysis_step": "barbara-wold:rna-eval-alignment",
+    "status": "virtual"
+}

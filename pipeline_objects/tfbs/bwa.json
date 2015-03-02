@@ -1,0 +1,13 @@
+{
+    "@type":["software"],
+    "aliases": ["encode:bwa"],
+    "description": "BWA is a software package for mapping low-divergent sequences against a large reference genome, such as the human genome.",
+    "name": "bwa",
+    "software_type": [
+        "aligner"
+    ],
+    "source_url": "http://sourceforge.net/projects/bio-bwa/files/",
+    "status": "in progress",
+    "title": "BWA",
+    "url": "http://bio-bwa.sourceforge.net/"
+}

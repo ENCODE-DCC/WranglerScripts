@@ -1,0 +1,22 @@
+{
+    "@type": ["analysis_step", "item"],
+    "aliases": [
+        "brenton-graveley:rna-eval-alignment"
+    ],
+    "analysis_step_types": [
+        "alignment"
+    ],
+    "input_file_types": [
+        "fastq"
+    ],
+    "name": "align-tophat",
+    "output_file_types": [
+        "bam"
+    ],
+    "software_versions": [
+        "/software-versions/8369c9b0-50ad-11e4-916c-0800200c9a66/",
+        "/software-versions/f21b7bbf-6178-4f1a-8c58-caeb6488bfc3/",
+        "/software-versions/9c51ea8f-ac73-4a25-8783-d31bce2d5aac/"
+    ],
+    "status": "in progress"
+}

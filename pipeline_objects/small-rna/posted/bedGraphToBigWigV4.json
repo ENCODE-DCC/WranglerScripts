@@ -1,0 +1,9 @@
+{
+    "@type":["software_version"],
+    "aliases": [
+        "encode:bedGraphToBigWigV4"
+    ],
+    "software": "/software/bedgraphtobigwig/",
+    "status": "released",
+    "version": "4"
+}

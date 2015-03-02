@@ -1,0 +1,6 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:samtools 0.1.19-96b5f2294a"],
+        "software": "samtools",
+        "version": "0.1.19-96b5f2294a"
+}

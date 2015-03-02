@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:rsem 1.2.19"],
+        "software": "rsem",
+        "version": "1.2.19",
+        "downloaded_url": "https://github.com/bli25wisc/RSEM/releases/tag/v1.2.19"
+}

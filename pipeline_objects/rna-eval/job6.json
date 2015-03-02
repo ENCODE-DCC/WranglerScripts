@@ -1,0 +1,8 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "brenton-graveley:rna-eval-signal-calling-run"
+    ],
+    "analysis_step": "brenton-graveley:rna-eval-signal-calling",
+    "status": "virtual"
+}

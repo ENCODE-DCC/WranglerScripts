@@ -1,0 +1,8 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:flux 1.6.1"],
+        "software": "9d85a5b0-5af0-11e4-8ed6-0800200c9a66",
+        "version": "1.6.1",
+        "downloaded_url": "http://sammeth.net/artifactory/barna/barna/barna.capacitor/1.6.1/flux-capacitor-1.6.1.tgz",
+        "uuid": "d84714c0-5af2-11e4-8ed6-0800200c9a66"
+}

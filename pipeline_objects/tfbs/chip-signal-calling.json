@@ -1,0 +1,11 @@
+    {
+        "@type": ["analysis_step"],
+        "aliases":["cricket:signal calling"],
+        "name": "chip-signal-calling",
+        "input_file_types": ["bam"],
+        "output_file_types": ["bed"],
+        "analysis_step_types": ["signal calling"],
+        "software_versions": [
+            "encode:samtools 1.0"
+        ]
+    }

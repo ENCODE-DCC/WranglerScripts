@@ -1,0 +1,14 @@
+{
+    "@type":["pipeline"],
+    "aliases": [
+        "cricket:histone-pipeline-1"
+    ],
+    "analysis_steps": [
+        "/analysis-steps/1edc53f6-9dc8-4a3f-b526-abd829610bd9/"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "ChIP-seq",
+    "name": "histone-pipeline",
+    "title": "Histone ChIP-seq Pipeline",
+    "version": 1
+}

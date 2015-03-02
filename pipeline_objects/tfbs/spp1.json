@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:spp 2.11.1"],
+        "software": "spp",
+        "version": "2.11.1",
+        "downloaded_url": "https://code.google.com/p/phantompeakqualtools/"
+}

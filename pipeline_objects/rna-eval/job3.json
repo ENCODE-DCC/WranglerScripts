@@ -1,0 +1,8 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "thomas-gingeras:rna-eval-signal-calling-run"
+    ],
+    "analysis_step": "thomas-gingeras:rna-eval-signal-calling",
+    "status": "virtual"
+}

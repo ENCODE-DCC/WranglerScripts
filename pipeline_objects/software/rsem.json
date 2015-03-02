@@ -1,0 +1,9 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:rsem 1.2.15"],
+        "software": "rsem",
+        "uuid": "08a31dbd-e957-4004-bf0c-8506388d9fed",
+        "version": "1.2.15",
+        "download_checksum": "92b24279a3ecc72946e7e7c23149ad0d181f373a",
+        "downloaded_url": "https://github.com/bli25wisc/RSEM/releases/tag/v1.2.15"
+}

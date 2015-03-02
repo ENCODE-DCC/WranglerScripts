@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:picard 1.110"],
+        "software":  "baf75b1a-6b0b-4c84-b2a1-d52b11119ddd",
+        "version":  "1.110",
+        "uuid": "c11ff7d0-30b5-4946-9fb5-8a29783bdc0f"
+}

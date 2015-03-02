@@ -1,0 +1,22 @@
+{
+   "@type": ["analysis_step", "item"],
+    "aliases": ["encode:small-rna-prep-star-v-1-0-0"
+                ], 
+    "analysis_step_types": [
+        "genome indexing"
+    ],
+    "input_file_types": [
+        "fasta",
+        "gtf"
+    ],
+    "output_file_types": [
+    ],
+    "software_versions": [
+        "encode:star 2.4.0g1"
+    ],
+    "parents":[],
+    "name": "small-rna-prep-star-v-1-0-0",
+    "title": "Small RNA STAR genome indexing step v1.0.0",
+    "status": "in progress",
+    "notes": "Need an output_file_type"
+}
