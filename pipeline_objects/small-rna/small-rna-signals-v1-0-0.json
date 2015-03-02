@@ -18,7 +18,7 @@
     ],
     "parents":["/analysis_step/small-rna-align-v-1-0-0"],
     "name": "small-rna-signals-v-1-0-0",
-    "title": "Stranded signal generation for small RNA v1.0.0",
+    "title": "Small RNA stranded signal generation v1.0.0",
     "status": "in progress",
     "notes": "verify that all of these steps are stranded"
 }

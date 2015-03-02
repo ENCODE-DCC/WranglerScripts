@@ -1,6 +1,6 @@
 {
    "@type": ["analysis_step", "item"],
-    "aliases": ["encode:small-rna-prep-star-v-1-0-0"
+    "aliases": [
                 ], 
     "analysis_step_types": [
         "genome indexing"

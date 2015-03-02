@@ -2,5 +2,5 @@
     "@type":["workflow_run"],
     "aliases": ["Cricket:Workflow-small-RNA"],
     "status": "finished",
-    "pipeline": "ENCODE:small-rna-pipeline"
+    "pipeline": "encode:smal-rna-seq-se-1"
 }
