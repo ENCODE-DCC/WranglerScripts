@@ -35,7 +35,7 @@ def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
         #url = SERVER+obj_id+'?limit=all'
-        url = SERVER+obj_id+'?datastore=database'
+        url = SERVER+obj_id+'?frame=object' #+'&datastore=database'
         print url
         if DEBUG_ON:
                 print "DEBUG: GET %s" %(url)
