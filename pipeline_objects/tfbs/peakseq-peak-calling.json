@@ -1,0 +1,22 @@
+{
+    "@type":["analysis_step"],
+    "aliases": [
+        "encode:peakseq peak calling"
+    ],
+    "analysis_step_types": [
+        "peak calling"
+    ],
+    "input_file_types": [
+        "bam"
+    ],
+    "name": "peakseq-peak-calling",
+    "output_file_types": [
+        "bed"
+    ],
+    "parents": [
+        "/analysis-steps/1edc53f6-9dc8-4a3f-b526-abd829610bd9/"
+    ],
+    "software_versions": [
+        "/software-versions/encode:peakseq 1.25"
+    ]
+}

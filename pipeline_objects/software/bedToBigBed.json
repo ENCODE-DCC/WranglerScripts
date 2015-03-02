@@ -1,0 +1,7 @@
+{
+        "@type":["software","item"],
+        "name": "bedToBigBed",
+        "title": "bedToBigBed",
+        "description": "bedToBigBed takes a standard bed file or a non-standard bed file with associated .as file to create a compressed bigBed version.",
+        "used_by": ["ENCODE"]
+}

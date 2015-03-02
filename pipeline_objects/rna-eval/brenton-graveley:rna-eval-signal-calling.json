@@ -1,0 +1,20 @@
+{
+    "@type":["analysis_step","item"],
+    "aliases": ["brenton-graveley:rna-eval-signal-calling"],
+    "analysis_step_types": [
+        "signal calling"
+    ],
+    "input_file_types": [
+        "bam"
+    ],
+    "output_file_types": [
+        "bigWig"
+    ],
+    "parents": [
+        "brenton-graveley:rna-eval-alignment"
+    ],
+    "software_versions": [
+        "/software-versions/encode:bedGraphToBigWigV4/"
+    ],
+    "status": "in progress"
+}

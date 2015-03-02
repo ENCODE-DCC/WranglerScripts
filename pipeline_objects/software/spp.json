@@ -1,0 +1,8 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:spp 1.10.1"],
+        "software": "spp",
+        "version": "1.10.1",
+        "downloaded_url": "https://code.google.com/p/phantompeakqualtools/source/browse/trunk/spp_1.10.1.tar.gz",
+        "uuid": "beb915d5-157c-48d2-9867-7d2bbf8917fe"
+}

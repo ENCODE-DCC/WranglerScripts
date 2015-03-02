@@ -1,0 +1,16 @@
+{
+    "@type":["pipeline"],
+    "aliases": [
+        "cricket:control-pipeline-1"
+    ],
+    "alternate_accessions": [],
+    "analysis_steps": [
+        "/analysis-steps/de15caa6-393f-4b32-8821-fd12e53f48c0/",
+        "/analysis-steps/2fc17e74-a11f-4e25-a3f9-bc11f05fbcaf/"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "ChIP-seq",
+    "name": "control-pipeline",
+    "title": "Control ChIP-seq pipeline, paired_end?",
+    "version": 1
+}

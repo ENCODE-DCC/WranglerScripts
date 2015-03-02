@@ -1,0 +1,18 @@
+{
+   "@type": ["pipeline", "item"],
+    "aliases": ["cricket:tfbs-pipeline-1"],
+    "version": 1,
+    "documents":[],
+    "analysis_steps": [
+       "encode:align-bwa",
+       "encode:filter-bams",
+       "encode:align-and-filter-bwa"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "ChIP-seq",
+    "end_points": [
+    ],
+    "name": "tfbs-pipeline",
+    "title": "Transcription Factor Binding Site ChIP-seq pipeline, paired_end?",
+    "status": "in progress"
+}

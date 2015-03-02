@@ -1,0 +1,11 @@
+    {
+      
+        "name": "prep-rsem",
+        "aliases": ["encode:prep-rsem-v-1-0-1"],
+        "input_file_types": ["fasta"],
+        "output_file_types": [],
+        "uuid": "c0f339bb-e681-40af-b98b-5b4c12aa61ba",
+        "analysis_step_types": ["genome indexing"],
+        "software_versions": ["encode:rsem 1.2.15"],
+        "@type": ["analysis_step"]
+    }

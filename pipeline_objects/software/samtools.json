@@ -1,0 +1,9 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:samtools 0.1.17"],
+        "software": "samtools",
+        "uuid": "f21b7bbf-6178-4f1a-8c58-caeb6488bfc3",
+        "version": "0.1.17",
+        "download_checksum": "ff338e1ef446511bcf42cf0da508bd8b",
+        "downloaded_url": "https://github.com/samtools/samtools/archive/0.1.17.tar.gz"
+}

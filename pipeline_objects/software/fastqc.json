@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:fastqc 0.11.2"],
+        "software": "40d96460-a590-11e4-bcd8-0800200c9a66",
+        "version": "0.11.2",
+        "uuid": "225b2920-a594-11e4-bcd8-0800200c9a66"
+}

@@ -1,0 +1,11 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "signal-calling-bismark",
+        "input_file_types": ["bam"],
+        "output_file_types": ["bed"],
+        "analysis_step_types": ["signal calling"],
+        "aliases":["encode:signal-calling-bismark"],
+        "software_versions": [
+            "a86c9d15-deaf-4abd-8bce-bfa6595d70bb"
+        ]
+    }

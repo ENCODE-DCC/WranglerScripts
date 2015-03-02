@@ -1,0 +1,22 @@
+{
+   "@type": ["analysis_step", "item"],
+    "aliases": ["encode:small-rna-align-v1-0-0",
+                "DNANexus:applet-BX3fbjQ0F1GKJBpXzj85Fy44"],
+    "analysis_step_types": [
+        "alignment"
+    ],
+    "input_file_types": [
+        "fastq"
+    ],
+    "output_file_types": [
+        "bam"
+    ],
+    "software_versions": [
+        "encode:star 2.4.0g1"
+    ],
+    "parents":["/analysis_step/small-rna-prep-star-v-1-0-0/"],
+    "name": "small-rna-align-v-1-0-0",
+    "title": "Single-ended alignment small RNA-seq v1.0.0",
+    "status": "in progress",
+    "notes": "The alias can leave this step, the software versions might need samtools",
+}

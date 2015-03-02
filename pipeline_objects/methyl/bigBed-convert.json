@@ -1,0 +1,10 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "bigbed-convert",
+        "input_file_types": ["bed"],
+        "output_file_types": ["bigBed"],
+        "analysis_step_types": ["file format conversion"],
+        "software_versions": [
+            "encode:bedToBigBed 2.6"
+        ]
+    }

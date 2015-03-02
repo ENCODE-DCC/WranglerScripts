@@ -1,0 +1,9 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:tophat 2.0.8"],
+        "software": "tophat",
+        "version": "2.0.8",
+        "uuid": "8369c9b0-50ad-11e4-916c-0800200c9a66",
+        "download_checksum": "ec29164105d44a5b4ac5bd73e1d1918a",
+        "downloaded_url": "http://ccb.jhu.edu/software/tophat/downloads/tophat-2.0.8.Linux_x86_64.tar.gz"
+}

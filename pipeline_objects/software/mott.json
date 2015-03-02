@@ -1,0 +1,9 @@
+{
+        "@type":["software","item"],
+        "name": "mott-trim.py",
+        "title": "Mott Trimmer",
+        "description": "Mott-Trimmer for WGBS reads",
+        "used_by": ["ENCODE"],
+        "source_url": "https://github.com/ENCODE-DCC/dna-me-pipeline.git",
+        "uuid": "9c537e83-cf5e-4e80-8027-746f31785c99"
+}

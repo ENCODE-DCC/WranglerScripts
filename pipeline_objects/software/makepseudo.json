@@ -1,0 +1,8 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:makepseudoreplicates x.x"],
+        "software":  "f819726b-364e-4194-b71b-8c95f46e8c3c",
+        "version": "unknown",
+        "status": "released",
+        "uuid": "fa8af638-925c-4f94-8972-3d2f4f8b0c21"
+}

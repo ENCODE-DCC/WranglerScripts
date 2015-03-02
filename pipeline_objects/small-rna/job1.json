@@ -1,0 +1,8 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "DNANexus:job-BX5fQG80F1GG6fqbxVJpP0pB"
+    ],
+    "analysis_step": "DNANexus:applet-BX3fbjQ0F1GKJBpXzj85Fy44",
+    "status": "finished"
+}

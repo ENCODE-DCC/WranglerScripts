@@ -1,0 +1,8 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "DNANexus:job-BY8v8PQ05y1FXQBkX1Jkx2pQ"
+    ],
+    "analysis_step": "encode:align-bwa",
+    "status": "finished"
+}

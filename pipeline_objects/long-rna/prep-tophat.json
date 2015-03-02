@@ -1,0 +1,14 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "prep-tophat",
+        "aliases":["encode:prep-tophat-v-1-0-0"],
+        "uuid": "3d3c36c4-17dd-4112-b77d-a7f64833d5db",
+        "input_file_types": ["fasta"],
+        "output_file_types": [],
+        "analysis_step_types": ["genome indexing"],
+        "software_versions": [
+            "8369c9b0-50ad-11e4-916c-0800200c9a66",
+            "f21b7bbf-6178-4f1a-8c58-caeb6488bfc3",
+            "9c51ea8f-ac73-4a25-8783-d31bce2d5aac"
+        ]
+    }

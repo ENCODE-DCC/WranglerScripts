@@ -1,0 +1,24 @@
+{
+    "@type":["pipeline"],
+    "aliases": ["cricket:long-rna-seq-pe-v-2"],
+    "analysis_steps": [
+        "encode:prep-tophat-v-1-0-0",
+        "encode:prep-star-v-1-0-1",
+        "encode:prep-rsem-v-1-0-1",
+        "encode:align-tophat-v-1-0-1",
+        "encode:align-star-pe-v-1-0-2",
+        "encode:bam-to-bigwig-stranded-v-1-0-1",
+        "encode:quant-rsem-v-1-0-2"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "RNA-seq",
+    "end_points": [
+        "encode:bam-to-bigwig-stranded-v-1-0-1",
+        "encode:quant-rsem-v-1-0-2"
+    ],
+    "name": "long-rna-seq-pipeline-pe-2",
+    "version": 2,
+    "source_url": "https://github.com/ENCODE-DCC/long-rna-seq-pipeline",
+    "status": "in progress",
+    "title": "long-rna-seq-pipeline-pe"
+}

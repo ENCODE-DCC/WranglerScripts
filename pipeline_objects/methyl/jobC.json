@@ -1,0 +1,9 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "Cricket:job-C"
+    ],
+    "notes": "This is a test for the separate format step",
+    "analysis_step": "28804463-06a0-406a-bcfa-efee4ca9d354",
+    "status": "finished"
+}

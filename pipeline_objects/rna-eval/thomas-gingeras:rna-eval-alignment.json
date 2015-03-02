@@ -1,0 +1,21 @@
+{
+    "@type":["analysis_step", "item"],
+    "aliases": [
+        "thomas-gingeras:rna-eval-alignment"
+    ],
+    "analysis_step_types": [
+        "alignment"
+    ],
+    "input_file_types": [
+        "fastq"
+    ],
+    "name": "align-star",
+    "output_file_types": [
+        "bam"
+    ],
+    "software_versions": [
+        "/software-versions/834e3145-b752-4486-a613-c0c625262051/",
+        "/software-versions/d44db1ed-3af1-4e3b-ae7a-b0fb1085877f/"
+    ],
+    "status": "in progress"
+}

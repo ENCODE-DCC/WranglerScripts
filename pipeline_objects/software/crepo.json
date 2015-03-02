@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:cxrepo-bed 0.2"],
+        "software": "cxrepo-bed.py",
+        "version": "0.2",
+        "downloaded_url": "https://github.com/ENCODE-DCC/dna-me-pipeline/"
+}

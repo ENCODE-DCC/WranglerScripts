@@ -1,0 +1,10 @@
+{
+    "@type":["software_version"],
+    "aliases": [
+         "encode:starV240g1"
+    ],
+    "downloaded_url": "https://github.com/alexdobin/STAR/releases/tag/STAR_2.4.0g1",
+    "software": "/software/star/",
+    "status": "released",
+    "version": "2.4.0g1"
+}

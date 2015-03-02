@@ -1,0 +1,10 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:bowtie 2.1.0"],
+        "software": "bowtie",
+        "uuid": "9c51ea8f-ac73-4a25-8783-d31bce2d5aac",
+        "status": "released",
+        "version": "2.1.0",
+        "download_checksum": "c00c168f8825382896cee967e191d71b",
+        "downloaded_url": "http://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip/download"
+}

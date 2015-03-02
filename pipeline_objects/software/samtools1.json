@@ -1,0 +1,7 @@
+{
+        "@type": ["software_version", "item"],
+        "aliases": ["encode:samtools 1.0"],
+        "software": "samtools",
+        "version": "1.0",
+        "downloaded_url": "https://github.com/samtools/samtools/archive/1.0.tar.gz"
+}

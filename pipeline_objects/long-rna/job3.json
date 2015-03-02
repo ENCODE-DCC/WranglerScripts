@@ -1,0 +1,8 @@
+{
+    "@type": ["analysis_step_run", "item"],
+    "aliases": [
+        "dnanexus:job-BX3pPPj0F1G3X12J59PVXxKf"
+    ],
+    "analysis_step": "encode:quant-rsem-v-1-0-2",
+    "status": "finished"
+}
