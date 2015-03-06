@@ -155,7 +155,7 @@ class ENC_Item(object):
 					pass
 			# should probably return the new object that comes back from the patch
 			new_object = new_ENCODE(self.connection, self.type, post_payload)
-
+			
 		else: #existing object to PATCH or PUT
 			if self.id.rfind('?') == -1:
 				get_string = self.id + '?'
@@ -182,7 +182,7 @@ class ENC_Item(object):
 					else:
 						pass
 				# should probably return the new object that comes back from the patch
-				replace_ENCODE(self.id, self.connection, put_payload)
+				new_object = replace_ENCODE(self.id, self.connection, put_payload)
 
 			else: #PATCH
 
@@ -191,7 +191,10 @@ class ENC_Item(object):
 				for prop in diff.changed():
 					patch_payload.update({prop : self.properties[prop]})
 				#should probably return the new object that comes back from the patch
-				patch_ENCODE(self.id, self.connection, patch_payload)
+				new_object = patch_ENCODE(self.id, self.connection, patch_payload)
+
+		return new_object
+
 
 
 def get_ENCODE(obj_id, connection):
