@@ -84,7 +84,7 @@ def main():
 		summary_publication = summary_response_dict ['result'][pub_id]
 		publication_obj['title'] = summary_publication['title']
 		publication_obj['date_published'] = summary_publication['pubdate']
-		publication_obj['journal'] = summary_publication['fulljournalname']
+		publication_obj['journal'] = summary_publication['source']
 		publication_obj['volume'] = summary_publication['volume']
 		publication_obj['issue'] = summary_publication['issue']
 		publication_obj['page'] = summary_publication['pages']
