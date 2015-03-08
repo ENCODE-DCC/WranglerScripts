@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, shutil, shlex, sys, subprocess, logging, re, json, urlparse, requests, time, gzip
-import magic, mimetypes, hashlib
+import hashlib, cPickle
 
 EPILOG = '''Notes:
 
@@ -153,26 +153,37 @@ def main():
 	keypair = (authid,authpw)
 
 	#file_formats = ['bed'] #this should pull from the file object schema file_format_file_extension
-	file_formats = ['bed_narrowPeak'] #this should pull from the file object schema file_format_file_extension
+	file_formats = ['fastq'] #this should pull from the file object schema file_format_file_extension
 	for file_format in file_formats:
 		print file_format,
-		query = '/search/?type=file&file_format=%s&frame=embedded&limit=all' %(file_format)
+		query = '/search/?type=file&file_format=%s&field=accession&field=href&field=dataset&field=status&field=lab&format=json&limit=all' %(file_format)
 		url = urlparse.urljoin(server,query)
 		print url
 		response = encoded_get(url,auth=keypair)
 		response.raise_for_status()
-		files = response.json()['@graph']
-		print "found %d files total." %(len(files))
+		all_files = response.json()['@graph']
+		files = []
+		status_to_ignore = ['deleted','revoked','replaced']
+		for f in all_files:
+			if 'status' not in f:
+				print '%s has no status.  Skipping' %(f.get('accession'))
+			else:
+				if f['status'] not in status_to_ignore:
+					files.append(f)
+		print "found %d files total not of status %s." %(len(files), ', '.join(status_to_ignore))
 
 		#for f_obj in [f for f in files if f.get('accession') == 'ENCFF915YMM']: #.bed.gz E3 from Ren
 		#for f_obj in [f for f in files if f.get('accession') in ['ENCFF002END', 'ENCFF915YMM']]:
+		md5sums = {}
 		for f_obj in files:
+			sys.stdout.write('.')
+			sys.stdout.flush()
 			url = urlparse.urljoin(server,f_obj.get('href'))
 			r = encoded_get(url, auth=keypair, allow_redirects=True, stream=True)
 			try:
 				r.raise_for_status
 			except:
-				print '%s href does not resolve' %(f_obj.get('accession'))
+				print >> sys.stderr, '%s href does not resolve' %(f_obj.get('accession'))
 				continue
 			s3_url = r.url
 			r.close()
@@ -180,20 +191,34 @@ def main():
 			mahout_prefix = "/external/encode/s3/encode-files/"
 			path = mahout_prefix.rstrip('/') + o.path
 			try:
-				magic_number = open(path,'rb').read(2)
+				fh = open(path,'rb')
+				magic_number = fh.read(2)
+				fh.close()
 			except IOError as e:
-				print e
+				print >> sys.stderr, e
 				continue
 			else:
 				is_gzipped = magic_number == b'\x1f\x8b'
-				if not is_gzipped:
-					if magic_number == 'ch':
-						print "%s not gzipped" %(path)
-						if not args.dryrun:
-							gzip_and_post(f_obj, path, server, keypair)
+				if is_gzipped:
+					fh = gzip.open(path,'rb')
+					m = hashlib.md5()
+					m.update(fh.read(100000))
+					md5sum = m.hexdigest()
+					file_info = {'accession': f_obj['accession'], 'dataset': f_obj['dataset'], 'lab': f_obj['lab']}
+					if md5sum in md5sums:
+						md5sums[md5sum].append(file_info)
+						print '\n'
+						print md5sums[md5sum]
 					else:
-						print "%s not gzipped and does not start with ch" %(path)
-
+						md5sums.update({md5sum: [file_info]})
+					fh.close()
+				else:
+					print >> sys.stderr, "%s not gzipped" %(path)
+		for md5sum,duplicate_files in md5sums.iteritems():
+			if len(duplicate_files) > 1:
+				print >> sys.stderr, duplicate_files
+		with open("%s_md5sums.pkl" %(file_format),'wb') as outfh:
+			cPickle.dump(md5sums,outfh)
 
 if __name__ == '__main__':
 	main()
