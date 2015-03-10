@@ -153,8 +153,10 @@ def main():
 	result = get_ENCODE(url,authid,authpw)
 	experiments = result['@graph']
 
-	fieldnames = ['download link','experiment','target','biosample_name','biosample_type','biorep_id','lab','rfa','assembly','bam',
-				  'hiq_reads','loq_reads','unique','fract_unique','distinct','fract_distinct','NRF','PBC1','PBC2','frag_len','NSC','RSC']
+	fieldnames = ['download link','experiment','target','biosample_name',
+		'biosample_type','biorep_id','lab','rfa','assembly','bam',
+		'hiq_reads','loq_reads','unique','fract_unique','distinct','fract_distinct',
+		'NRF','PBC1','PBC2','frag_len','NSC','RSC']
 	writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter=',', quotechar='"')
 	writer.writeheader()
 
@@ -173,7 +175,7 @@ def main():
 
 		if not bams:
 			row = copy.deepcopy(row_template)
-			#writer.writerow(row)
+			writer.writerow(row)
 		else:
 			for bam in bams:
 				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from')]]
