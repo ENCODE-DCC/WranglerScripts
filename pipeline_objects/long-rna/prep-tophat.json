@@ -1,15 +1,14 @@
     {
         "@type": ["analysis_step"],
-        "name": "prep-tophat",
-        "title": "Long RNA-seq TopHat genome indexing step v1.0.0",
-        "aliases":["encode:prep-tophat-v-1-0-0"],
-        "uuid": "3d3c36c4-17dd-4112-b77d-a7f64833d5db",
-        "input_file_types": ["fasta"],
+        "name": "index-tophat-v-1-0-0",
+        "title": "Long RNA TopHat genome indexing step v1.0.0",
+        "aliases":[],
+        "input_file_types": ["fasta","fasta","gtf"],
         "output_file_types": [],
+        "notes": "This takes in gencode annotations + tRNAs + spike-ins: *.gtf.gz AND reference genome: *.fasta.gz AND spike-ins alone: *.fasta.gz  THEN output TopHat index *.tgz (containing a bunch of files). We need an index type for the output",
         "analysis_step_types": ["genome indexing"],
         "software_versions": [
-            "8369c9b0-50ad-11e4-916c-0800200c9a66",
-            "f21b7bbf-6178-4f1a-8c58-caeb6488bfc3",
-            "9c51ea8f-ac73-4a25-8783-d31bce2d5aac"
+            "encode:tophat 2.0.8",
+            "encode:bowtie 2.1.0"
         ]
     }

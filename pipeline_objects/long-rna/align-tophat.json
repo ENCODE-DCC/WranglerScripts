@@ -1,12 +1,11 @@
     {
         "@type": ["analysis_step"],
-        "name": "align-tophat",
-        "uuid": "dcdb54a7-3b13-4ac6-b36e-0e0669367350",
+        "name": "align-tophat-pe-v-1-0-1",
+        "title": "Long RNA Tophat paired-ended alignment step v1.0.1",
         "input_file_types": ["fastq"],
         "output_file_types": ["bam"],
-        "parents": ["encode:prep-tophat-v-1-0-0"],
-        "aliases":["encode:align-tophat-v-1-0-1"],
-        "analysis_step_types": ["alignment"],
+        "parents": ["/analysis-steps/index-tophat-v-1-0-0/"],
+        "analysis_step_types": ["fastq concatenation","alignment"],
         "software_versions": [
             "encode:tophat 2.0.8",
             "encode:bowtie 2.1.0"
