@@ -1,9 +1,0 @@
-{
-    "@type": ["analysis_step_run", "item"],
-    "aliases": [
-        "Cricket:job-A"
-    ],
-    "notes": "This is a test for the mott-trimmer step",
-    "analysis_step": "encode:mott-trim-align-bismark-v1",
-    "status": "finished"
-}

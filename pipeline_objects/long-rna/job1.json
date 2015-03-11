@@ -1,8 +1,0 @@
-{
-    "@type": ["analysis_step_run", "item"],
-    "aliases": [
-        "dnanexus:job-BX3pP900F1G03f7Zx1JZF136"
-    ],
-    "analysis_step": "encode:align-tophat-v-1-0-1",
-    "status": "finished"
-}

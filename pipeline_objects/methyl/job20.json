@@ -1,8 +1,0 @@
-{
-    "@type": ["analysis_step_run", "item"],
-    "aliases": [
-        "DNANexus:job-BXBFbzj0z53Y0J021x2kVqgF"
-    ],
-    "analysis_step": "aa598eaa-eda4-4fb3-b313-072f95de58a4",
-    "status": "finished"
-}
