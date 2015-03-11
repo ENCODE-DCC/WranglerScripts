@@ -12,3 +12,7 @@ iter_files.py
 *.pyc
 
 encodedcc.pyc
+
+publications.py
+
+validation_test.py

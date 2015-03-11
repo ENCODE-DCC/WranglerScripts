@@ -3,7 +3,7 @@
 '''Reports replicate mappings'''
 
 import pdb
-import requests, json, jsonschema, csv
+import requests, json, jsonschema, csv, copy
 import logging, sys, os.path, urlparse, re
 
 EPILOG = '''Example:
@@ -98,9 +98,6 @@ def main():
 	    formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 
-	parser.add_argument('--query',
-		help="A complete query to run rather than GET the whole collection.  \
-		E.g. \"search/?type=biosample&lab.title=Ross Hardison, PennState\".  Implies --es.")
 	parser.add_argument('--server',
 		help="Full URL of the server.")
 	parser.add_argument('--key',
@@ -117,65 +114,122 @@ def main():
 		default=False,
 		action='store_true',
 		help="Print debug messages.  Default is False.")
+	parser.add_argument('--assembly', help="The genome assembly to report on", default=None)
+	parser.add_argument('--assay', help="The assay_term_name to report on", default='ChIP-seq')
+	parser.add_argument('--rfa', help='ENCODE2 or ENCODE3. Omit for all', default=None)
+	parser.add_argument('--lab', help='ENCODE lab name, e.g. j-michael-cherry', default=None)
+	parser.add_argument('--query_terms', help='Additional query terms in the form "&term=value"', default=None)
 
 	args = parser.parse_args()
 
 	if args.debug:
 		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 	else:
-		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+		logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.WARNING)
 
 	server, authid, authpw = processkeys(args)
 
-	url = urlparse.urljoin(server, "/search/?type=experiment&assay_term_name=ChIP-seq&target.label=Control&files.file_format=fastq&replicates.library.biosample.donor.organism.scientific_name=Homo%20sapiens&frame=embedded")
+	if args.assembly in ['hg19','GRCh38']:
+		organism_name = 'human'
+	elif args.assembly in ['mm10','mm9']:
+		organism_name = 'mouse'
+	else:
+		organism_name = ''
+
+	query = '/search/?type=experiment&field=assay_term_name&field=accession&field=biosample_term_name&field=biosample_type&field=lab.name&field=award.rfa&field=target.name&format=json&limit=all'
+	if args.assay:
+		query += '&assay_term_name=%s' %(args.assay)
+	if args.rfa:
+		query += '&award.rfa=%s' %(args.rfa)
+	if args.lab:
+		query += '&lab.name=%s' %(args.lab)
+	if organism_name:
+		query += '&replicates.library.biosample.donor.organism.name=%s' %(organism_name)
+	if args.query_terms:
+		query += args.query_terms
+
+	url = urlparse.urljoin(server, query)
 
 	result = get_ENCODE(url,authid,authpw)
 	experiments = result['@graph']
 
-	fieldnames = ['experiment','target','biosample_name','biosample_type','biorep_id','lab','rfa','assembly','bam','link','in_total_hiq','in_total_loq','read1_hiq','read1_loq','read2_hiq','read2_loq']
+	fieldnames = ['download link','experiment','target','biosample_name',
+		'biosample_type','biorep_id','lab','rfa','assembly','bam',
+		'hiq_reads','loq_reads','unique','fract_unique','distinct','fract_distinct',
+		'NRF','PBC1','PBC2','frag_len','NSC','RSC']
 	writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter=',', quotechar='"')
 	writer.writeheader()
 
 	for experiment in experiments:
-		row = {}
 		row_template = {
 			'experiment': urlparse.urljoin(server, '/experiments/%s' %(experiment.get('accession'))),
-			'target': experiment.get('target').get('name'),
+			'target': experiment.get('target',{}).get('name'),
 			'biosample_name': experiment.get('biosample_term_name'),
 			'biosample_type': experiment.get('biosample_type'),
-			'lab': experiment.get('lab').get('name'),
-			'rfa': experiment.get('award').get('rfa')
+			'lab': experiment.get('lab',{}).get('name'),
+			'rfa': experiment.get('award',{}).get('rfa')
 		}
-		fastqs = [f for f in experiment.get('files') if f.get('file_format') == 'fastq']
-		bams = [f for f in experiment.get('files') if f.get('file_format') == 'bam' and f.get('assembly') == "GRCh38"]
+		original_files = get_ENCODE(urlparse.urljoin(server,'/search/?type=file&dataset=/experiments/%s/&frame=embedded&format=json' %(experiment.get('accession'))),authid,authpw)['@graph']
+		fastqs = [f for f in original_files if f.get('file_format') == 'fastq' and f.get('status') not in ['deleted', 'revoked', 'replaced']]
+		bams = [f for f in original_files if f.get('file_format') == 'bam' and (not args.assembly or f.get('assembly') == args.assembly) and f.get('status') not in ['deleted', 'revoked', 'replaced']]
+
 		if not bams:
-			row = row_template
+			row = copy.deepcopy(row_template)
 			writer.writerow(row)
 		else:
 			for bam in bams:
-				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in bam.get('derived_from')]
+				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from')]]
 				bioreps = set([str(f.get('replicate').get('biological_replicate_number')) for f in fastqs if f.get('accession') in derived_from_accessions])
-				row = row_template
+				row = copy.deepcopy(row_template)
 				row.update({
 					'biorep_id': ",".join(bioreps),
 					'assembly': bam.get('assembly'),
 					'bam': bam.get('accession'),
-					'link': urlparse.urljoin(server,bam.get('href'))
+					'download link': urlparse.urljoin(server,bam.get('href'))
 				})
 				notes = json.loads(bam.get('notes'))
 				if isinstance(notes,dict):
-					qc = notes.get('qc')
-					row.update({
-						'in_total_hiq': qc.get('in_total')[0],
-						'in_total_loq': qc.get('in_total')[1],
-						'read1_hiq': qc.get('read1')[0],
-						'read1_loq': qc.get('read1')[1],
-						'read2_hiq': qc.get('read2')[0],
-						'read2_loq': qc.get('read2')[1]
-					})
+					raw_flagstats		= notes.get('qc')
+					filtered_flagstats	= notes.get('filtered_qc')
+					duplicates			= notes.get('dup_qc')
+					xcor				= notes.get('xcor_qc')
+					pbc					= notes.get('pbc_qc')
+
+					try:
+						fract_unique = float(raw_flagstats.get('mapped')[0])/float(raw_flagstats.get('in_total')[0])
+					except:
+						fract_unique = ''
+					try:
+						fract_distinct = float(filtered_flagstats.get('in_total')[0])/float(raw_flagstats.get('in_total')[0])
+					except:
+						fract_distinct = ''
+
+					if raw_flagstats:
+						row.update({
+							'hiq_reads': raw_flagstats.get('in_total')[0],
+							'loq_reads': raw_flagstats.get('in_total')[1],
+							'unique': raw_flagstats.get('mapped')[0],
+							'fract_unique' : fract_unique,
+							})
+					if filtered_flagstats:
+						row.update({
+							'distinct': filtered_flagstats.get('in_total')[0],
+							'fract_distinct': fract_distinct
+							})
+					if pbc:
+						row.update({
+							'NRF': pbc.get('NRF'),
+							'PBC1': pbc.get('PBC1'),
+							'PBC2': pbc.get('PBC2')
+							})
+					if xcor:
+						row.update({
+							'frag_len': xcor.get('estFragLen'),
+							'NSC': xcor.get('phantomPeakCoef'),
+							'RSC': xcor.get('relPhantomPeakCoef')
+						})
 
 				writer.writerow(row)
-
 
 if __name__ == '__main__':
 	main()
