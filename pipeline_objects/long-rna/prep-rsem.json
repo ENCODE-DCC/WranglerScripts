@@ -1,12 +1,12 @@
     {
       
-        "name": "prep-rsem-v-1-0-1",
-        "title": "Long RNA-seq RSEM genome indexing step v1.0.1",
+        "name": "index-rsem-v-1-0-1",
+        "title": "Long RNA RSEM genome indexing step v1.0.1",
         "aliases": [],
         "input_file_types": ["fasta","fasta","gtf"],
         "output_file_types": ["gtf"],
-        "uuid": "c0f339bb-e681-40af-b98b-5b4c12aa61ba",
-        "analysis_step_types": ["file format conversion", "genome indexing"],
+        "notes": "This takes in gencode annotations + tRNAs + spike-ins: *.gtf.gz AND reference genome: *.fasta.gz AND spike-ins alone: *.fasta.gz  THEN output TopHat index *.tgz (containing a bunch of files). We need an index type for the output",
+        "analysis_step_types": ["genome indexing"],
         "software_versions": ["encode:rsem 1.2.15"],
         "@type": ["analysis_step"]
     }
