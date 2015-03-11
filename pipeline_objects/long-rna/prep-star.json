@@ -1,10 +1,11 @@
     {
         "@type": ["analysis_step"],
-        "name": "prep-star",
-        "aliases":["encode:prep-star-v-1-0-1"],
-        "input_file_types": ["fasta"],
+        "name": "index-star-v-1-0-1",
+        "title": "Long RNA STAR genome indexing step v1.0.1",
+        "aliases":[],
+        "input_file_types": ["fasta","fasta","gtf"],
         "output_file_types": [],
-        "parents": [],
+        "notes": "This takes in gencode annotations + tRNAs + spike-ins: *.gtf.gz AND reference genome: *.fasta.gz AND spike-ins alone: *.fasta.gz  THEN output TopHat index *.tgz (containing a bunch of files). We need an index type for the output",
         "analysis_step_types": ["genome indexing"],
-        "software_versions": ["encode:star 2.4.0h"]
+        "software_versions": ["encode:star 2.4.0d"]
     }

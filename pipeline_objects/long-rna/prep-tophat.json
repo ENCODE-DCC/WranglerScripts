@@ -1,6 +1,7 @@
     {
         "@type": ["analysis_step"],
         "name": "prep-tophat",
+        "title": "Long RNA-seq TopHat genome indexing step v1.0.0",
         "aliases":["encode:prep-tophat-v-1-0-0"],
         "uuid": "3d3c36c4-17dd-4112-b77d-a7f64833d5db",
         "input_file_types": ["fasta"],
