@@ -1,0 +1,11 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "unstranded-signal-star-v-1-0-1",
+        "title": "Long RNA-seq STAR unstranded signal generation step v1.0.1",
+        "input_file_types": ["bam"],
+        "output_file_types": ["bigWig"],
+        "parents": ["/analysis-steps/align-star-se-v-1-0-0/",
+                    "/analysis-steps/align-tophat-se-v-1-0-1/"],
+        "analysis_step_types": ["signal generation","file format conversion"],
+        "software_versions": ["encode:star 2.4.0h", "encode:bedgraphtobigwig 4"]
+    }

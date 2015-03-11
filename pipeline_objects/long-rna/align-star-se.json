@@ -1,0 +1,15 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "align-star-se-v-1-0-2",
+        "title": "Long RNA single-ended STAR alignment step v1.0.2",
+        "input_file_types": ["fastq"],
+        "output_file_types": ["bam"],
+        "parents": [
+            "encode:prep-star-v-1-0-1"
+        ],
+        "analysis_step_types": ["fastq concatenation", "alignment"],
+        "software_versions": [
+            "encode:star 2.4.0h",
+            "encode:samtools 0.1.19-96b5f2294a"
+        ]
+    }
