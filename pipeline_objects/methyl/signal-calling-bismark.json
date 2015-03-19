@@ -1,11 +1,13 @@
     {
         "@type": ["analysis_step"],
         "name": "signal-calling-bismark",
+        "title": "Bismark signal generation step",
         "input_file_types": ["bam"],
         "output_file_types": ["bed"],
-        "analysis_step_types": ["signal calling"],
+        "analysis_step_types": ["signal generation"],
         "aliases":["encode:signal-calling-bismark"],
         "software_versions": [
+            "encode:cxrepo-bed 0.2",
             "a86c9d15-deaf-4abd-8bce-bfa6595d70bb"
         ]
     }

@@ -1,0 +1,22 @@
+{
+   "@type": ["pipeline", "item"],
+    "aliases": ["encode:wgbs-pipeline-se"],
+    "version": 1,
+    "documents":[],
+    "description": "ENCODE DAC/DCC run pipeline for WGBS taking in single ended fastqs and producing three result files",
+    "analysis_steps": [
+       "/analysis-steps/prep-bismark/",
+       "/analysis_step/mott-trim-align-bismark/",
+       "/analysis_step/signal-calling-bismark/",
+       "/analysis_step/bigbed-convert/"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "RNA-seq",
+    "end_points": [
+           "/analysis_step/signal-calling-bismark"
+    ],
+    "name": "wgbs-pipeline-se",
+    "title": "WGBS single-end pipeline",
+    "notes": "This is for single ended stranded data. Is the url correct?  We need documents.  What about version?  What about concat fastqs?",
+    "status": "in progress"
+}

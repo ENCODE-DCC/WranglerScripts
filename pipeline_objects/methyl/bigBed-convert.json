@@ -1,8 +1,10 @@
     {
         "@type": ["analysis_step"],
         "name": "bigbed-convert",
+        "title": "Bed to bigBed conversion",
         "input_file_types": ["bed"],
         "output_file_types": ["bigBed"],
+        "parents": ["/analysis-steps/signal-calling-bismark/"],
         "analysis_step_types": ["file format conversion"],
         "software_versions": [
             "encode:bedToBigBed 2.6"
