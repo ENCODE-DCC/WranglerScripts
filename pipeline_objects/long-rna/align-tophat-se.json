@@ -1,13 +1,14 @@
     {
         "@type": ["analysis_step"],
         "name": "align-tophat-se-v-1-0-1",
-        "title": "Long RNA-seq Tophat single-ended alignment step v1.0.1",
+        "title": "Long RNA Tophat single-ended alignment step v1.0.1",
         "input_file_types": ["fastq"],
         "output_file_types": ["bam"],
-        "parents": ["encode:prep-tophat-v-1-0-0"],
+        "parents": ["/analysis-steps/index-tophat-v-1-0-0/"],
         "analysis_step_types": ["fastq concatenation","alignment"],
         "software_versions": [
             "encode:tophat 2.0.8",
-            "encode:bowtie 2.1.0"
+            "encode:bowtie 2.1.0",
+           "encode:samtools 0.1.19-96b5f2294a"
         ]
     }
