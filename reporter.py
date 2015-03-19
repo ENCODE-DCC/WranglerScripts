@@ -224,7 +224,6 @@ fileCheckedItems = ['accession',
                     'controlled_by',
                     'species',
                     'experiment-lab',
-                    'lab',
                     'alias',
                     'replicate_alias',
                     'biological_replicate',
@@ -233,7 +232,7 @@ fileCheckedItems = ['accession',
                     'paired_end',
                     'md5sum',
                     'library_size_range',
-                    'date_created'
+                    'notes'
                     ]
 
 libraryCheckedItems = [
