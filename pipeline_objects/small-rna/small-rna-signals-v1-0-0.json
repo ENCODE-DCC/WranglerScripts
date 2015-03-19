@@ -1,7 +1,7 @@
 {
    "@type": ["analysis_step", "item"],
     "aliases": ["encode:small-rna-signals-v1-0-0",
-                "DNANexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0"],
+                "dnanexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0"],
     "analysis_step_types": [
         "signal generation",
         "file format conversion"

@@ -4,6 +4,6 @@
         "dnanexus:job-BX5fV5j0F1G3X12J59PVYKBB"
     ],
     "workflow_run": "Cricket:Workflow-small-RNA",
-    "analysis_step": "dnanexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0",
+    "analysis_step": "encode:small-rna-signals-v1-0-0",
     "status": "finished"
 }
