@@ -1,0 +1,6 @@
+{
+    "@type":["workflow_run"],
+    "aliases": ["encode:ENCSR817FFF-workflow-1"],
+    "status": "finished",
+    "pipeline": "cricket:control-pipeline-1"
+}

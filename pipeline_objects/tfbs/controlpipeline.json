@@ -5,12 +5,14 @@
     ],
     "alternate_accessions": [],
     "analysis_steps": [
-        "/analysis-steps/de15caa6-393f-4b32-8821-fd12e53f48c0/",
-        "/analysis-steps/2fc17e74-a11f-4e25-a3f9-bc11f05fbcaf/"
+        "/analysis-steps/prep-bwa-v-1-0-0/",
+        "/analysis-steps/align-bwa-no-filter",
+        "/analysis-steps/filter-bams-v-1-0-0/"
     ],
     "assay_term_id": "OBI:0001271",
     "assay_term_name": "ChIP-seq",
-    "name": "control-pipeline",
-    "title": "Control ChIP-seq pipeline, paired_end?",
+    "name": "control-pipeline-v-1-0-0",
+    "title": "Control paired-ended pipeline Version 1",
+    "description": "ChIP-seq pipeline for paired-ended input controls",
     "version": 1
 }
