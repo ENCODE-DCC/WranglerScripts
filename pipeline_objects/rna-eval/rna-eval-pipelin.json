@@ -1,0 +1,24 @@
+{
+    "@type":["pipeline"],
+    "aliases": ["encode:rna-seq-eval"],
+    "analysis_steps": [
+        "barbara-wold:rna-eval-alignment",
+        "barbara-wold:rna-eval-signal-calling",
+        "brenton-graveley:rna-eval-alignment",
+        "brenton-graveley:rna-eval-signal-calling",
+        "thomas-gingeras:rna-eval-alignment",
+        "thomas-gingeras:rna-eval-signal-calling"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "RNA-seq",
+    "end_points": [
+        "barbara-wold:rna-eval-signal-calling",
+        "brenton-graveley:rna-eval-signal-calling",
+        "thomas-gingeras:rna-eval-signal-calling"
+    ],
+    "name": "rna-seq-eval-pipeline",
+    "version": 1,
+    "status": "in progress",
+    "title": "RNA-seq comparision pipeline",
+    "description": "Three different pipelines are compared on the same biosample"
+}

@@ -3,6 +3,7 @@
     "aliases": [
         "brenton-graveley:rna-eval-alignment-run"
     ],
+    "workflow_run": "encode:rna-seq-eval-virtual-run",
     "analysis_step": "brenton-graveley:rna-eval-alignment",
     "status": "virtual"
 }

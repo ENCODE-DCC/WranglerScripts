@@ -9,7 +9,8 @@
     "input_file_types": [
         "fastq"
     ],
-    "name": "align-tophat",
+    "name": "graveley-align-tophat",
+    "title": "Gravely lab Tophat alignment step",
     "output_file_types": [
         "bam"
     ],
