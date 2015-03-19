@@ -1,14 +1,15 @@
     {
-        "name": "quant-rsem",
+        "name": "quant-rsem-v-1-0-2",
+        "title": "Long RNA RSEM quantification step v1.0.2",
         "input_file_types": ["bam"],
         "input_file_types": ["tsv"],
-        "aliases":["encode:quant-rsem-v-1-0-2"],
+        "aliases":[],
         "uuid": "7505ced9-3584-4146-84a1-7c5695cb8cf4",
         "parents": [
-            "encode:align-star-pe-v-1-0-2",
-            "encode:prep-rsem-v-1-0-1"
+            "/analysis-steps/align-star-pe-v-1-0-2",
+            "/analysis-steps/index-rsem-v-1-0-1"
         ],
         "analysis_step_types": ["quantification"],
-        "software_versions": ["encode:rsem 1.2.15"],
+        "software_versions": ["encode:rsem 1.2.19"],
         "@type": ["analysis_step"]
     }

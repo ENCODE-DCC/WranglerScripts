@@ -1,14 +1,16 @@
     {
         "@type": ["analysis_step"],
-        "name": "align-star",
-        "aliases":["encode:align-star-pe-v-1-0-2"],
+        "name": "align-star-pe-v-1-0-2",
+        "title": "Long RNA paired-ended STAR alignment step v1.0.2",
+        "aliases":[],
         "input_file_types": ["fastq"],
         "output_file_types": ["bam"],
         "parents": [
-            "encode:prep-star-v-1-0-1"
+            "/analysis-steps/index-star-v-1-0-1"
         ],
-        "analysis_step_types": ["alignment"],
+        "analysis_step_types": ["fastq concatenation", "alignment"],
         "software_versions": [
+            "encode:concat-fastqs 1.0.2",
             "encode:star 2.4.0h",
             "encode:samtools 0.1.19-96b5f2294a"
         ]

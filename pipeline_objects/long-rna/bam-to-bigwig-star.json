@@ -1,10 +1,12 @@
     {
         "@type": ["analysis_step"],
-        "name": "bam-to-bigwig-stranded",
-        "aliases":["encode:bam-to-bigwig-stranded-v-1-0-1"],
+        "name": "stranded-signal-star-v-1-0-1",
+        "title": "Long RNA STAR stranded signal generation step v1.0.1",
+        "aliases":[],
         "input_file_types": ["bam"],
         "output_file_types": ["bigWig"],
-        "parents": ["encode:align-star-pe-v-1-0-2"],
-        "analysis_step_types": ["signal calling","file format conversion"],
+        "parents": ["/analysis-steps/align-star-pe-v-1-0-2",
+                    "/analysis-steps/align-tophat-pe-v-1-0-1"],
+        "analysis_step_types": ["signal generation","file format conversion"],
         "software_versions": ["encode:star 2.4.0h", "encode:bedgraphtobigwig 4"]
     }
