@@ -1,0 +1,12 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "prep-bismark",
+        "title": "WGBS Bismark genome indexing step",
+        "input_file_types": ["fasta"],
+        "output_file_types": [],
+        "analysis_step_types": ["genome indexing"],
+        "software_versions": [
+            "encode:bismark 0.10.0"
+            "encode:bowtie 1.0.1"
+        ]
+    }
