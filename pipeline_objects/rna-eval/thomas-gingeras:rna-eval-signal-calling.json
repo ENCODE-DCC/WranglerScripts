@@ -3,8 +3,10 @@
     "aliases": [
         "thomas-gingeras:rna-eval-signal-calling"
     ],
+    "name":"gingeras-signal-calling-step",
+    "title":"Gingeras lab signal generation step",
     "analysis_step_types": [
-        "signal calling"
+        "signal generation"
     ],
     "input_file_types": [
         "bam"
@@ -16,7 +18,7 @@
         "thomas-gingeras:rna-eval-alignment/"
     ],
     "software_versions": [
-        "/software-versions/encode:bedGraphToBigWigV4"
+        "/software-versions/encode:bedgraphtobigwig 4"
     ],
     "status": "in progress"
 }

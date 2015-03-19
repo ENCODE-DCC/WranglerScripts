@@ -3,6 +3,7 @@
     "aliases": [
         "brenton-graveley:rna-eval-signal-calling-run"
     ],
+    "workflow_run": "encode:rna-seq-eval-virtual-run",
     "analysis_step": "brenton-graveley:rna-eval-signal-calling",
     "status": "virtual"
 }

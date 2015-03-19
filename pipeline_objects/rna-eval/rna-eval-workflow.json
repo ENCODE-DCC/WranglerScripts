@@ -1,0 +1,8 @@
+{
+    "@type":["workflow_run"],
+    "aliases": [
+        "encode:rna-seq-eval-virtual-run"
+     ],
+    "status": "finished",
+    "pipeline": "encode:rna-seq-eval"
+}

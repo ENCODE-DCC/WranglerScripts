@@ -1,5 +1,6 @@
 {
     "@type": ["analysis_step_run", "item"],
+    "workflow_run": "encode:rna-seq-eval-virtual-run",
     "aliases": [
         "barbara-wold:rna-eval-signal-calling-run"
     ],

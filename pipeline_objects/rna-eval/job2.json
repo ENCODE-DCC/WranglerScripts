@@ -3,6 +3,7 @@
     "aliases": [
         "barbara-wold:rna-eval-alignment-run"
     ],
+    "workflow_run": "encode:rna-seq-eval-virtual-run",
     "analysis_step": "barbara-wold:rna-eval-alignment",
     "status": "virtual"
 }

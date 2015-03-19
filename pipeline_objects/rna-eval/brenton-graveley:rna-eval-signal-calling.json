@@ -1,8 +1,10 @@
 {
     "@type":["analysis_step","item"],
     "aliases": ["brenton-graveley:rna-eval-signal-calling"],
+    "name": "graveley-signal-calling",
+    "title": "Graveley lab signal generation step",
     "analysis_step_types": [
-        "signal calling"
+        "signal generation"
     ],
     "input_file_types": [
         "bam"
@@ -14,7 +16,7 @@
         "brenton-graveley:rna-eval-alignment"
     ],
     "software_versions": [
-        "/software-versions/encode:bedGraphToBigWigV4/"
+        "/software-versions/encode:bedgraphtobigwig 4/"
     ],
     "status": "in progress"
 }

@@ -4,12 +4,13 @@
         "barbara-wold:rna-eval-signal-calling"
     ],
     "analysis_step_types": [
-        "signal calling"
+        "signal generation"
     ],
     "input_file_types": [
         "bam"
     ],
-    "name": "star-signal-calling",
+    "name": "wold-eval-signal-calling",
+    "title": "Wold lab STAR signal generation step",
     "output_file_types": [
         "bigWig"
     ],
@@ -17,7 +18,7 @@
         "barbara-wold:rna-eval-alignment"
     ],
     "software_versions": [
-        "/software-versions/encode:bedGraphToBigWigV4"
+        "/software-versions/encode:bedgraphtobigwig 4"
     ],
     "status": "in progress"
 }

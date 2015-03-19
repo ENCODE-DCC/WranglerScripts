@@ -9,7 +9,8 @@
     "input_file_types": [
         "fastq"
     ],
-    "name": "align-star",
+    "name": "gingeras-align-star",
+    "title": "Gingeras lab STAR alignment step",
     "output_file_types": [
         "bam"
     ],
