@@ -1,9 +1,11 @@
     {
         "@type": ["analysis_step"],
+        "aliases": ["encode:align-and-filter-bwa-v-1"],
         "name": "align-and-filter-bwa",
+        "title": "ChIP-seq alignment and filtration step",
         "input_file_types": ["fastq"],
         "output_file_types": ["bam"],
-        "analysis_step_types": ["filtering","alignment"],
+        "analysis_step_types": ["fastq concatenation", "alignment", "filtering"],
         "software_versions": [
             "encode:bwa 0.7.10",
             "encode:samtools 1.0"

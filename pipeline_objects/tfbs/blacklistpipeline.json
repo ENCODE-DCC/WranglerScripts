@@ -1,0 +1,17 @@
+{
+    "@type":["pipeline"],
+    "aliases": [
+        "encode:blacklist-pipeline-1"
+    ],
+    "alternate_accessions": [],
+    "analysis_steps": [
+        "/analysis-steps/prep-bwa-v-1-0-0/",
+        "/analysis-steps/align-bwa-no-filter"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "ChIP-seq",
+    "name": "blacklist-pipeline-v-1-0-0",
+    "title": "Blacklist pipeline version 1",
+    "description": "ChIP-seq pipeline for generating a blacklist from the input controls",
+    "version": 1
+}
