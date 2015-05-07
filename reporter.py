@@ -232,6 +232,10 @@ fileCheckedItems = ['accession',
                     'paired_end',
                     'md5sum',
                     'library_size_range',
+                    'controlled_by',
+                    'platform',
+                    'read_length',
+                    'run_type',
                     'notes'
                     ]
 
@@ -418,6 +422,10 @@ def main():
                     fileob['experiment'] = exp['accession']
                     fileob['experiment-lab'] = exp['lab']['name']
                     fileob['biosample'] = exp['biosample_term_name']
+                    try: 
+                         fileob['platform'] = fileob['platform']['title']
+                    except:
+                         fileob['platform'] = None 
                     try:
                         fileob['species'] = exp['replicates'][0]['library']['biosample']['donor']['organism']['name']
                     except:
