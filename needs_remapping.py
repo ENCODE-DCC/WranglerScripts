@@ -86,7 +86,9 @@ def main():
 			for f in fastqs:
 				if f.get('replicate').get('biological_replicate_number') == bam_biorep:
 					if common.after(f.get('date_created'), bam.get('date_created')):
-						logger.error("bam %s is out-of-date.  fastq %s is newer" %(bam.get('accession'), f.get('accession')))
+						logger.info("bam %s is out-of-date.  fastq %s is newer" %(bam.get('accession'), f.get('accession')))
+						if re.search('control',experiment_object.get('target').lower()):
+							logger.info("WARNING, %s is a control experiment so many other experiments may be out-of-date." %(experiment_object.get('accession')))
 
 if __name__ == '__main__':
 	main()
