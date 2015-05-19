@@ -188,7 +188,7 @@ class ENC_Item(object):
 
 				excluded_from_patch = ['schema_version', 'accession', 'uuid']
 				patch_payload = {}
-				for prop in diff.changed():
+				for prop in diff.changed() and prop not in excluded_from_patch:
 					patch_payload.update({prop : self.properties[prop]})
 				#should probably return the new object that comes back from the patch
 				new_object = patch_ENCODE(self.id, self.connection, patch_payload)
