@@ -1,14 +1,19 @@
 {
-    "@type":["pipeline"],
-    "aliases": [
-        "cricket:histone-pipeline-1"
-    ],
+   "@type": ["pipeline", "item"],
+    "aliases": ["encode:histone-pipeline-1"],
+    "version": 1,
+    "documents":[],
     "analysis_steps": [
-        "/analysis-steps/1edc53f6-9dc8-4a3f-b526-abd829610bd9/"
+       "prep-bwa-v-1-0-0",
+       "align-and-filter-bwa",
+       "encode-histone-peak-calling-v-0-0-1",
+       "encode-peak-concordance-v-0-0-1"
     ],
     "assay_term_id": "OBI:0001271",
     "assay_term_name": "ChIP-seq",
-    "name": "histone-pipeline",
-    "title": "Histone ChIP-seq Pipeline",
-    "version": 1
+    "end_points": [
+    ],
+    "name": "histone-pipeline-v-1-0-0",
+    "title": "Histone ChIP-seq pipeline",
+    "status": "in progress"
 }

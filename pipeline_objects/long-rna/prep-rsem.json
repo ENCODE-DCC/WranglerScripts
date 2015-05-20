@@ -2,7 +2,7 @@
       
         "name": "index-rsem-v-1-0-1",
         "title": "Long RNA RSEM genome indexing step v1.0.1",
-        "aliases": [],
+        "aliases": ["dnanexus:prep-rsem-v-1-0-1"],
         "input_file_types": ["fasta","fasta","gtf"],
         "output_file_types": ["gtf"],
         "notes": "This takes in gencode annotations + tRNAs + spike-ins: *.gtf.gz AND reference genome: *.fasta.gz AND spike-ins alone: *.fasta.gz  THEN output TopHat index *.tgz (containing a bunch of files). We need an index type for the output",
