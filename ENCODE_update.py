@@ -75,6 +75,7 @@ def main():
 	with open(args.infile,'rU') as f:
 		reader = csv.DictReader(f, delimiter=',', quotechar='"')
 		for new_metadata in reader:
+			print new_metadata
 			uuid = new_metadata.pop('uuid',None)
 			accession = new_metadata.pop('accession',None)
 			if uuid: #use the uuid if there is one
@@ -84,8 +85,9 @@ def main():
 			else: #if neither uuid or accession, assume this is a new object
 				obj_id = None
 			enc_object = ENC_Item(connection, obj_id)
+			print "Got accessioned object %s with status %s" %(enc_object.get('accession'), enc_object.get('status'))
 			for prop in new_metadata:
-				if new_metadata[prop].strip() == "": #pop out the old property from the object
+				if new_metadata[prop].strip() == "": #if empty, pop out the old property from the object
 					old_value = enc_object.properties.pop(prop,None)
 				else: #new property or new value for old property
 					new_metadata_string = new_metadata[prop]
@@ -100,8 +102,9 @@ def main():
 						json_str = '{"%s" : %s}' %(prop_name, new_metadata_string)
 					else:
 						json_str = '{"%s" : "%s"}' %(prop_name, new_metadata_string) #this assumes string
-					logging.debug("%s" %(json_str))
-					logging.debug("%s" %(json.loads(json_str)))
+					print json_str
+					#logging.debug("%s" %(json_str))
+					#logging.debug("%s" %(json.loads(json_str)))
 					enc_object.properties.update(json.loads(json_str))
 			logging.info('Syncing %s' %(obj_id))
 			logging.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))

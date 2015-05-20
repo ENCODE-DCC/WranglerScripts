@@ -253,6 +253,7 @@ def main():
 			infile = sys.stdin
 
 		new_json_string = infile.read()
+
 		new_json = json.loads(new_json_string)
 		if '@id' in new_json:
 			try:
@@ -340,19 +341,22 @@ def main():
 				print "Setting filename to %s" %(filename)
 			except:
 				print >> sys.stderr, "Must specify either href or filename for attachment"
-			try:
-				mime_type, encoding = mimetypes.guess_type(filename)
-				major, minor = mime_type.split('/')
-				detected_type = magic.from_file(filename, mime=True)
-				print "Detected mime type %s" %(mime_type)
-			except:
-				print >> sys.stderr, "Failed to detect mime type in file %s" %(filename)
+			if new_json['attachment'].get('type'):
+				mime_type = new_json['attachment'].get('type')
+			else:
+				try:
+					mime_type, encoding = mimetypes.guess_type(filename)
+					major, minor = mime_type.split('/')
+					detected_type = magic.from_file(filename, mime=True)
+					print "Detected mime type %s" %(mime_type)
+				except:
+					print >> sys.stderr, "Failed to detect mime type in file %s" %(filename)
 			try:
 				with open(filename, 'rb') as stream:
 					print "opened"
 					newvalue = {
 						'download': filename, #Just echoes the given filename as the download name
-						#'type': mime_type,
+						'type': mime_type,
 						'href': 'data:%s;base64,%s' % (mime_type, b64encode(stream.read()))
 					}
 				f = open('tmp', 'w')

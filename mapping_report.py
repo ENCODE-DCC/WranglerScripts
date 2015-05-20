@@ -98,22 +98,12 @@ def main():
 	    formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 
-	parser.add_argument('--server',
-		help="Full URL of the server.")
-	parser.add_argument('--key',
-		default='default',
-		help="The keypair identifier from the keyfile.  Default is --key=default")
-	parser.add_argument('--keyfile',
-		default=os.path.expanduser("~/keypairs.json"),
-		help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
-	parser.add_argument('--authid',
-		help="The HTTP auth ID.")
-	parser.add_argument('--authpw',
-		help="The HTTP auth PW.")
-	parser.add_argument('--debug',
-		default=False,
-		action='store_true',
-		help="Print debug messages.  Default is False.")
+	parser.add_argument('--server', help="Full URL of the server.")
+	parser.add_argument('--key', default='default', help="The keypair identifier from the keyfile.  Default is --key=default")
+	parser.add_argument('--keyfile', default=os.path.expanduser("~/keypairs.json"), help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
+	parser.add_argument('--authid', help="The HTTP auth ID.")
+	parser.add_argument('--authpw', help="The HTTP auth PW.")
+	parser.add_argument('--debug', default=False, action='store_true', help="Print debug messages.  Default is False.")
 	parser.add_argument('--assembly', help="The genome assembly to report on", default=None)
 	parser.add_argument('--assay', help="The assay_term_name to report on", default='ChIP-seq')
 	parser.add_argument('--rfa', help='ENCODE2 or ENCODE3. Omit for all', default=None)
