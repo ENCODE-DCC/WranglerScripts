@@ -8,7 +8,7 @@ import sys
 import os.path
 from base64 import b64encode
 from copy import deepcopy
-import magic
+#import magic
 import mimetypes
 
 
