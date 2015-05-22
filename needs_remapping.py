@@ -69,7 +69,10 @@ def main():
 				continue
 			else:
 				bam_biorep = bioreps[0]
-			derived_from = [common.encoded_get(urlparse.urljoin(server,'%s' %(uri)), keypair) for uri in bam.get('derived_from')]
+			try:
+				derived_from = [common.encoded_get(urlparse.urljoin(server,'%s' %(uri)), keypair) for uri in bam.get('derived_from')]
+			except:
+				derived_from = None
 			if not derived_from:
 				logger.error('bam %s is derived from nothing. Skipping' %(bam.get('accession')))
 				continue
