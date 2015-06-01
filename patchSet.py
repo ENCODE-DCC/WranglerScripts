@@ -213,8 +213,6 @@ def main():
 
             '''construct a dictionary with the key and value to be changed'''
             patchdict = {FIELD: patch_thing}
-            if FIELD == 'read_length':
-               patchdict.update({'read_length_units':'nt'}) 
            
             response = patch_ENCODE (key, patchdict)
                   
