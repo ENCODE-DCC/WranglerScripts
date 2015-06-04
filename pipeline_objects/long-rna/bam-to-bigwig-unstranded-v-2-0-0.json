@@ -1,0 +1,13 @@
+    {
+        "@type": ["analysis_step"],
+        "aliases": ["dnanexus:bam-to-bigwig-unstranded-v-2-0-0"],
+        "name": "unstranded-signal-star-v-2-0-0",
+        "title": "Long RNA STAR unstranded signal generation step v2.0.0",
+        "aliases":[],
+        "input_file_types": ["bam"],
+        "output_file_types": ["bigWig"],
+        "parents": ["/analysis-steps/align-star-pe-v-2-0-0",
+                    "/analysis-steps/align-tophat-pe-v-1-0-1"],
+        "analysis_step_types": ["signal generation","file format conversion"],
+        "software_versions": ["encode:star 2.4.0k", "encode:bedgraphtobigwig 4"]
+    }
