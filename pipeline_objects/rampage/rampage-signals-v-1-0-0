@@ -1,0 +1,25 @@
+{
+    "@type": ["analysis_step"],
+    "aliases": [
+        "dnanexus:rampage-signals-v-1-0"
+    ],
+    "analysis_step_types": [
+        "signal generation",
+        "file format conversion"
+    ],
+    "input_file_types": [
+        "alignments"
+    ],
+    "name": "rampage-signals-v-1-0",
+    "output_file_types": [
+        "minus strand signal of unique reads",
+        "plus strand signal of unique reads",
+        "minus strand signal of multi-mapped reads",
+        "plus strand signal of multi-mapped reads"
+    ],
+    "parents": [
+        "/analysis-steps/rampage-align-pe-v-1-0/"
+    ],
+    "software_versions": ["encode:star 2.4.0k", "encode:bedgraphtobigwig 4"],
+    "title": "RAMPAGE stranded signal generation step using v1.0"
+}

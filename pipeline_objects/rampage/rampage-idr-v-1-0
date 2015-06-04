@@ -1,0 +1,14 @@
+    {
+        "name": "rampage-idr-v-1-0",
+        "title": "RAMPAGE IDR replicate comparison step v1.0",
+        "input_file_types": ["peaks"],
+        "output_file_types": ["peaks"],
+        "aliases":["dnanexus:rampage-idr-v-1-0"],
+        "parents": [
+            "/analysis-steps/rampage-peaks-v-1-0",
+            "/analysis-steps/rampage-peaks-v-1-1"
+        ],
+        "analysis_step_types": ["IDR","replicate concordance"],
+        "software_versions": ["encode:idr 2.0.0"],
+        "@type": ["analysis_step"]
+    }

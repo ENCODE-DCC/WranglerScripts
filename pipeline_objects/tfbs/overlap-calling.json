@@ -1,0 +1,13 @@
+    {
+        "@type": ["analysis_step"],
+        "aliases":["encode:peak-concordance-v-0-0-1"],
+        "name": "encode-peak-concordance-v-0-0-1",
+        "input_file_types": ["bed"],
+        "output_file_types": ["bed","bigBed"],
+        "analysis_step_types": ["QA calculation", "peak calling"],
+        "parents":["encode-histone-peak-calling-v-0-0-1"],
+        "software_versions": [
+            "encode:gem 2.4.1"
+        ],
+        "title":"ENCODE peak concordance"
+    }
