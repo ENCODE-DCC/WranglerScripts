@@ -1,0 +1,12 @@
+    {
+        "@type": ["analysis_step"],
+        "name": "bed-to-bigbed-convert-v-1-0",
+        "title": "Bed to bigBed conversion",
+        "input_file_types": ["peaks"],
+        "output_file_types": ["peaks"],
+        "parents": ["/analysis-steps/histone-signal-calling-v-1-0/"],
+        "analysis_step_types": ["file format conversion"],
+        "software_versions": [
+            "encode:bedToBigBed 2.6"
+        ]
+    }

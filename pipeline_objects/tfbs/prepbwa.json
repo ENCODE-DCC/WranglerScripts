@@ -5,7 +5,10 @@
         "genome indexing"
     ],
     "input_file_types": [
-        "fasta"
+        "genome reference"
+    ],
+    "output_file_types": [
+        "genome index"
     ],
     "name": "prep-bwa-v-1-0-0",
     "title": "ChIP-seq BWA genome indexing step",

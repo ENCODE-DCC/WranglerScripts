@@ -1,0 +1,26 @@
+{
+    "@type":["pipeline"],
+    "aliases": ["encode:long-rna-seq-se-pipeline-2"],
+    "accession": "ENCPL002LSE",
+    "analysis_steps": [
+        "/analysis-steps/index-rsem-v-1-0-1/",
+        "/analysis-steps/index-star-v-2-0-0/",
+        "/analysis-steps/index-tophat-v-1-0-0",
+        "/analysis-steps/align-star-se-v-2-0-0",
+        "/analysis-steps/quant-rsem-v-1-0-2",
+        "/analysis-steps/align-tophat-se-v-1-0-1",
+        "/analysis-steps/unstranded-signal-star-v-2-0-0"
+    ],
+    "assay_term_id": "OBI:0001271",
+    "assay_term_name": "RNA-seq",
+    "end_points": [
+        "/analysis-steps/unstranded-signal-star-v-2-0-0",
+        "/analysis-steps/quant-rsem-v-1-0-2"
+    ],
+    "name": "long-rna-seq-se-pipeline-2",
+    "version": 2,
+    "source_url": "https://github.com/ENCODE-DCC/long-rna-seq-pipeline",
+    "status": "in progress",
+    "description": "Pipeline for single-ended unstranded data long RNA-seq data as developed by the ENCODE RNA Working Group",
+    "title": "Long RNA-seq single-end unstranded pipeline"
+}
