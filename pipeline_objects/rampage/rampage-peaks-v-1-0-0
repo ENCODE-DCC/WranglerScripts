@@ -1,0 +1,25 @@
+    {
+    "@type": ["analysis_step"],
+    "aliases": [
+        "dnanexus:rampage-peaks-v-1-0"
+    ],
+    "analysis_step_types": [
+        "file format conversion",
+        "peak calling"
+    ],
+    "input_file_types": [
+        "alignments"
+    ],
+    "name": "rampage-peaks-v-1-0",
+    "output_file_types": [
+        "peaks"
+    ],
+    "parents": [
+        "/analysis-steps/rampage-align-pe-v-1-0/"
+    ],
+    "software_versions": [
+        "/software-versions/4c911ae3-9007-4777-9680-2c526ab8fdbb/",
+         "encode:samtools 0.1.19-96b5f2294a"
+    ],
+    "title": "Rampage peak calling step v1.0"
+}

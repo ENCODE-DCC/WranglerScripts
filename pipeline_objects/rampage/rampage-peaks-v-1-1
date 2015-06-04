@@ -1,0 +1,27 @@
+{
+    "@type":["analysis_step"],
+    "aliases": [
+        "dnanexus:rampage-peaks-v-1-1"
+    ],
+    "analysis_step_types": [
+        "file format conversion",
+        "peak calling"
+    ],
+    "input_file_types": [
+        "alignments"
+    ],
+    "name": "rampage-peaks-v-1-1",
+    "output_file_types": [
+        "peaks"
+    ],
+    "parents": [
+        "/analysis-steps/rampage-align-pe-v-1-0/"
+    ],
+    "software_versions": [
+        "/software-versions/4c911ae3-9007-4777-9680-2c526ab8fdbb/",
+        "/software-versions/7b2cc20c-53aa-4035-93a3-722eabb082a0/",
+        "encode:bedToBigBed 2.6",
+        "encode:grit 2.0.4"
+    ],
+    "title": "Rampage peak calling step v1.1"
+}

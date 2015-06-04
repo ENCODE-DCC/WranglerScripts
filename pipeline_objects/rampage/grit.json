@@ -1,0 +1,11 @@
+{
+    "aliases": [
+        "encode:grit 2.0.4"
+    ],
+    "download_checksum": "e092d33fec56a0880961c24c5d3213adad662c88",
+    "downloaded_url": "https://github.com/nboley/grit/releases/tag/2.0.4",
+    "software": "/software/grit/",
+    "status": "released",
+    "version": "2.0.4",
+    "@type": ["software_version"]
+}

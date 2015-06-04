@@ -1,0 +1,24 @@
+{
+    "@type":["pipeline"],
+    "aliases": [
+    ],
+    "analysis_steps": [
+        "/analysis-steps/index-star-v-2-0-0/",
+        "/analysis-steps/rampage-align-pe-v-1-0/",
+        "/analysis-steps/rampage-signals-v-1-0/",
+        "/analysis-steps/rampage-peaks-v-1-1/",
+        "/analysis-steps/rampage-idr-v-1-0/"
+    ],
+    "assay_term_id": "OBI:0001864",
+    "assay_term_name": "RAMPAGE",
+    "description": "ENCODE pipeline for paired-ended and stranded RAMPAGE data",
+    "end_points": [
+        "/analysis-steps/rampage-peaks-v-1-0/",
+        "/analysis-steps/rampage-signals-v-1-0/"
+    ],
+    "name": "rampage-pe-pipeline-2",
+    "source_url": "https://github.com/ENCODE-DCC/long-rna-seq-pipeline",
+    "status": "in progress",
+    "title": "RAMPAGE paired-end stranded pipeline",
+    "version":2 
+}

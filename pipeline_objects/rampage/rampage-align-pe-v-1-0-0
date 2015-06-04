@@ -1,0 +1,25 @@
+{
+    "@type": ["analysis_step"],
+    "aliases": [
+        "dnanexus:rampage-align-pe-v-1-0"
+    ],
+    "analysis_step_types": [
+        "fastq concatenation",
+        "alignment"
+    ],
+    "input_file_types": [
+        "reads"
+    ],
+    "name": "rampage-align-pe-v-1-0",
+    "output_file_types": [
+        "alignments"
+    ],
+    "parents": [
+        "/analysis-steps/index-star-v-2-0-0/"
+    ],
+    "software_versions": [
+            "encode:concat-fastqs 1.0.2",
+            "encode:star 2.4.0k"
+    ],
+    "title": "RAMPAGE paired-ended STAR alignment step v1.0"
+}
