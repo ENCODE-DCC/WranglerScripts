@@ -1,22 +1,22 @@
 {
    "@type": ["analysis_step", "item"],
     "aliases": [
+           "dnanexus:small-rna-prep-star-v-1-0"
                 ], 
     "analysis_step_types": [
         "genome indexing"
     ],
     "input_file_types": [
-        "fasta",
-        "gtf"
+        "genome reference"
     ],
     "output_file_types": [
+         "genome index"
     ],
     "software_versions": [
         "encode:star 2.4.0g1"
     ],
     "parents":[],
-    "name": "small-rna-prep-star-v-1-0-0",
-    "title": "Small RNA STAR genome indexing step v1.0.0",
-    "status": "in progress",
-    "notes": "Need an output_file_type"
+    "name": "small-rna-index-star-v-1-0",
+    "title": "Small RNA STAR genome indexing step v1.0",
+    "status": "in progress"
 }
