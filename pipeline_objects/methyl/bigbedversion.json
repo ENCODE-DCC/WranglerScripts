@@ -1,6 +1,0 @@
-{
-    "@type":["software_version"],
-    "aliases": ["encode:bedToBigBed 2.6"],
-    "software": "/software/bedToBigBed/",
-    "version": "2.6"
-}
