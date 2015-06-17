@@ -1,6 +1,6 @@
 {
     "@type":["analysis_step"], 
-    "aliases": ["encode:prep-bwa-v-1-0-0"],
+    "aliases": ["encode:index-bwa-v-1-0"],
     "analysis_step_types": [
         "genome indexing"
     ],
@@ -10,8 +10,8 @@
     "output_file_types": [
         "genome index"
     ],
-    "name": "prep-bwa-v-1-0-0",
-    "title": "ChIP-seq BWA genome indexing step",
+    "name": "index-bwa-v-1-0",
+    "title": "BWA genome indexing step",
     "software_versions": [
         "/software-versions/encode:bwa 0.7.10"
     ]
