@@ -1,11 +1,11 @@
     {
         "@type": ["analysis_step"],
-        "name": "signal-calling-bismark",
+        "name": "methylation-quantification-bismark-v-1-0",
         "title": "Bismark signal generation step",
-        "input_file_types": ["bam"],
-        "output_file_types": ["bed"],
-        "analysis_step_types": ["signal generation"],
-        "aliases":["encode:signal-calling-bismark"],
+        "input_file_types": ["alignments"],
+        "output_file_types": ["methylation state at CHG","methylation state at CHH","methylation state at CpG"],
+        "analysis_step_types": ["quantification"],
+        "parents":["mott-trim-align-bismark-v-1-0"],
         "software_versions": [
             "encode:cxrepo-bed 0.2",
             "a86c9d15-deaf-4abd-8bce-bfa6595d70bb"

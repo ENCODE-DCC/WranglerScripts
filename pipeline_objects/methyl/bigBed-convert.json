@@ -2,9 +2,12 @@
         "@type": ["analysis_step"],
         "name": "bigbed-convert",
         "title": "Bed to bigBed conversion",
-        "input_file_types": ["bed"],
-        "output_file_types": ["bigBed"],
-        "parents": ["/analysis-steps/signal-calling-bismark/"],
+        "input_file_types": [
+                "methylation state at CHG",
+                "methylation state at CHH",
+                "methylation state at CpG"
+        ],
+        "parents": ["/analysis-steps/methylation-quantification-bismark-v-1-0/"],
         "analysis_step_types": ["file format conversion"],
         "software_versions": [
             "encode:bedToBigBed 2.6"
