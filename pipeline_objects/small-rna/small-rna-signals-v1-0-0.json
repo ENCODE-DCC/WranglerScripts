@@ -1,24 +1,25 @@
 {
    "@type": ["analysis_step", "item"],
-    "aliases": ["encode:small-rna-signals-v1-0-0",
+    "aliases": ["encode:small-rna-signals-v1-0",
                 "dnanexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0"],
     "analysis_step_types": [
         "signal generation",
         "file format conversion"
     ],
     "input_file_types": [
-        "bam"
+        "alignments"
     ],
     "output_file_types": [
-        "bigWig"
+        "minus strand signal of multi-mapped reads",
+        "plus strand signal of multi-mapped reads"
     ],
     "software_versions": [
         "encode:star 2.4.0g1",
         "encode:bedgraphtobigwig 4"
     ],
-    "parents":["/analysis_step/small-rna-align-v-1-0-0"],
-    "name": "small-rna-signals-v-1-0-0",
-    "title": "Small RNA stranded signal generation v1.0.0",
+    "parents":["/analysis_step/small-rna-align-v-1-0"],
+    "name": "small-rna-signals-v-1-0",
+    "title": "Small RNA stranded signal generation v1.0",
     "status": "in progress",
     "notes": "verify that all of these steps are stranded"
 }
