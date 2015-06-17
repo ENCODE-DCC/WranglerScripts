@@ -3,7 +3,7 @@
         "aliases": ["encode:align-and-filter-bwa-v-1"],
         "name": "align-and-filter-bwa",
         "title": "ChIP-seq alignment and filtration step",
-        "parents":["prep-bwa-v-1-0-0"],
+        "parents":["index-bwa-v-1-0"],
         "input_file_types": ["genome index", "reads"],
         "output_file_types": ["alignments"],
         "analysis_step_types": ["fastq concatenation", "alignment", "filtering"],

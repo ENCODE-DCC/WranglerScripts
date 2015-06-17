@@ -2,9 +2,9 @@
         "@type": ["analysis_step"],
         "aliases": ["encode:align-bwa-no-filter-v-1"],
         "name": "align-bwa-no-filter",
-        "title": "ChIP-seq alignment step with no filtering v1.0.0",
-        "input_file_types": ["fastq"],
-        "output_file_types": ["bam"],
+        "title": "ChIP-seq alignment step with no filtering v1.0",
+        "input_file_types": ["reads"],
+        "output_file_types": ["alignments"],
         "analysis_step_types": ["fastq concatenation", "alignment"],
         "software_versions": [
             "encode:bwa 0.7.10",

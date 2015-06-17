@@ -5,9 +5,11 @@
     ],
     "alternate_accessions": [],
     "analysis_steps": [
-        "/analysis-steps/prep-bwa-v-1-0-0/",
+        "/analysis-steps/index-bwa-v-1-0/",
         "/analysis-steps/align-bwa-no-filter"
     ],
+    "lab": "encode-processing-pipeline",
+    "award": "ENCODE",
     "assay_term_id": "OBI:0001271",
     "assay_term_name": "ChIP-seq",
     "name": "blacklist-pipeline-v-1-0-0",
