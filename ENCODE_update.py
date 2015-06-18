@@ -100,8 +100,12 @@ def main():
 					if prop_type == 'array':
 						new_metadata_string = new_metadata_string.strip("\'\"")
 						json_str = '{"%s" : %s}' %(prop_name, new_metadata_string)
+					elif prop_type == 'int':
+						json_str = '{"%s" : %i}' %(prop_name, int(new_metadata_string))
+					elif prop_type == 'float':
+						json_str = '{"%s" : %d}' %(prop_name, float(new_metadata_string))
 					else:
-						json_str = '{"%s" : "%s"}' %(prop_name, new_metadata_string) #this assumes string
+						json_str = '{"%s" : "%s"}' %(prop_name, new_metadata_string) #default is string
 					print json_str
 					#logging.debug("%s" %(json_str))
 					#logging.debug("%s" %(json.loads(json_str)))
