@@ -98,6 +98,7 @@ def main():
 	    formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 
+	parser.add_argument('--infile', help="Input file containing experiment accessions to report on (over-rides assay,rfa,lab,query_terms)", type=argparse.FileType('r'))
 	parser.add_argument('--server', help="Full URL of the server.")
 	parser.add_argument('--key', default='default', help="The keypair identifier from the keyfile.  Default is --key=default")
 	parser.add_argument('--keyfile', default=os.path.expanduser("~/keypairs.json"), help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
@@ -126,27 +127,35 @@ def main():
 	else:
 		organism_name = ''
 
-	query = '/search/?type=experiment&field=assay_term_name&field=accession&field=biosample_term_name&field=biosample_type&field=lab.name&field=award.rfa&field=target.name&format=json&limit=all'
-	if args.assay:
-		query += '&assay_term_name=%s' %(args.assay)
-	if args.rfa:
-		query += '&award.rfa=%s' %(args.rfa)
-	if args.lab:
-		query += '&lab.name=%s' %(args.lab)
-	if organism_name:
-		query += '&replicates.library.biosample.donor.organism.name=%s' %(organism_name)
-	if args.query_terms:
-		query += args.query_terms
+	if args.infile:
+		experiments = []
+		for expid in args.infile:
+			expid = expid.rstrip()
+			url = urlparse.urljoin(server, '/experiments/%s' %(expid))
+			result = get_ENCODE(url,authid,authpw)
+			experiments.append(result)
+	else:
+		query = '/search/?type=experiment&field=assay_term_name&field=accession&field=biosample_term_name&field=biosample_type&field=lab.name&field=award.rfa&field=target.name&format=json&limit=all'
+		if args.assay:
+			query += '&assay_term_name=%s' %(args.assay)
+		if args.rfa:
+			query += '&award.rfa=%s' %(args.rfa)
+		if args.lab:
+			query += '&lab.name=%s' %(args.lab)
+		if organism_name:
+			query += '&replicates.library.biosample.donor.organism.name=%s' %(organism_name)
+		if args.query_terms:
+			query += args.query_terms
 
-	url = urlparse.urljoin(server, query)
+		url = urlparse.urljoin(server, query)
 
-	result = get_ENCODE(url,authid,authpw)
-	experiments = result['@graph']
+		result = get_ENCODE(url,authid,authpw)
+		experiments = result['@graph']
 
 	fieldnames = ['download link','experiment','target','biosample_name',
 		'biosample_type','biorep_id','lab','rfa','assembly','bam',
 		'hiq_reads','loq_reads','unique','fract_unique','distinct','fract_distinct',
-		'NRF','PBC1','PBC2','frag_len','NSC','RSC']
+		'NRF','PBC1','PBC2','frag_len','NSC','RSC','library','library aliases']
 	writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter=',', quotechar='"')
 	writer.writeheader()
 
@@ -170,12 +179,21 @@ def main():
 			for bam in bams:
 				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from')]]
 				bioreps = set([str(f.get('replicate').get('biological_replicate_number')) for f in fastqs if f.get('accession') in derived_from_accessions])
+				library_uris = set([str(f.get('replicate').get('library')) for f in fastqs if f.get('accession') in derived_from_accessions])
+				aliases = []
+				libraries = []
+				for uri in library_uris:
+					library = get_ENCODE(urlparse.urljoin(server,'%s' %(uri)), authid, authpw)
+					libraries.append(library.get('accession'))
+					aliases.extend(library.get('aliases'))
 				row = copy.deepcopy(row_template)
 				row.update({
 					'biorep_id': ",".join(bioreps),
 					'assembly': bam.get('assembly'),
 					'bam': bam.get('accession'),
-					'download link': urlparse.urljoin(server,bam.get('href'))
+					'download link': urlparse.urljoin(server,bam.get('href')),
+					'library': ','.join(libraries),
+					'library aliases': ','.join(aliases)
 				})
 				notes = json.loads(bam.get('notes'))
 				if isinstance(notes,dict):
