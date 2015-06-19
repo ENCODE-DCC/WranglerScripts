@@ -140,7 +140,7 @@ class ENC_Item(object):
 		if self.id == None: #There is no id, so this is a new object to POST
 			excluded_from_post = ['schema_version']
 			self.type = self.properties.pop('@type')
-			schema_uri = '/profiles/%s.json' %(self.type)
+			schema_uri = 'profiles/%s.json' %(self.type)
 			try:
 				schema = next(x for x in schemas if x.uri == schema_uri)
 			except StopIteration:
