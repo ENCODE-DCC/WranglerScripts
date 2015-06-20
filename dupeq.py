@@ -49,7 +49,7 @@ def main():
 	mesh = int(args.mesh)
 	logger.debug("Mesh %d" %(mesh))
 	sampled_seqids = {}
-	for filename in args.infiles:
+	for filename in args.infile:
 		out.write("Sampling %s" %(filename))
 
 		fh = gzip.open(filename)
