@@ -22,7 +22,7 @@ def get_args():
 		description=__doc__, epilog=EPILOG,
 		formatter_class=argparse.RawDescriptionHelpFormatter)
 
-	parser.add_argument('infiles',	help="Fastq's to search within and across", nargs='+')
+	parser.add_argument('infile',	help="Fastq's to search within and across", nargs='+')
 	parser.add_argument('--mesh',		help="Sampling rate (approximately mesh^-1)", default=1000000)
 	parser.add_argument('--debug',		help="Print debug messages", default=False, action='store_true')
 
