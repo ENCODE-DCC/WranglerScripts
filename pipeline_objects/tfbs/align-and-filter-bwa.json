@@ -1,7 +1,7 @@
     {
         "@type": ["analysis_step"],
-        "aliases": ["encode:align-and-filter-bwa-v-1"],
-        "name": "align-and-filter-bwa",
+        "aliases": ["encode:align-and-filter-bwa-v-1-0"],
+        "name": "align-and-filter-bwa-v-1-0",
         "title": "ChIP-seq alignment and filtration step",
         "parents":["index-bwa-v-1-0"],
         "input_file_types": ["genome index", "reads"],
