@@ -1,13 +1,15 @@
     {
         "@type": ["analysis_step"],
         "aliases":[],
-        "name": "histone-signal-calling-v-1-0",
-        "title": "Histone modification ChIP-seq signal generation step v1.0",
+        "name": "encode-peaks-spp-v-1-0",
+        "title": "ENCODE ChIP-seq signal generation and peak calling using SPP v1.0",
         "input_file_types": ["alignments"],
-        "output_file_types": ["fold change over control", "signal p-value"],
-        "analysis_step_types": ["signal generation"],
-        "parents": ["align-and-filter-bwa"],
+        "output_file_types": ["fold change over control", "signal p-value", "peaks"],
+        "analysis_step_types": ["signal generation", "peak calling"],
+        "parents": ["/analysis-steps/align-and-filter-bwa-v-1-0/"],
         "software_versions": [
-            "encode:samtools 1.0"
+            "encode:samtools 1.0",
+            "encode:spp 1.11.1",
+            "encode:picard 1.110"
         ]
     }

@@ -1,0 +1,23 @@
+{
+    "@type":["analysis_step"],
+    "aliases": [],
+    "analysis_step_types": [
+        "file format conversion"
+    ],
+    "input_file_types": [
+        "bed"
+    ],
+    "output_file_types": [
+        "bigBed"
+    ],
+    "name": "bigbed-conversion-v-2-6",
+    "parents": [
+        "/analysis-steps/overlap-peaks-v-1-0/",
+        "/analysis-steps/encode-peaks-spp-v-1-0/"
+    ],
+    "software_versions": [
+        "/software-versions/143e5445-7f10-48fe-9455-5f1a777773ca/"
+    ],
+    "status": "in progress",
+    "title": "Bed to bigBed conversion"
+}

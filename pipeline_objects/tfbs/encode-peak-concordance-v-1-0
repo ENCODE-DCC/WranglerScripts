@@ -1,0 +1,13 @@
+    {
+        "@type": ["analysis_step"],
+        "aliases":["encode:overlap-peaks-v-1-0"],
+        "name": "overlap-peaks-v-1-0",
+        "title": "ENCODE ChIP-seq overlap peaks v1.0",
+        "input_file_types": ["alignments"],
+        "analysis_step_types": ["replicate concordance"],
+        "parents": ["/analysis-steps/encode-peaks-spp-v-1-0/"],
+        "software_versions": [
+            "encode:samtools 1.0",
+            "encode:overlap_peaks 1.0"
+        ]
+    }
