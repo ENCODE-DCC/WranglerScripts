@@ -72,7 +72,7 @@ def patch_ENCODE(obj_id, patch_input):
 	'''PATCH an existing ENCODE object and return the response JSON
 	'''
 	if isinstance(patch_input, dict):
-	    json_payload = json.dumps(patch_input)
+		json_payload = json.dumps(patch_input)
 	elif isinstance(patch_input, basestring):
 		json_payload = patch_input
 	else:
@@ -87,14 +87,14 @@ def patch_ENCODE(obj_id, patch_input):
 		print "DEBUG: PATCH RESPONSE"
 		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
 	if not response.status_code == 200:
-	    print >> sys.stderr, response.text
+		print >> sys.stderr, response.text
 	return response.json()
 
 def replace_ENCODE(obj_id, put_input):
 	'''PUT an existing ENCODE object and return the response JSON
 	'''
 	if isinstance(put_input, dict):
-	    json_payload = json.dumps(put_input)
+		json_payload = json.dumps(put_input)
 	elif isinstance(put_input, basestring):
 		json_payload = put_input
 	else:
@@ -116,7 +116,7 @@ def new_ENCODE(collection_id, post_input):
 	'''POST an ENCODE object as JSON and return the response JSON
 	'''
 	if isinstance(post_input, dict):
-	    json_payload = json.dumps(post_input)
+		json_payload = json.dumps(post_input)
 	elif isinstance(post_input, basestring):
 		json_payload = post_input
 	else:
@@ -140,16 +140,18 @@ def new_ENCODE(collection_id, post_input):
 	return response.json()
 
 def flat_one(JSON_obj):
-	return [JSON_obj[identifier] for identifier in \
-				['accession', 'name', 'email', 'title', 'uuid', 'href','download'] \
+	try:
+		return [JSON_obj[identifier] for identifier in ['accession', 'name', 'email', 'title', 'uuid', 'href','download'] \
 				if identifier in JSON_obj][0]
+	except:
+		return JSON_obj
 
 def flat_ENCODE(JSON_obj):
 	flat_obj = {}
 	for key in JSON_obj:
 		if isinstance(JSON_obj[key], dict):
-                        if JSON_obj[key] != {}:
-			     flat_obj.update({key:flat_one(JSON_obj[key])})
+			if JSON_obj[key] != {}:
+				 flat_obj.update({key:flat_one(JSON_obj[key])})
 		elif isinstance(JSON_obj[key], list) and JSON_obj[key] != [] and isinstance(JSON_obj[key][0], dict):
 			newlist = []
 			for obj in JSON_obj[key]:
@@ -169,8 +171,8 @@ def main():
 
 	import argparse
 	parser = argparse.ArgumentParser(
-	    description=__doc__, epilog=EPILOG,
-	    formatter_class=argparse.RawDescriptionHelpFormatter,
+		description=__doc__, epilog=EPILOG,
+		formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 
 	parser.add_argument('--infile', '-i',
@@ -312,7 +314,7 @@ def main():
 							'edw_key', 'experiment', 'file', 'file_relationship', 'human_donor', 'lab',\
 							'library', 'mouse_donor', 'organism', 'platform', 'replicate', 'rnai',\
 							'rnai_characterization', 'software', 'source', 'target', 'treatment', 'user',\
-                            'analysis_step_run','pipeline', 'workflow_run', 'analysis_step','software_version','publication']
+							'analysis_step_run','pipeline', 'workflow_run', 'analysis_step','software_version','publication']
 	type_list = new_json.pop('@type',[])
 	possible_collections = [x for x in type_list if x in supported_collections]
 	if possible_collections:
