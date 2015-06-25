@@ -168,7 +168,7 @@ def main():
 					pass
 				else:
 					print "New accession: %s" %(new_accession)
-					if enc_object.type == 'file':
+					if enc_object.type == 'file' and 'submitted_file_name' in json_obj:
 						upload_credentials = r['@graph'][0]['upload_credentials']
 						rc = upload_file(upload_credentials,path)
 
