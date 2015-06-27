@@ -70,6 +70,9 @@ def upload_file(credentials, f_path):
 
 	return upload_returncode
 
+def get_upload_credentials(server, keypair, accession):
+	r = requests.get()
+
 def main():
 
 	import argparse
@@ -126,7 +129,6 @@ def main():
 					continue #skip properties with no value for post or patch
 				else: #new property or new value for old property
 					new_metadata_string = new_metadata[prop]
-					#TODO here we need to explicitly handle datatypes (ints/floats, arrrays, strings)
 					if ':' in prop:
 						prop_name,sep,prop_type = prop.partition(':')
 					else:
@@ -146,32 +148,32 @@ def main():
 					else:
 						json_obj = {prop_name: new_metadata_string} #default is string
 					enc_object.properties.update(json_obj)
-			if enc_object.get('@type') == 'file':
-				if 'submitted_file_name' in enc_object.properties:
-					path = os.path.expanduser(enc_object.get('submitted_file_name'))
-					path = os.path.abspath(path)
-					basename = os.path.basename(path)
-					enc_object.properties.update({
-						'submitted_file_name': basename,
-						'md5sum': common.md5(path),
-						'file_size': os.path.getsize(path)})
+			if 'submitted_file_name' in enc_object.properties:
+				path = os.path.expanduser(enc_object.get('submitted_file_name'))
+				path = os.path.abspath(path)
+				basename = os.path.basename(path)
+				enc_object.properties.update({
+					'submitted_file_name': basename,
+					'md5sum': common.md5(path),
+					'file_size': os.path.getsize(path)})
 			if obj_id:
 				logger.info('Syncing %s' %(obj_id))
 			else:
 				logger.info('Syncing new object')
 			logger.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
 			if not args.dryrun:
-				r = enc_object.sync()
+				new_object = enc_object.sync()
 				try:
-					new_accession = r['@graph'][0]['accession']
+					new_accession = new_object['accession']
 				except:
 					pass
 				else:
 					print "New accession: %s" %(new_accession)
 					if enc_object.type == 'file' and 'submitted_file_name' in json_obj:
-						upload_credentials = r['@graph'][0]['upload_credentials']
+						upload_credentials = enc_object.new_creds()
+						print upload_credentials
 						rc = upload_file(upload_credentials,path)
-
+						print "Upload rc: %d" %(rc)
 
 if __name__ == '__main__':
 	main()

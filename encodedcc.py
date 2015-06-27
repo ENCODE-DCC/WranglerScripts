@@ -166,6 +166,7 @@ class ENC_Item(object):
 			diff = dict_diff(on_server, self.properties)
 			if diff.same():
 				logging.warning("%s: No changes to sync" %(self.id))
+				new_object = on_server
 			elif diff.added() or diff.removed(): #PUT
 				excluded_from_put = ['schema_version']
 				schema_uri = '/profiles/%s.json' %(self.type)
@@ -196,6 +197,12 @@ class ENC_Item(object):
 
 		return new_object
 
+	def new_creds(self):
+		if self.type == 'file': #There is no id, so this is a new object to POST
+			r = requests.post("%s/%s/upload/" %(self.connection.server, self.id), auth=self.connection.auth, headers=self.connection.headers, data=json.dumps({}))
+			return r.json()['@graph'][0]['upload_credentials']
+		else:
+			return None
 
 
 def get_ENCODE(obj_id, connection):
