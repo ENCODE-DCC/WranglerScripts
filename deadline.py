@@ -9,7 +9,7 @@ def main():
 	search_string = "2014-10"
 	lab = "/labs/bradley-bernstein/"
 
-	all_files = requests.get('https://www.encodeproject.org/search/?type=file&lab=%s&field=accession&field=lab&field=date_created&format=json&limit=all' %(lab), auth=('***REMOVED***','***REMOVED***'), headers={'content-type': 'application/json'}).json()['@graph']
+	all_files = requests.get('https://www.encodeproject.org/search/?type=file&lab=%s&field=accession&field=lab&field=date_created&format=json&limit=all' %(lab), auth=('**REMOVED**','**REMOVED**'), headers={'content-type': 'application/json'}).json()['@graph']
 
 	files = [f for f in all_files if re.search(search_string,f.get('date_created')) and f.get('status') not in ignore_statuses]
 	print "%s %s" %(lab, len(files))
