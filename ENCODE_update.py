@@ -135,11 +135,14 @@ def main():
 						prop_name = prop
 						prop_type = 'string'
 					if prop_type == 'array':
-						subreader = csv.reader(StringIO(new_metadata_string), delimiter=',', quotechar='"')
-						array_items = []
-						for line in subreader:
-							for s in line:
-								array_items.append(s)
+						# subreader = csv.reader(StringIO(new_metadata_string), delimiter=',', quotechar='"')
+						# array_items = []
+						# for line in subreader:
+						# 	for s in line:
+						# 		array_items.append(s)
+						print "new_metadata_string is %s" %(new_metadata_string)
+						array_items = json.loads(new_metadata_string)
+						print "array_items is %s" %(array_items)
 						json_obj = {prop_name: array_items}
 					elif prop_type == 'int':
 						json_obj = {prop_name: int(new_metadata_string)}
