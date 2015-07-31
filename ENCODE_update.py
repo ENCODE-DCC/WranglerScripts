@@ -146,7 +146,7 @@ def main():
 						array_items = json.loads(new_metadata_string)
 						print "array_items is %s" %(array_items)
 						json_obj = {prop_name: array_items}
-					elif prop_type == 'int':
+					elif prop_type == 'int' or prop_type == 'integer':
 						json_obj = {prop_name: int(new_metadata_string)}
 					elif prop_type == 'float':
 						json_obj = {prop_name: float(new_metadata_string)}
