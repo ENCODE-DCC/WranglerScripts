@@ -203,39 +203,40 @@ repCheckedItems = [
                    'antibody_lot',
                    'antibody_status',
                    'replicate_uuid',
-                   'replicate_aliases',
+                   #'replicate_aliases',
                    'rep_status',
-                   'rep_date',
-                   'rep_user',
                    'biological_replicate_number',
                    'technical_replicate_number',
-                   'read_length',
-                   'paired_ended',
                    'files',
                    ]
 
 fileCheckedItems = ['accession',
                     'submitted_file_name',
-                    'submitted_by',
+                    #'submitted_by',
+                    'library_aliases',
                     'file_format',
-                    'dataset',
+                    'file_format_type',
+                    'output_type',
                     'experiment',
                     'biosample',
-                    'controlled_by',
+                    'biosample_aliases',
                     'species',
                     'experiment-lab',
                     'alias',
-                    'replicate_alias',
+                    'replicate_id',
                     'biological_replicate',
                     'technical_replicate',
                     'status',
-                    'paired_end',
                     'md5sum',
-                    'library_size_range',
+                    'content_md5sum',
                     'controlled_by',
                     'platform',
                     'read_length',
                     'run_type',
+                    'paired_end',
+                    'paired_with',
+                    'flowcell',
+                    'lane',
                     'notes'
                     ]
 
@@ -273,7 +274,6 @@ libraryCheckedItems = [
                        'age',
                        'age_units',
                        'life_stage',
-                       'library_paired_ended',
                        'strand_specificity',
                        'date_created'
                        ]
@@ -383,7 +383,6 @@ def main():
             libraryCheckedItems.remove('extraction_method')
             libraryCheckedItems.remove('library_size_selection_method')
             libraryCheckedItems.remove('size_range')
-            libraryCheckedItems.remove('library_paired_ended')
             libraryCheckedItems.remove('nucleic_acid_starting_quantity')
             libraryCheckedItems.remove('nucleic_acid_starting_quantity_units')
 
@@ -422,19 +421,24 @@ def main():
                     fileob['experiment'] = exp['accession']
                     fileob['experiment-lab'] = exp['lab']['name']
                     fileob['biosample'] = exp['biosample_term_name']
-                    try: 
-                         fileob['platform'] = fileob['platform']['title']
+                    fileob['flowcell'] = []
+                    fileob['lane'] = []
+                    for fcd in file['flowcell_details']:
+                        fileob['flowcell'].append(fcd['flowcell'])
+                        fileob['lane'].append(fcd['lane'])
+                    try:
+                        fileob['platform'] = fileob['platform']['title']
                     except:
-                         fileob['platform'] = None 
+                        fileob['platform'] = None
                     try:
                         fileob['species'] = exp['replicates'][0]['library']['biosample']['donor']['organism']['name']
                     except:
                         fileob['species'] = ''
-                    try:
-                        library = get_ENCODE(file['replicate']['library'])
-                        fileob['library_size_range'] = library['size_range']
-                    except:
-                        fileob['library_size_range'] = ''
+                    if 'replicate' in file:
+                            library = file['replicate']['library']
+                            fileob['library_aliases'] = library['aliases']
+                            if 'biosample' in library:
+                                fileob['biosample_aliases'] = library['biosample']['aliases']
                     if 'alias' in exp:
                         fileob['alias'] = exp['aliases'][0]
                     else:
@@ -442,12 +446,12 @@ def main():
                     if 'replicate' in file:
                         fileob['biological_replicate'] = file['replicate']['biological_replicate_number']
                         fileob['technical_replicate'] = file['replicate']['technical_replicate_number']
-                        fileob['replicate_alias'] = file['replicate'].get('aliases')                        
+                        fileob['replicate_id'] = file['replicate'].get('uuid')                        
                     else:
                         fileob['biological_replicate'] = fileob['technical_replicate'] = fileob['replicate_alias'] = ''
                     row = []
                     for j in fileCheckedItems:
-                        row.append(str(fileob[j]))
+                        row.append(repr(fileob[j]))
                     print '\t'.join(row)
             return
 
@@ -541,8 +545,6 @@ def main():
                 repOb['replicate_aliases'] = rep['aliases']
                 repOb['replicate_uuid'] = rep['uuid']
                 repOb['rep_status'] = rep['status']
-                repOb['rep_date'] = rep.get('date_created')
-                repOb['rep_user'] = rep.get('submitted_by')
                 if 'platform' in rep:
                     repOb['platform'] = rep['platform']['term_name']
                 if 'antibody' in rep:
@@ -556,7 +558,7 @@ def main():
                 # inititalize the lib with repItems
                 for i in repCheckedItems:
                     if i in repOb:
-                        lib.append(str(repOb[i]))
+                        lib.append(repr(repOb[i]))
 
                 if 'library' in rep:
 
@@ -567,7 +569,6 @@ def main():
                     repOb['library_treatments'] = get_treatment_list(rep['library']['treatments'])
                     repOb['spikeins_used'] = get_spikeins_list(rep['library'].get('spikeins_used'))
                     repOb['library_status'] = rep['library']['status']
-                    repOb['library_paired_ended'] = rep['library'].get('paired_ended')
                     if 'biosample' in rep['library']:
                         bs = rep['library']['biosample']
                         repOb['biosample_accession'] = bs['accession']
@@ -603,7 +604,7 @@ def main():
 
                     for i in libraryCheckedItems:
                         if i in repOb:
-                            lib.append(str(repOb[i]))
+                            lib.append(repr(repOb[i]))
                         else:
                             lib.append('')
                 libs.append(lib)
