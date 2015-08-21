@@ -24,6 +24,7 @@ def get_args():
 	parser.add_argument('--debug',		help="Print debug messages", default=False, action='store_true')
 	parser.add_argument('--key',		help="The keypair identifier from the keyfile.", default='www')
 	parser.add_argument('--keyfile',	help="The keyfile.", default=os.path.expanduser("~/keypairs.json"))
+	parser.add_argument('--query', 		help="Take experiments from a query")
 
 	args = parser.parse_args()
 
@@ -46,7 +47,11 @@ def main():
 	authid, authpw, server = common.processkey(args.key, args.keyfile)
 	keypair = (authid,authpw)
 
-	if args.experiments:
+	if args.query:
+		r = requests.get(args.query, auth=keypair, headers={'content-type': 'application/json', 'accept': 'application/json'})
+		experiments = r.json()['@graph']
+		exp_ids = [e['accession'] for e in experiments]
+	elif args.experiments:
 		exp_ids = args.experiments
 	else:
 		exp_ids = args.infile

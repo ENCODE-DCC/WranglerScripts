@@ -4,7 +4,7 @@
 '''
 import requests
 
-AUTH = "LXDWVIW7", "uz2dmao52jxsv6jj"
+AUTH = "**REMOVED**", "**REMOVED**"
 HEADERS = {'content-type': 'application/json'}
 query_url = "https://www.encodeproject.org/search/?type=experiment&assay_term_name=RNA-seq&replicates.library.biosample.donor.organism.scientific_name=Mus+musculus&limit=all&lab.title=Barbara+Wold%2C+Caltech&format=json&frame=embedded"
 

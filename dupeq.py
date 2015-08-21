@@ -6,11 +6,12 @@ EPILOG = '''Notes:
 
 Examples:
 
-	%(prog)s
+	%(prog)s fastq1.fq.gz fastq2.fq.gz fastq3.fq.gz
 '''
 
 import sys, logging, os.path
 from zlib import crc32
+from hashlib import md5
 import gzip
 import common
 
@@ -25,6 +26,7 @@ def get_args():
 	parser.add_argument('infile',	help="Fastq's to search within and across", nargs='+')
 	parser.add_argument('--mesh',		help="Sampling rate (approximately mesh^-1)", default=1000000)
 	parser.add_argument('--debug',		help="Print debug messages", default=False, action='store_true')
+	parser.add_argument('--noprogress', help="Don't print progress bar", default=False, action='store_true')
 
 	args = parser.parse_args()
 
@@ -34,6 +36,10 @@ def get_args():
 		logging.basicConfig(format='%(levelname)s:%(message)s')
 
 	return args
+
+def hashfunc(line):
+	return crc32(line)
+	#return int(md5(line).hexdigest(), 16)
 
 def main():
 
@@ -57,8 +63,11 @@ def main():
 			if i % 4 != 0:
 				continue
 			# Normalize crc32 result to an unsigned int for Python 2.
-			if (crc32(line) & 0xffffffff) % mesh == 0:
-				out.write('.')
+			h = hashfunc(line) & 0xffffffff
+			h = ((h & 0xffff) << 16) + (h >> 16)
+			if (h % mesh) == 0:
+				if not args.noprogress:
+					out.write('.')
 				if line in sampled_seqids:
 					sampled_seqids[line].append(filename)
 				else:

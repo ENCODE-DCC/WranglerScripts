@@ -188,13 +188,20 @@ class ENC_Item(object):
 
 				excluded_from_patch = ['schema_version', 'accession', 'uuid']
 				patch_payload = {}
-				for prop in diff.changed() and prop not in excluded_from_patch:
-					patch_payload.update({prop : self.properties[prop]})
+				for prop in diff.changed():
+					if prop not in excluded_from_patch:
+						patch_payload.update({prop : self.properties[prop]})
 				#should probably return the new object that comes back from the patch
 				new_object = patch_ENCODE(self.id, self.connection, patch_payload)
 
 		return new_object
 
+	def new_creds(self):
+		if self.type == 'file': #There is no id, so this is a new object to POST
+			r = requests.post("%s/%s/upload/" %(self.connection.server, self.id), auth=self.connection.auth, headers=self.connection.headers, data=json.dumps({}))
+			return r.json()['@graph'][0]['upload_credentials']
+		else:
+			return None
 
 
 def get_ENCODE(obj_id, connection):
