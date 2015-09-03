@@ -16,9 +16,11 @@ EPILOG = '''Notes:
 	csv's should have a header as below and data rows in the form:
 
 	accession,property1:array,property2,property3:int,property4:float ...
-	ENCBSxyzabc,""elementwithcomma,andstuff",second element",stringproperty,3,4.1 ...
+	ENCBSxyzabc,"[""elementwithcomma,andstuff"",""second element""]",stringproperty,3,4.1 ...
 	...
 	Note that array elements are comma-delimited within a double-quote quoted string
+	Excel will export to csv in exactly that format automatically.  Following the example, the
+	cell should contain exactly the string ["elementwithcomma,andstuff","second element"]
 	Only arrays of strings are supported
 	Int and float are supported as property:int and property:float
 
@@ -135,13 +137,16 @@ def main():
 						prop_name = prop
 						prop_type = 'string'
 					if prop_type == 'array':
-						subreader = csv.reader(StringIO(new_metadata_string), delimiter=',', quotechar='"')
-						array_items = []
-						for line in subreader:
-							for s in line:
-								array_items.append(s)
+						# subreader = csv.reader(StringIO(new_metadata_string), delimiter=',', quotechar='"')
+						# array_items = []
+						# for line in subreader:
+						# 	for s in line:
+						# 		array_items.append(s)
+						print "new_metadata_string is %s" %(new_metadata_string)
+						array_items = json.loads(new_metadata_string)
+						print "array_items is %s" %(array_items)
 						json_obj = {prop_name: array_items}
-					elif prop_type == 'int':
+					elif prop_type == 'int' or prop_type == 'integer':
 						json_obj = {prop_name: int(new_metadata_string)}
 					elif prop_type == 'float':
 						json_obj = {prop_name: float(new_metadata_string)}
