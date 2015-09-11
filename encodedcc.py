@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import requests, json, jsonschema
+import requests, json, jsonschema, copy
 import sys, logging
 
 class dict_diff(object):
@@ -15,38 +15,52 @@ class dict_diff(object):
 		]
 		self.intersect = self.current_keys.intersection(self.past_keys)
 
-	def added(self):
+	def added(self): #added(A,B) new keys in A
 		diff = self.current_keys - self.intersect
-		if diff == set():
-			return None
-		else:
-			return diff
+		# if diff == set():
+		# 	return None
+		# else:
+		# 	return diff
+		return diff #returns set() if none added
 
-	def removed(self):
+	def removed(self): #removed(A,B) keys from B not in A
 		diff = self.past_keys - self.intersect
-		if diff == set():
-			return None
-		else:
-			return diff 
+		# if diff == set():
+		# 	return None
+		# else:
+		# 	return diff 
+		return diff
 
-	def changed(self):
+	def changed(self): #shared properties with values that have changed
 		diff = set(o for o in self.intersect
 				   if self.past_dict[o] != self.current_dict[o])
-		if diff == set():
-			return None
-		else:
-			return diff
+		# if diff == set():
+		# 	return None
+		# else:
+		# 	return diff
+		return diff
 
-	def unchanged(self):
+	def unchanged(self): #shared properties with values that have not changed
 		diff = set(o for o in self.intersect
 				   if self.past_dict[o] == self.current_dict[o])
-		if diff == set():
-			return None
-		else:
-			return diff
+		# if diff == set():
+		# 	return None
+		# else:
+		# 	return diff
+		return diff
 
-	def same(self):
+	def same(self): #boolean
 		return self.added() == None and self.removed() == None and self.changed() == None
+
+def postable_props(d):
+	ignore_properties = ['schema_version']
+	pruned_dict = {}
+	for k,prop in d.iteritems():
+		if prop.get('calculatedProperty') or k in ignore_properties:
+			pass
+		else:
+			pruned_dict.update({k:prop})
+	return pruned_dict
 
 class ENC_Key:
 	def __init__(self, keyfile, keyname):
@@ -136,68 +150,86 @@ class ENC_Item(object):
 		except KeyError:
 			return None
 
-	def sync(self):
-		if self.id == None: #There is no id, so this is a new object to POST
-			excluded_from_post = ['schema_version']
-			self.type = self.properties.pop('@type')
-			schema_uri = 'profiles/%s.json' %(self.type)
-			try:
-				schema = next(x for x in schemas if x.uri == schema_uri)
-			except StopIteration:
-				schema = ENC_Schema(self.connection, schema_uri)
-				schemas.append(schema)
+	def postable_properties(self):
+		excluded_from_post = ['schema_version']
+		schema_uri = 'profiles/%s.json' %(self.type)
+		try:
+			schema = next(x for x in schemas if x.uri == schema_uri)
+		except StopIteration:
+			schema = ENC_Schema(self.connection, schema_uri)
+			schemas.append(schema)
+		pruned_properties = {}
+		for k,v in self.properties.iteritems():
+			if k not in schema.properties or k in excluded_from_post or schema.properties[k].get('calculatedProperty'):
+				pass
+			else:
+				pruned_properties.update({k:v})
+		return pruned_properties
 
+	def sync(self,dryrun=False):
+		if self.id == None: #There is no id, so this is a new object to POST
+			self.type = self.properties.pop('@type')
 			post_payload = {}
-			for prop in self.properties:
-				if prop in schema.properties and prop not in excluded_from_post:
-					post_payload.update({prop : self.properties[prop]})
-				else:
-					pass
+			for prop in self.postable_properties():
+				post_payload.update({prop : self.properties[prop]})
 			# should probably return the new object that comes back from the patch
-			new_object = new_ENCODE(self.connection, self.type, post_payload)
-			
+			logging.debug("post_payload %s" %(post_payload))
+			if not dryrun:
+				new_object = new_ENCODE(self.connection, self.type, post_payload)
+			else:
+				logging.info("dryrun so nothing posted")
+				new_object={}
 		else: #existing object to PATCH or PUT
 			if self.id.rfind('?') == -1:
 				get_string = self.id + '?'
 			else:
 				get_string = self.id + '&'
 			get_string += 'frame=%s' %(self.frame)
-			on_server = get_ENCODE(get_string, self.connection)
-			diff = dict_diff(on_server, self.properties)
+			#on_server = get_ENCODE(get_string, self.connection)
+			on_server = ENC_Item(self.connection,self.id)
+			diff = dict_diff(self.postable_properties(), on_server.postable_properties())
+
 			if diff.same():
 				logging.warning("%s: No changes to sync" %(self.id))
 				new_object = on_server
-			elif diff.added() or diff.removed(): #PUT
-				excluded_from_put = ['schema_version']
-				schema_uri = '/profiles/%s.json' %(self.type)
-				try:
-					schema = next(x for x in schemas if x.uri == schema_uri)
-				except StopIteration:
-					schema = ENC_Schema(self.connection, schema_uri)
-					schemas.append(schema)
+			elif diff.removed(): #PUT only if properties have been removed
+				# schema_uri = '/profiles/%s.json' %(self.type)
+				# try:
+				# 	schema = next(x for x in schemas if x.uri == schema_uri)
+				# except StopIteration:
+				# 	schema = ENC_Schema(self.connection, schema_uri)
+				# 	schemas.append(schema)
 
 				put_payload = {}
-				for prop in self.properties:
-					if prop in schema.properties and prop not in excluded_from_put:
-						put_payload.update({prop : self.properties[prop]})
-					else:
-						pass
-				# should probably return the new object that comes back from the patch
-				new_object = replace_ENCODE(self.id, self.connection, put_payload)
+				for prop in self.postable_properties():
+					put_payload.update({prop : self.properties[prop]})
 
+				# should probably return the new object that comes back from the patch
+				logging.debug('put_payload %s' %(put_payload))
+				if not dryrun:
+					new_object = replace_ENCODE(self.id, self.connection, put_payload)
+				else:
+					logging.info('dryrun so nothing put')
+					new_object={}
 			else: #PATCH
 
-				excluded_from_patch = ['schema_version', 'accession', 'uuid']
+				excluded_from_patch = ['accession', 'uuid']
 				patch_payload = {}
-				for prop in diff.changed():
+				for prop in diff.changed() | diff.added():
 					if prop not in excluded_from_patch:
 						patch_payload.update({prop : self.properties[prop]})
 				#should probably return the new object that comes back from the patch
-				new_object = patch_ENCODE(self.id, self.connection, patch_payload)
+				logging.debug('patch_payload %s' %(patch_payload))
+				if not dryrun:
+					new_object = patch_ENCODE(self.id, self.connection, patch_payload)
+				else:
+					logging.info('dryrun so no patch')
+					new_object={}
 
 		return new_object
 
 	def new_creds(self):
+
 		if self.type == 'file': #There is no id, so this is a new object to POST
 			r = requests.post("%s/%s/upload/" %(self.connection.server, self.id), auth=self.connection.auth, headers=self.connection.headers, data=json.dumps({}))
 			return r.json()['@graph'][0]['upload_credentials']
