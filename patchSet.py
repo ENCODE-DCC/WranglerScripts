@@ -97,28 +97,6 @@ def post_ENCODE(collection_id, post_input):
         return response.json()
 
 
-def flat_one(JSON_obj):
-    return [JSON_obj[identifier] for identifier in \
-            ['accession', 'name', 'email', 'title', 'uuid', 'href', 'download']
-            if identifier in JSON_obj][0]
-
-
-def flat_ENCODE(JSON_obj):
-    flat_obj = {}
-    for key in JSON_obj:
-        if isinstance(JSON_obj[key], dict):
-            if JSON_obj[key] != {}:
-                flat_obj.update({key: flat_one(JSON_obj[key])})
-        elif isinstance(JSON_obj[key], list) and JSON_obj[key] != [] and isinstance(JSON_obj[key][0], dict):
-            newlist = []
-            for obj in JSON_obj[key]:
-                newlist.append(flat_one(obj))
-            flat_obj.update({key: newlist})
-        else:
-            flat_obj.update({key: JSON_obj[key]})
-    return flat_obj
-
-
 def set_ENCODE_keys(keyfile, key):
         '''
           Set the global authentication keyds
