@@ -435,10 +435,12 @@ def main():
                     except:
                         fileob['species'] = ''
                     if 'replicate' in file:
-                            library = file['replicate']['library']
-                            fileob['library_aliases'] = library['aliases']
-                            if 'biosample' in library:
-                                fileob['biosample_aliases'] = library['biosample']['aliases']
+                            rep = file['replicate']
+                            if 'library' in rep and rep['library'] is not None:
+                                library = file['replicate'].get('library')
+                                fileob['library_aliases'] = library['aliases']
+                                if 'biosample' in library:
+                                    fileob['biosample_aliases'] = library['biosample']['aliases']
                     if 'alias' in exp:
                         fileob['alias'] = exp['aliases'][0]
                     else:
