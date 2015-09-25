@@ -16,7 +16,7 @@
         "encode:star 2.4.0g1"
     ],
     "parents":[],
-    "name": "small-rna-index-star-v-1-0",
-    "title": "Small RNA STAR genome indexing step v1.0",
+    "name": "small-rna-star-indexing-step-v-1",
+    "title": "Small RNA STAR genome indexing step - Version 1",
     "status": "in progress"
 }

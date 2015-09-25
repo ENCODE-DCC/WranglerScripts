@@ -1,7 +1,6 @@
 {
    "@type": ["analysis_step", "item"],
     "aliases": [
-                "dnanexus:applet-BX3fbjQ0F1GKJBpXzj85Fy44",
                 "dnanexus:small-rna-align-v-1-0"
                ],
     "analysis_step_types": [
@@ -17,9 +16,8 @@
     "software_versions": [
         "encode:star 2.4.0g1"
     ],
-    "parents":["/analysis_step/small-rna-index-star-v-1-0/"],
+    "parents":["/analysis_step/small-rna-star-indexing-step-v-1/"],
     "name": "small-rna-align-v-1-0",
-    "title": "Small RNA single-ended STAR alignment step v1.0",
-    "status": "in progress",
-    "notes": "the software versions might need samtools and possibly fastqc"
+    "title": "Small RNA single-ended STAR alignment step - Version 1",
+    "status": "in progress"
 }
