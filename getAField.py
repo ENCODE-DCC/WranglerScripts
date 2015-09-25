@@ -89,26 +89,24 @@ def post_ENCODE(collection_id, post_input):
         return response.json()
 
 
-def set_ENCODE_keys(keyfile,key):
+def set_ENCODE_keys(keyfile, key):
         '''
           Set the global authentication keyds
         '''
 
-        keysf = open(keyfile,'r')
+        keysf = open(keyfile, 'r')
         keys_json_string = keysf.read()
         keysf.close()
-  
+
         keys = json.loads(keys_json_string)
         key_dict = keys[key]
-        
 
         global AUTHID
         global AUTHPW
         global SERVER
 
-
         AUTHID = key_dict['key']
-	AUTHPW = key_dict['secret']
+        AUTHPW = key_dict['secret']
         SERVER = key_dict['server']
         if not SERVER.endswith("/"):
                 SERVER += "/"
@@ -128,8 +126,8 @@ def get_experiment_list(file,search):
             set = get_ENCODE(search+'&limit=all&frame=embedded')
             for i in range(0, len(set['@graph'])):
                 #print set['@graph'][i]['accession'] 
-                #objList.append(set['@graph'][i]['accession'] )
-                objList.append(set['@graph'][i]['uuid'] )
+                objList.append(set['@graph'][i]['@id'] )
+                #objList.append(set['@graph'][i]['uuid'] )
 
         return objList 
 
@@ -186,13 +184,13 @@ def main():
 
         objList = get_experiment_list ( args.infile, args.search )
         for i in range (0, len(objList)):
-
-           ob = get_ENCODE(objList[i])
+           
            field = ''     
-           if ob != '':
-                id = ob['uuid']
-                if args.field in ob:
-                    field = str(ob[args.field])
+           if objList[i] != '':
+               ob = get_ENCODE(objList[i])
+               id = ob.get('@id')
+               if args.field in ob:
+                   field = str(ob[args.field])
            else:
               id = objList[i]
            print '\t'.join([id,field])
