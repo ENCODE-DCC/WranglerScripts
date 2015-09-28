@@ -115,30 +115,30 @@ def get_fastq_dictionary(exp):
 def get_HAIB_fastq_dictionary(controls):
 
     controlfiles = {}
-    for i in controls:
-        control = get_ENCODE(i)
+    for control in controls:
         for ff in control['files']:
-            if ff.get('file_format') != 'fastq':
+            ff_obj = get_ENCODE(ff)
+            if ff_obj.get('file_format') != 'fastq':
                 continue
-            if 'replicate' not in ff:
+            if 'replicate' not in ff_obj:
                 print "Missing replicate error"
                 continue
             try:
-                lib = get_ENCODE(ff['replicate']['library'])
+                lib = get_ENCODE(ff_obj['replicate']['library'])
                 biosample = lib['biosample']['accession']
             except:
                 print 'Cannot find biosample'
                 biosample = ''
-            pair = str(ff.get('paired_end'))
-            key = biosample + '-' + pair
 
+            key = biosample
             if key not in controlfiles:
-                controlfiles[key] = [ff['accession']]
+                controlfiles[key] = [ff_obj['accession']]
             else:
                 print "error: biosample has multiple files"
-                controlfiles[key].append(ff['accession'])
+                controlfiles[key].append(ff_obj['accession'])
                 controlfiles[key].append('same-biosample-error')
 
+    print controlfiles
     return controlfiles
 
 
@@ -198,7 +198,7 @@ def main():
 
         # If it is HAIB
         elif obj['lab']['name'] == 'richard-myers':
-            controlfiles = get_HAIB_fastq_dictionary(controlIds)
+            controlfiles = get_HAIB_fastq_dictionary(obj['possible_controls'])
 
         # Single possible control
         elif len(obj['possible_controls']) == 1:
@@ -235,17 +235,23 @@ def main():
                 rep = biorep + '-' + techrep + '-' + pair
                 biokey = biorep + '-' + pair
                 if ff['lab']['name'] == 'richard-myers':
-                    print ff['replicate']['library']
-                    lib = get_ENCODE(ff['replicate']['library'])
+                    if 'replicate' in ff:
+                        if 'library' in ff['replicate']:
+                            if 'biosample' in ff['replicate']['library']:
+                                biokey = ff['replicate']['library']['biosample']['accession']
+                                print ff['replicate']['library']['biosample']['accession']
+                    else:
+                        biokey = None
 
                 if rep in controlfiles:
                     answer = controlfiles[rep]
+                    biokey = rep
                 elif biokey in controlfiles:
                     answer = controlfiles[biokey]
                 else:
                     answer = 'error: control had no corresponding replicate'
 
-                print rep, ff['accession'], answer
+                print biokey, ff['accession'], answer
         print ''
 
 
