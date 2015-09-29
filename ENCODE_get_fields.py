@@ -21,6 +21,7 @@ To use a different key from the default keypair file:
 
 def get_experiment_list(file,search, connection):
         objList = []
+        myConnect = connection
         if search == "NULL":
             f = open(file)
             objList = f.readlines()
@@ -35,8 +36,8 @@ def get_experiment_list(file,search, connection):
 
         return objList 
 def get_antibody_approval (antibody, target):
-
-        search = encodedcc.get_ENCODE('search/?searchTerm='+antibody+'&type=antibody_approval')
+        myConnect = connection
+        search = encodedcc.get_ENCODE('search/?searchTerm='+antibody+'&type=antibody_approval', myConnect)
         for approval in search['@graph']:
             if approval['target']['name'] == target:
                 return approval['status']
