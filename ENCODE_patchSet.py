@@ -68,9 +68,9 @@ def main():
         DEBUG_ON = args.debug
         print (DEBUG_ON)
 
-        myKey = encodedcc.ENC_Key(args.keyfile, args.key)
+        key = encodedcc.ENC_Key(args.keyfile, args.key)
         
-        myConnect = encodedcc.ENC_Connection(myKey)
+        connection = encodedcc.ENC_Connection(key)
 
         FIELD = args.field
 
@@ -90,7 +90,7 @@ def main():
             elif objDict[key].isdigit():
                 objDict[key] = int(objDict[key])
 
-            object = encodedcc.get_ENCODE(key, myConnect)
+            object = encodedcc.get_ENCODE(key, connection)
             old_thing = object.get(FIELD)
 
             if args.array:
@@ -123,7 +123,7 @@ def main():
             patchdict = {FIELD: patch_thing}
 
             if not args.dryrun:
-                response = encodedcc.patch_ENCODE(key, myConnect, patchdict)
+                response = encodedcc.patch_ENCODE(key, connection, patchdict)
             else:
                 print ("In DRY RUN mode, no data will be patched...")
 

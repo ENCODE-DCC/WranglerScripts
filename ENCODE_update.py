@@ -141,9 +141,9 @@ def main():
 						# for line in subreader:
 						# 	for s in line:
 						# 		array_items.append(s)
-						print "new_metadata_string is %s" %(new_metadata_string)
+						print ("new_metadata_string is %s" %(new_metadata_string))
 						array_items = json.loads(new_metadata_string)
-						print "array_items is %s" %(array_items)
+						print ("array_items is %s" %(array_items))
 						json_obj = {prop_name: array_items}
 					elif prop_type == 'int' or prop_type == 'integer':
 						json_obj = {prop_name: int(new_metadata_string)}
@@ -172,12 +172,12 @@ def main():
 				except:
 					pass
 				else:
-					print "New accession: %s" %(new_accession)
+					print ("New accession: %s" %(new_accession))
 					if enc_object.type == 'file' and 'submitted_file_name' in json_obj:
 						upload_credentials = enc_object.new_creds()
-						print upload_credentials
+						print (upload_credentials)
 						rc = upload_file(upload_credentials,path)
-						print "Upload rc: %d" %(rc)
+						print ("Upload rc: %d" %(rc))
 
 if __name__ == '__main__':
 	main()

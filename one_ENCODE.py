@@ -10,6 +10,7 @@ from base64 import b64encode
 from copy import deepcopy
 #import magic
 import mimetypes
+import encodedcc
 
 
 EPILOG = '''Examples:
@@ -47,125 +48,6 @@ In case of emergency, break glass:
 
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
-
-def get_ENCODE(obj_id):
-	'''GET an ENCODE object as JSON and return as dict
-	'''
-	url = SERVER+obj_id+'?limit=all'
-	#url = SERVER+obj_id
-	if DEBUG_ON:
-		print "DEBUG: GET %s" %(url)
-	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
-	if DEBUG_ON:
-		print "DEBUG: GET RESPONSE code %s" %(response.status_code)
-		try:
-			if response.json():
-				print "DEBUG: GET RESPONSE JSON"
-				print json.dumps(response.json(), indent=4, separators=(',', ': '))
-		except:
-			print "DEBUG: GET RESPONSE text %s" %(response.text)
-	if not response.status_code == requests.codes.ok:
-		response.raise_for_status()
-	return response.json()
-
-def patch_ENCODE(obj_id, patch_input):
-	'''PATCH an existing ENCODE object and return the response JSON
-	'''
-	if isinstance(patch_input, dict):
-		json_payload = json.dumps(patch_input)
-	elif isinstance(patch_input, basestring):
-		json_payload = patch_input
-	else:
-		print >> sys.stderr, 'Datatype to patch is not string or dict.'
-	url = SERVER+obj_id
-	if DEBUG_ON:
-		print "DEBUG: PATCH URL : %s" %(url)
-		print "DEBUG: PATCH data: nik! %s" %(json_payload)
-		print "DEBUG: headers: %s" %(HEADERS)
-	response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
-	if DEBUG_ON:
-		print "DEBUG: PATCH RESPONSE"
-		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
-	if not response.status_code == 200:
-		print >> sys.stderr, response.text
-	return response.json()
-
-def replace_ENCODE(obj_id, put_input):
-	'''PUT an existing ENCODE object and return the response JSON
-	'''
-	if isinstance(put_input, dict):
-		json_payload = json.dumps(put_input)
-	elif isinstance(put_input, basestring):
-		json_payload = put_input
-	else:
-		print >> sys.stderr, 'Datatype to put is not string or dict.'
-	url = SERVER+obj_id
-	if DEBUG_ON:
-		print "DEBUG: PUT URL : %s" %(url)
-		print "DEBUG: PUT data: %s" %(json_payload)
-	response = requests.put(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
-	if DEBUG_ON:
-		print "DEBUG: PUT RESPONSE"
-		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
-	if not response.status_code == 200:
-		print >> sys.stderr, response.text
-	print response.text
-	return response.json()
-
-def new_ENCODE(collection_id, post_input):
-	'''POST an ENCODE object as JSON and return the response JSON
-	'''
-	if isinstance(post_input, dict):
-		json_payload = json.dumps(post_input)
-	elif isinstance(post_input, basestring):
-		json_payload = post_input
-	else:
-		print >> sys.stderr, 'Datatype to post is not string or dict.'
-	if DEBUG_ON:
-		print "DEBUG: SERVER = %s" %(SERVER)
-		print "DEBUG: collection = %s" %(collection_id)
-	url = SERVER+collection_id
-	if DEBUG_ON:
-		print "DEBUG: POST URL : %s" %(url)
-		print "DEBUG: POST data:"
-		print json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))
-	response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
-	if DEBUG_ON:
-		print "DEBUG: POST RESPONSE"
-		print json.dumps(response.json(), indent=4, separators=(',', ': '))	
-	if not response.status_code == 201:
-		print >> sys.stderr, response.text
-	print "Return object:"
-	print json.dumps(response.json(), sort_keys=True, indent=4, separators=(',', ': '))
-	return response.json()
-
-def flat_one(JSON_obj):
-	try:
-		return [JSON_obj[identifier] for identifier in ['accession', 'name', 'email', 'title', 'uuid', 'href','download'] \
-				if identifier in JSON_obj][0]
-	except:
-		return JSON_obj
-
-def flat_ENCODE(JSON_obj):
-	flat_obj = {}
-	for key in JSON_obj:
-		if isinstance(JSON_obj[key], dict):
-			if JSON_obj[key] != {}:
-				 flat_obj.update({key:flat_one(JSON_obj[key])})
-		elif isinstance(JSON_obj[key], list) and JSON_obj[key] != [] and isinstance(JSON_obj[key][0], dict):
-			newlist = []
-			for obj in JSON_obj[key]:
-				newlist.append(flat_one(obj))
-			flat_obj.update({key:newlist})
-		else:
-			flat_obj.update({key:JSON_obj[key]})
-	return flat_obj
-
-def pprint_ENCODE(JSON_obj):
-	if ('type' in JSON_obj) and (JSON_obj['type'] == "object"):
-		print json.dumps(JSON_obj['properties'], sort_keys=True, indent=4, separators=(',', ': '))
-	else:
-		print json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': '))
 
 def main():
 
@@ -213,38 +95,18 @@ def main():
 	else:
 		GET_ONLY = False
 
-	keysf = open(args.keyfile,'r')
-	keys_json_string = keysf.read()
-	keysf.close()
-	keys = json.loads(keys_json_string)
-	key_dict = keys[args.key]
-	global AUTHID
-	global AUTHPW
-	global SERVER
-	if not args.authid:
-		AUTHID = key_dict['key']
-	else:
-		AUTHID = args.authid
-	if not args.authpw:
-		AUTHPW = key_dict['secret']
-	else:
-		AUTHPW = args.authpw
-	if not args.server:
-		SERVER = key_dict['server']
-	else:
-		SERVER = args.server
-	if not SERVER.endswith("/"):
-		SERVER += "/"
+	key = encodedcc.ENC_Key(args.keyfile, args.key)
+	connection = encodedcc.ENC_Collection(key)
 
 	new_object = False
 	if args.id:
 		GET_ONLY = True
-		print "Taking id to get from --id"
+		print ("Taking id to get from --id")
 		new_json = {}
 		uuid_response = {}
 		accession_response = {}
 		try:
-			id_response = get_ENCODE(args.id)
+			id_response = encodedcc.get_ENCODE(args.id, connection)
 		except:
 			id_response = {}
 			new_object = True
@@ -259,7 +121,7 @@ def main():
 		new_json = json.loads(new_json_string)
 		if '@id' in new_json:
 			try:
-				id_response = get_ENCODE(new_json['@id'])
+				id_response = encodedcc.get_ENCODE(new_json['@id'], connection)
 			except:
 				id_response = {}
 				new_object = True
@@ -267,7 +129,7 @@ def main():
 			id_response = {}
 		if 'uuid' in new_json:
 			try:
-				uuid_response = get_ENCODE(new_json['uuid'])
+				uuid_response = encodedcc.get_ENCODE(new_json['uuid'], connection)
 			except:
 				uuid_response = {}
 				new_object = True
@@ -275,38 +137,38 @@ def main():
 			uuid_response = {}
 		if 'accession' in new_json:
 			try:
-				accession_response = get_ENCODE(new_json['accession'])
+				accession_response = encodedcc.get_ENCODE(new_json['accession'], connection)
 			except:
 				accession_response = {}
 				new_object = True
 		else:
-			print "No identifier in new JSON object.  Assuming POST or PUT with auto-accessioning."
+			print ("No identifier in new JSON object.  Assuming POST or PUT with auto-accessioning.")
 			new_object = True
 			accession_response = {}
 
 	object_exists = False
 	if id_response:
 		object_exists = True
-		print "Found matching @id:"
-		pprint_ENCODE(id_response)
+		print ("Found matching @id:")
+		encodedcc.pprint_ENCODE(id_response)
 	if uuid_response:
 		object_exists = True
-		print "Found matching uuid:"
-		pprint_ENCODE(uuid_response)
+		print ("Found matching uuid:")
+		encodedcc.pprint_ENCODE(uuid_response)
 	if accession_response:
 		object_exists = True
-		print "Found matching accession"
-		pprint_ENCODE(accession_response)
+		print ("Found matching accession")
+		encodedcc.pprint_ENCODE(accession_response)
 
 	if id_response and uuid_response and (id_response != uuid_response):
-		print "Existing id/uuid mismatch"
+		print ("Existing id/uuid mismatch")
 	if id_response and accession_response and (id_response != accession_response):
-		print "Existing id/accession mismatch"
+		print ("Existing id/accession mismatch")
 	if uuid_response and accession_response and (uuid_response != accession_response):
-		print "Existing uuid/accession mismatch"
+		print ("Existing uuid/accession mismatch")
 
 	if new_object and object_exists:
-		print "Conflict:  At least one identifier already exists and at least one does not exist"
+		print ("Conflict:  At least one identifier already exists and at least one does not exist")
 
 	supported_collections = ['access_key', 'antibody_approval', 'antibody_characterization',\
 							'antibody_lot', 'award', 'biosample', 'biosample_characterization',\
@@ -340,9 +202,9 @@ def main():
 		else:
 			try:
 				filename = new_json['attachment']['download']
-				print "Setting filename to %s" %(filename)
+				print ("Setting filename to %s" %(filename))
 			except:
-				print >> sys.stderr, "Must specify either href or filename for attachment"
+				print ("Must specify either href or filename for attachment", file=sys.stderr)
 			if new_json['attachment'].get('type'):
 				mime_type = new_json['attachment'].get('type')
 			else:
@@ -350,42 +212,42 @@ def main():
 					mime_type, encoding = mimetypes.guess_type(filename)
 					major, minor = mime_type.split('/')
 					detected_type = magic.from_file(filename, mime=True)
-					print "Detected mime type %s" %(mime_type)
+					print ("Detected mime type %s" %(mime_type))
 				except:
-					print >> sys.stderr, "Failed to detect mime type in file %s" %(filename)
+					print ("Failed to detect mime type in file %s" %(filename), file=sys.stderr)
 			try:
 				with open(filename, 'rb') as stream:
-					print "opened"
+					print ("opened")
 					newvalue = {
 						'download': filename, #Just echoes the given filename as the download name
 						'type': mime_type,
 						'href': 'data:%s;base64,%s' % (mime_type, b64encode(stream.read()))
 					}
 				f = open('tmp', 'w')
-				print >> f, newvalue
+				print(f, newvalue)
 				new_json.update({'attachment':newvalue}) # add
 			except:
-				print >> sys.stderr, "Cannot open file %s" %(filename)
+				print ("Cannot open file %s" %(filename), file=sys.stderr)
 
 
 	if object_exists:
 		if args.force_put:
 			if not GET_ONLY:
-				print "Replacing existing object"
-				replace_ENCODE(identifier,new_json)
+				print ("Replacing existing object")
+				encodedcc.replace_ENCODE(identifier,new_json, connection)
 		else:
 			if not GET_ONLY:
-				print "Patching existing object"
-				patch_ENCODE(identifier,new_json)
+				print ("Patching existing object")
+				encodedcc.patch_ENCODE(identifier,new_json, connection)
 	elif new_object:
 		if args.force_put:
 			if not GET_ONLY:
-				print "PUT'ing new object"
-				replace_ENCODE(identifier,new_json)
+				print ("PUT'ing new object")
+				encodedcc.replace_ENCODE(identifier,new_json, connection)
 		else:
 			if not GET_ONLY:
-				print "POST'ing new object"
-				new_ENCODE(collection,new_json)
+				print ("POST'ing new object")
+				encodedcc.new_ENCODE(collection,new_json, connection)
 
 
 if __name__ == '__main__':

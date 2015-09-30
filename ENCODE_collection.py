@@ -10,6 +10,7 @@ import json
 import jsonschema
 import sys, os.path, urlparse
 import pdb
+import encodedcc
 
 EPILOG = '''Limitations:
 
@@ -31,86 +32,6 @@ Same for human-donors
 
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
-
-def get_ENCODE(uri):
-	'''GET an ENCODE object as JSON and return as dict'''
-	if 'search' in uri: #assume that a search query is complete except for &limit=all
-		pass
-	else:
-		if '?' in uri: # have to do this because it might be the first directive in the URL
-			uri += '&datastore=database'
-		else:
-			uri += '?datastore=database'
-	uri += '&limit=all'
-	url = urlparse.urljoin(SERVER, uri)
-	if DEBUG:
-		print "DEBUG: GET %s" %(url)
-	response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
-	if DEBUG:
-		print "DEBUG: GET RESPONSE code %s" %(response.status_code)
-		try:
-			if response.json():
-				print "DEBUG: GET RESPONSE JSON"
-				print json.dumps(response.json(), indent=4, separators=(',', ': '))
-		except:
-			print "DEBUG: GET RESPONSE text %s" %(response.text)
-	if not response.status_code == 200:
-		print >> sys.stderr, response.text
-	return response.json()
-
-def processkeys(args):
-
-	keysf = open(args.keyfile,'r')
-	keys_json_string = keysf.read()
-	keysf.close()
-	keys = json.loads(keys_json_string)
-	key_dict = keys[args.key]
-	global AUTHID
-	global AUTHPW
-	global SERVER
-	if not args.authid:
-		AUTHID = key_dict['key']
-	else:
-		AUTHID = args.authid
-	if not args.authpw:
-		AUTHPW = key_dict['secret']
-	else:
-		AUTHPW = args.authpw
-	if not args.server:
-		SERVER = key_dict['server']
-	else:
-		SERVER = args.server
-	if not SERVER.endswith("/"):
-		SERVER += "/"
-
-def flat_one(JSON_obj):
-	try:
-		return [JSON_obj[identifier] for identifier in \
-					['accession', 'name', 'email', 'title', 'uuid', 'href'] \
-					if identifier in JSON_obj][0]
-	except:
-		return JSON_obj
-
-def flat_ENCODE(JSON_obj):
-	flat_obj = {}
-	for key in JSON_obj:
-		if isinstance(JSON_obj[key], dict):
-			flat_obj.update({key:flat_one(JSON_obj[key])})
-		elif isinstance(JSON_obj[key], list) and JSON_obj[key] != [] and isinstance(JSON_obj[key][0], dict):
-			newlist = []
-			for obj in JSON_obj[key]:
-				newlist.append(flat_one(obj))
-			flat_obj.update({key:newlist})
-		else:
-			flat_obj.update({key:JSON_obj[key]})
-	return flat_obj
-
-def pprint_ENCODE(JSON_obj):
-	if ('type' in JSON_obj) and (JSON_obj['type'] == "object"):
-		print json.dumps(JSON_obj['properties'], sort_keys=True, indent=4, separators=(',', ': '))
-	else:
-		print json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': '))
-
 
 def main():
 
@@ -152,7 +73,8 @@ def main():
 
 	args = parser.parse_args()
 
-	processkeys(args)
+	keys = encodedcc.ENC_Key(args.keyfile, args.key)
+	connection = encodedcc.ENC_Connection(keys)
 
 	global DEBUG
 	DEBUG = args.debug
@@ -167,7 +89,7 @@ def main():
 		schema_name = supplied_name.replace('-','_') + '.json'
 
 	schema_uri = '/profiles/' + schema_name
-	object_schema = get_ENCODE(schema_uri)
+	object_schema = encodedcc.get_ENCODE(schema_uri, connection)
 	headings = []
 	for schema_property in object_schema["properties"]:
 		property_type = object_schema["properties"][schema_property]["type"]
@@ -183,7 +105,7 @@ def main():
 			elif 'url' in object_schema["properties"][schema_property].keys():
 				whateveritscalled = "url"
 			else:
-				print object_schema["properties"][schema_property].keys()
+				print (object_schema["properties"][schema_property].keys())
 				raise NameError("None of these match anything I know")
 			if object_schema["properties"][schema_property][whateveritscalled]["type"] == 'string':
 				headings.append(schema_property + ':array')
@@ -220,7 +142,7 @@ def main():
 		uri = supplied_name
 
 	global collection
-	collection = get_ENCODE(uri)
+	collection = encodedcc.get_ENCODE(uri, connection)
 	collected_items = collection['@graph']
 
 	headstring = ""
@@ -230,12 +152,12 @@ def main():
 		else:
 			headstring += heading + '\t'
 	headstring = headstring.rstrip()
-	print headstring
+	print (headstring)
 
 	for item in collected_items:
-		#obj = get_ENCODE(item['@id'])
+		#obj = encodedcc.get_ENCODE(item['@id'], connection)
 		obj = item
-		obj = flat_ENCODE(obj)
+		obj = encodedcc.flat_ENCODE(obj)
 		rowstring = ""
 		for header in headstring.split('\t'):
 			prop_key = header.split(':')[0]
@@ -248,9 +170,9 @@ def main():
 				try:
 					embedded_key = obj[prop_key.split('.')[0]]
 					if '/' in embedded_key:
-						embedded_obj = get_ENCODE(embedded_key)
+						embedded_obj = encodedcc.get_ENCODE(embedded_key, connection)
 					else:
-						embedded_obj = get_ENCODE(prop_key.split('.')[0] + '/' + obj[prop_key.split('.')[0]])
+						embedded_obj = encodedcc.get_ENCODE(prop_key.split('.')[0] + '/' + obj[prop_key.split('.')[0]], connection)
 					embedded_value_string = json.dumps(embedded_obj[prop_key.split('.')[1]]).lstrip('"').rstrip('"')
 					if embedded_value_string == '[]':
 						embedded_value_string = ""
@@ -260,7 +182,7 @@ def main():
 			else:
 				rowstring += '\t'
 		rowstring = rowstring.rstrip()
-		print rowstring
+		print (rowstring)
 
 if __name__ == '__main__':
 	main()
