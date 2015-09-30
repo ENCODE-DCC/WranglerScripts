@@ -96,7 +96,7 @@ def main():
 		GET_ONLY = False
 
 	key = encodedcc.ENC_Key(args.keyfile, args.key)
-	connection = encodedcc.ENC_Collection(key)
+	connection = encodedcc.ENC_Connection(key)
 
 	new_object = False
 	if args.id:

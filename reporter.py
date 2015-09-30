@@ -7,6 +7,7 @@ import json
 import sys
 import os.path
 import argparse
+import encodedcc
 
 HEADERS = {'content-type': 'application/json'}
 SERVER = 'http://www.encodeproject.org'  # Default
@@ -21,99 +22,7 @@ To use a different key from the default keypair file:
         %(prog)s --key submit
 '''
 
-
-def get_ENCODE(obj_id):
-        '''GET an ENCODE object as JSON and return as dict
-        '''
-        # url = SERVER+obj_id+'?limit=all'
-        url = SERVER+obj_id
-        if DEBUG_ON:
-                print "DEBUG: GET %s" % (url)
-        response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
-        if DEBUG_ON:
-                print "DEBUG: GET RESPONSE code %s" % (response.status_code)
-                try:
-                        if response.json():
-                                print "DEBUG: GET RESPONSE JSON"
-                                print json.dumps(response.json(), indent=4, separators=(',', ': '))
-                except:
-                        print "DEBUG: GET RESPONSE text %s" % (response.text)
-        if not response.status_code == requests.codes.ok:
-                response.raise_for_status()
-        return response.json()
-
-
-def patch_ENCODE(obj_id, patch_input):
-        '''PATCH an existing ENCODE object and return the response JSON
-        '''
-        if isinstance(patch_input, dict):
-            json_payload = json.dumps(patch_input)
-        elif isinstance(patch_input, basestring):
-                json_payload = patch_input
-        else:
-                print >> sys.stderr, 'Datatype to patch is not string or dict.'
-        url = SERVER+obj_id
-        if DEBUG_ON:
-                print "DEBUG: PATCH URL : %s" % (url)
-                print "DEBUG: PATCH data: %s" % (json_payload)
-        response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
-        if DEBUG_ON:
-                print "DEBUG: PATCH RESPONSE"
-                print json.dumps(response.json(), indent=4, separators=(',', ': '))
-        if not response.status_code == 200:
-            print >> sys.stderr, response.text
-        return response.json()
-
-
-def post_ENCODE(collection_id, post_input):
-        '''POST an ENCODE object as JSON and return the response JSON
-        '''
-        if isinstance(post_input, dict):
-            json_payload = json.dumps(post_input)
-        elif isinstance(post_input, basestring):
-                json_payload = post_input
-        else:
-                print >> sys.stderr, 'Datatype to post is not string or dict.'
-        url = SERVER+collection_id
-        if DEBUG_ON:
-                print "DEBUG: POST URL : %s" % (url)
-                print "DEBUG: POST data:"
-                print json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))
-        response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
-        if DEBUG_ON:
-                print "DEBUG: POST RESPONSE"
-                print json.dumps(response.json(), indent=4, separators=(',', ': '))
-        if not response.status_code == 201:
-                print >> sys.stderr, response.text
-        print "Return object:"
-        print json.dumps(response.json(), sort_keys=True, indent=4, separators=(',', ': '))
-        return response.json()
-
-
-def set_ENCODE_keys(keyfile, key):
-        '''
-          Set the global authentication keyds
-        '''
-        keysf = open(keyfile, 'r')
-        keys_json_string = keysf.read()
-        keysf.close()
-
-        keys = json.loads(keys_json_string)
-        key_dict = keys[key]
-
-        global AUTHID
-        global AUTHPW
-        global SERVER
-
-        AUTHID = key_dict['key']
-        AUTHPW = key_dict['secret']
-        SERVER = key_dict['server']
-        if not SERVER.endswith("/"):
-                SERVER += "/"
-        return
-
-
-def get_experiment_list(file, search):
+def get_experiment_list(file, search, connection):
 
         objList = []
         if search == "NULL":
@@ -122,22 +31,18 @@ def get_experiment_list(file, search):
             for i in range(0, len(objList)):
                 objList[i] = objList[i].strip()
         else:
-            set = get_ENCODE(search + '&limit=all')
+            set = encodedcc.get_ENCODE(search + '&limit=all', connection)
             for i in range(0, len(set['@graph'])):
                 objList.append(set['@graph'][i]['accession'])
 
         return objList
+def get_antibody_approval(antibody, target, connection):
 
-
-def get_antibody_approval(antibody, target):
-
-        search = get_ENCODE('search/?searchTerm='+antibody+'&type=antibody_approval')
+        search = encodedcc.get_ENCODE('search/?searchTerm='+antibody+'&type=antibody_approval', connection)
         for approval in search['@graph']:
             if approval['target']['name'] == target:
                 return approval['status']
         return "UNKNOWN"
-
-
 def get_doc_list(documents):
 
     list = []
@@ -147,8 +52,6 @@ def get_doc_list(documents):
         else:
             list.append(documents[i]['uuid'])
     return ' '.join(list)
-
-
 def get_spikeins_list(spikes):
 
     list = []
@@ -158,7 +61,6 @@ def get_spikeins_list(spikes):
     return ' '.join(list)
 
 # # I need my attachment thing here
-
 
 def get_treatment_list(treatments):
 
@@ -278,7 +180,6 @@ libraryCheckedItems = [
                        'date_created'
                        ]
 
-
 def main():
 
         parser = argparse.ArgumentParser(
@@ -337,7 +238,8 @@ def main():
 
         DEBUG_ON = args.debug
 
-        set_ENCODE_keys(args.keyfile, args.key)
+        key = encodedcc.ENC_Key(args.keyfile, args.key)
+        connection = encodedcc.ENC_Connection(key)
 
         '''Adjust the checked list by the datatype'''
         if args.datatype != 'CHIP':
@@ -401,9 +303,9 @@ def main():
             libraryCheckedItems.remove('strain_background')
 
         if args.files:
-            print '\t'.join(fileCheckedItems)
+            print ('\t'.join(fileCheckedItems))
         else:
-            print '\t'.join(checkedItems+repCheckedItems+libraryCheckedItems)
+            print ('\t'.join(checkedItems+repCheckedItems+libraryCheckedItems))
 
         # Get list of objects we are interested in
         search = args.search
@@ -411,7 +313,7 @@ def main():
 
         if args.files:
             for i in range(0, len(objList)):
-                exp = get_ENCODE(objList[i])
+                exp = encodedcc.get_ENCODE(objList[i], connection)
                 for i in range(0, len(exp['files'])):
                     fileob = {}
                     file = exp['files'][i]
@@ -454,12 +356,12 @@ def main():
                     row = []
                     for j in fileCheckedItems:
                         row.append(repr(fileob[j]))
-                    print '\t'.join(row)
+                    print ('\t'.join(row))
             return
 
         for i in range(0, len(objList)):
 
-            exp = get_ENCODE(objList[i])
+            exp = encodedcc.get_ENCODE(objList[i], connection)
             ob = {}
 
             for i in checkedItems:
@@ -578,7 +480,7 @@ def main():
                         try:
                             repOb['biosample_biosample_term'] = bs['biosample_term_name']
                         except:
-                            print >> sys.stderr, "Skipping missing biosample_term_name in %s" %(bs['accession'])
+                            print ("Skipping missing biosample_term_name in %s" %(bs['accession']), file=sys.stderr)
                             repOb['biosample_biosample_term'] = ""
                         repOb['biosample_biosample_id'] = bs['biosample_term_id']
                         repOb['biosample_biosample_type'] = bs['biosample_type']
@@ -615,9 +517,9 @@ def main():
             for j in checkedItems:
                 row.append(unicode(ob[j]))
             if len(libs) == 0:
-                print '\t'.join(row)
+                print ('\t'.join(row))
             for k in range(0, len(libs)):
-                print '\t'.join(row+libs[k])
+                print ('\t'.join(row+libs[k]))
 
 
 if __name__ == '__main__':
