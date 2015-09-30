@@ -375,6 +375,7 @@ def main():
         else:
             ob['file_count'] = 0
         '''Get the experiment level ownership'''
+
         ob['lab_name'] = exp['lab']['name']
         ob['project'] = exp['award']['rfa']
         ob['grant'] = exp['award']['name']
@@ -504,7 +505,7 @@ def main():
 
         row = []
         for j in checkedItems:
-            row.append(unicode(ob[j]))
+            row.append(str(ob[j]))
         if len(libs) == 0:
             print ('\t'.join(row))
         for k in range(0, len(libs)):
