@@ -228,7 +228,7 @@ def replace_ENCODE(obj_id, connection, put_input):
 	'''
 	if isinstance(put_input, dict):
 		json_payload = json.dumps(put_input)
-	elif isinstance(put_input, basestring):
+	elif isinstance(put_input, str):
 		json_payload = put_input
 	else:
 		logging.warning('Datatype to put is not string or dict.')
@@ -246,10 +246,10 @@ def patch_ENCODE(obj_id, connection, patch_input):
 	'''
 	if isinstance(patch_input, dict):
 	    json_payload = json.dumps(patch_input)
-	elif isinstance(patch_input, basestring):
+	elif isinstance(patch_input, str):
 		json_payload = patch_input
 	else:
-		print >> sys.stderr, 'Datatype to patch is not string or dict.'
+		print ('Datatype to patch is not string or dict.', file=sys.stderr)
 	url = connection.server + obj_id
 	logging.debug('PATCH URL : %s' %(url))
 	logging.debug('PATCH data: %s' %(json_payload))
@@ -264,10 +264,10 @@ def new_ENCODE(connection, collection_name, post_input):
 	'''
 	if isinstance(post_input, dict):
 	    json_payload = json.dumps(post_input)
-	elif isinstance(post_input, basestring):
+	elif isinstance(post_input, str):
 		json_payload = post_input
 	else:
-		print >> sys.stderr, 'Datatype to post is not string or dict.'
+		print ('Datatype to post is not string or dict.', file=sys.stderr)
 	url = connection.server + collection_name
 	logging.debug("POST URL : %s" %(url))
 	logging.debug("POST data: %s" %(json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))))
@@ -302,7 +302,7 @@ def flat_ENCODE(JSON_obj):
 
 def pprint_ENCODE(JSON_obj):
 	if ('type' in JSON_obj) and (JSON_obj['type'] == "object"):
-		print json.dumps(JSON_obj['properties'], sort_keys=True, indent=4, separators=(',', ': '))
+		print (json.dumps(JSON_obj['properties'], sort_keys=True, indent=4, separators=(',', ': ')))
 	else:
-		print json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': '))
+		print (json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': ')))
 

@@ -66,9 +66,10 @@ def main():
         args = parser.parse_args()
 
         DEBUG_ON = args.debug
-        print DEBUG_ON
+        print (DEBUG_ON)
 
         myKey = encodedcc.ENC_Key(args.keyfile, args.key)
+        
         myConnect = encodedcc.ENC_Connection(myKey)
 
         FIELD = args.field
@@ -106,7 +107,7 @@ def main():
 
                 if args.remove:
                     items = objDict[key].split(', ')
-                    print "Removing %s from %s" % (objDict[key], key)
+                    print ("Removing %s from %s" % (objDict[key], key))
                     patch_thing = list(old_thing)
                     for i in range(len(items)):
                         patch_thing.remove(items[i])
@@ -122,13 +123,13 @@ def main():
             patchdict = {FIELD: patch_thing}
 
             if not args.dryrun:
-                response = encodedcc.patch_ENCODE(key, patchdict, myConnect)
+                response = encodedcc.patch_ENCODE(key, myConnect, patchdict)
             else:
-                print "In DRY RUN mode, no data will be patched..."
+                print ("In DRY RUN mode, no data will be patched...")
 
             '''print what we did'''
-            print "Original:  %s" %(old_thing)
-            print "PATCH:     %s" %(patch_thing)
+            print ("Original:  %s" %(old_thing))
+            print ("PATCH:     %s" %(patch_thing))
 
 if __name__ == '__main__':
         main()
