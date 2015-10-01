@@ -6,9 +6,7 @@ import argparse
 import os.path
 import encodedcc
 
-
 HEADERS = {'content-type': 'application/json'}
-DEBUG_ON = False
 EPILOG = '''Examples:
 
 To get one ENCODE object from the server/keypair called "default" in the default keypair file and print the JSON:
@@ -23,8 +21,6 @@ For more details:
 
         %(prog)s --help
 '''
-
-# I need my attachment thing here
 
 
 def main():

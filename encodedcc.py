@@ -5,6 +5,7 @@ import requests
 import json
 import sys
 import logging
+from urllib.parse import urljoin
 
 
 class dict_diff(object):
@@ -93,7 +94,8 @@ class ENC_Collection(object):
         self.server = connection.server
         self.schema = get_ENCODE(schema_uri, connection)
         self.frame = frame
-        search_string = '/search/?format=json&limit=all&type=%s&frame=%s' % (self.search_name, frame)
+        search_string = '/search/?format=json&limit=all&\
+                        type=%s&frame=%s' % (self.search_name, frame)
         collection = get_ENCODE(search_string, connection)
         self.items = collection['@graph']
         self.es_connection = None
@@ -103,7 +105,9 @@ class ENC_Collection(object):
         if self.es_connection is None:
             es_server = self.server.rstrip('/') + ':9200'
             self.es_connection = ElasticSearch(es_server)
-        results = self.es_connection.search(query_dict, index='encoded', doc_type=self.search_name, size=maxhits)
+        results = self.es_connection.search(query_dict, index='encoded',
+                                            doc_type=self.search_name,
+                                            size=maxhits)
         return results
 
 global schemas
@@ -162,7 +166,7 @@ class ENC_Item(object):
                     post_payload.update({prop: self.properties[prop]})
                 else:
                     pass
-            # should probably return the new object that comes back from the patch
+            # should return the new object that comes back from the patch
             new_object = new_ENCODE(self.connection, self.type, post_payload)
 
         else:  # existing object to PATCH or PUT
@@ -190,7 +194,7 @@ class ENC_Item(object):
                         put_payload.update({prop: self.properties[prop]})
                     else:
                         pass
-                # should probably return the new object that comes back from the patch
+                # should return the new object that comes back from the patch
                 new_object = replace_ENCODE(self.id, self.connection, put_payload)
 
             else:  # PATCH
@@ -207,7 +211,10 @@ class ENC_Item(object):
 
     def new_creds(self):
         if self.type == 'file':  # There is no id, so this is a new object to POST
-            r = requests.post("%s/%s/upload/" % (self.connection.server, self.id), auth=self.connection.auth, headers=self.connection.headers, data=json.dumps({}))
+            r = requests.post("%s/%s/upload/" % (self.connection.server, self.id),
+                              auth=self.connection.auth,
+                              headers=self.connection.headers,
+                              data=json.dumps({}))
             return r.json()['@graph'][0]['upload_credentials']
         else:
             return None
@@ -215,17 +222,19 @@ class ENC_Item(object):
 
 def get_ENCODE(obj_id, connection):
     '''GET an ENCODE object as JSON and return as dict'''
-    if obj_id.rfind('?') == -1:
-        url = connection.server+obj_id+'?limit=all'
+    if '?' in obj_id:
+        url = urljoin(connection.server, obj_id+'?limit=all')
     else:
-        url = connection.server+obj_id+'&limit=all'
+        url = urljoin(connection.server, obj_id+'?limit=all')
     logging.debug('GET %s' % (url))
-
-    response = requests.get(url, auth=connection.auth, headers=connection.headers)
+    response = requests.get(url, auth=connection.auth,
+                            headers=connection.headers)
     logging.debug('GET RESPONSE code %s' % (response.status_code))
     try:
         if response.json():
-            logging.debug('GET RESPONSE JSON: %s' % (json.dumps(response.json(), indent=4, separators=(',', ': '))))
+            logging.debug('GET RESPONSE JSON: %s' %
+                          (json.dumps(response.json(),
+                                      indent=4, separators=(',', ': '))))
     except:
         logging.debug('GET RESPONSE text %s' % (response.text))
     if not response.status_code == 200:
@@ -241,12 +250,14 @@ def replace_ENCODE(obj_id, connection, put_input):
     elif isinstance(put_input, str):
         json_payload = put_input
     else:
-        logging.warning('Datatype to put is not string or dict.')
-    url = connection.server + obj_id
+        logging.warning('Datatype to PUT is not string or dict.')
+    url = urljoin(connection.server, obj_id)
     logging.debug('PUT URL : %s' % (url))
     logging.debug('PUT data: %s' % (json_payload))
-    response = requests.put(url, auth=connection.auth, data=json_payload, headers=connection.headers)
-    logging.debug('PUT RESPONSE: %s' % (json.dumps(response.json(), indent=4, separators=(',', ': '))))
+    response = requests.put(url, auth=connection.auth, data=json_payload,
+                            headers=connection.headers)
+    logging.debug('PUT RESPONSE: %s' % (json.dumps(response.json(), indent=4,
+                                                   separators=(',', ': '))))
     if not response.status_code == 200:
         logging.warning('PUT failure.  Response = %s' % (response.text))
     return response.json()
@@ -260,12 +271,14 @@ def patch_ENCODE(obj_id, connection, patch_input):
     elif isinstance(patch_input, str):
         json_payload = patch_input
     else:
-        print('Datatype to patch is not string or dict.', file=sys.stderr)
-    url = connection.server + obj_id
+        print('Datatype to PATCH is not string or dict.', file=sys.stderr)
+    url = urljoin(connection.server, obj_id)
     logging.debug('PATCH URL : %s' % (url))
     logging.debug('PATCH data: %s' % (json_payload))
-    response = requests.patch(url, auth=connection.auth, data=json_payload, headers=connection.headers)
-    logging.debug('PATCH RESPONSE: %s' % (json.dumps(response.json(), indent=4, separators=(',', ': '))))
+    response = requests.patch(url, auth=connection.auth, data=json_payload,
+                              headers=connection.headers)
+    logging.debug('PATCH RESPONSE: %s' % (json.dumps(response.json(), indent=4,
+                                                     separators=(',', ': '))))
     if not response.status_code == 200:
         logging.warning('PATCH failure.  Response = %s' % (response.text))
     return response.json()
@@ -279,15 +292,21 @@ def new_ENCODE(connection, collection_name, post_input):
     elif isinstance(post_input, str):
         json_payload = post_input
     else:
-        print('Datatype to post is not string or dict.', file=sys.stderr)
-    url = connection.server + collection_name
+        print('Datatype to POST is not string or dict.', file=sys.stderr)
+    url = urljoin(connection.server, collection_name)
     logging.debug("POST URL : %s" % (url))
-    logging.debug("POST data: %s" % (json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))))
-    response = requests.post(url, auth=connection.auth, headers=connection.headers, data=json_payload)
-    logging.debug("POST RESPONSE: %s" % (json.dumps(response.json(), indent=4, separators=(',', ': '))))
+    logging.debug("POST data: %s" % (json.dumps(post_input,
+                                     sort_keys=True, indent=4,
+                                     separators=(',', ': '))))
+    response = requests.post(url, auth=connection.auth,
+                             headers=connection.headers, data=json_payload)
+    logging.debug("POST RESPONSE: %s" % (json.dumps(response.json(),
+                                         indent=4, separators=(',', ': '))))
     if not response.status_code == 201:
         logging.warning('POST failure. Response = %s' % (response.text))
-    logging.debug("Return object: %s" % (json.dumps(response.json(), sort_keys=True, indent=4, separators=(',', ': '))))
+    logging.debug("Return object: %s" % (json.dumps(response.json(),
+                                         sort_keys=True, indent=4,
+                                         separators=(',', ': '))))
     return response.json()
 
 
@@ -317,6 +336,8 @@ def flat_ENCODE(JSON_obj):
 
 def pprint_ENCODE(JSON_obj):
     if ('type' in JSON_obj) and (JSON_obj['type'] == "object"):
-        print(json.dumps(JSON_obj['properties'], sort_keys=True, indent=4, separators=(',', ': ')))
+        print(json.dumps(JSON_obj['properties'],
+                         sort_keys=True, indent=4, separators=(',', ': ')))
     else:
-        print(json.dumps(flat_ENCODE(JSON_obj), sort_keys=True, indent=4, separators=(',', ': ')))
+        print(json.dumps(flat_ENCODE(JSON_obj),
+                         sort_keys=True, indent=4, separators=(',', ': ')))
