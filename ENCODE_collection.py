@@ -2,14 +2,11 @@
 # -*- coding: latin-1 -*-
 '''GET an ENCODE collection and output a tsv of all objects and their properties suitable for spreadsheet import'''
 
-'''use requests to handle the HTTP connection'''
-import requests
 '''use json to convert between Python dictionaries and JSON objects'''
 import json
 '''use jsonschema to validate objects against the JSON schemas'''
-import jsonschema
-import sys, os.path, urlparse
-import pdb
+
+import os.path
 import encodedcc
 
 EPILOG = '''Limitations:
@@ -33,6 +30,7 @@ Same for human-donors
 '''force return from the server in JSON format'''
 HEADERS = {'content-type': 'application/json'}
 
+
 def main():
 
     import argparse
@@ -42,34 +40,36 @@ def main():
     )
 
     parser.add_argument('collection',
-        help="The collection to get")
+                        help="The collection to get")
     parser.add_argument('--es',
-        default=False,
-        action='store_true',
-        help="Use elasticsearch")
+                        default=False,
+                        action='store_true',
+                        help="Use elasticsearch")
     parser.add_argument('--query',
-        help="A complete query to run rather than GET the whole collection.  \
-        E.g. \"search/?type=biosample&lab.title=Ross Hardison, PennState\".  Implies --es.")
+                        help="A complete query to run rather than GET the whole collection.  \
+                        E.g. \"search/?type=biosample&lab.title=Ross Hardison, PennState\".  Implies --es.")
     parser.add_argument('--submittable',
-        default=False,
-        action='store_true',
-        help="Show only properties you might want a submitter to submit.")
+                        default=False,
+                        action='store_true',
+                        help="Show only properties you might want a submitter to submit.")
     parser.add_argument('--server',
-        help="Full URL of the server.")
+                        help="Full URL of the server.")
     parser.add_argument('--key',
-        default='default',
-        help="The keypair identifier from the keyfile.  Default is --key=default")
+                        default='default',
+                        help="The keypair identifier from the keyfile.  \
+                        Default is --key=default")
     parser.add_argument('--keyfile',
-        default=os.path.expanduser("~/keypairs.json"),
-        help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
+                        default=os.path.expanduser("~/keypairs.json"),
+                        help="The keypair file.  Default is --\
+                        keyfile=%s" % (os.path.expanduser("~/keypairs.json")))
     parser.add_argument('--authid',
-        help="The HTTP auth ID.")
+                        help="The HTTP auth ID.")
     parser.add_argument('--authpw',
-        help="The HTTP auth PW.")
+                        help="The HTTP auth PW.")
     parser.add_argument('--debug',
-        default=False,
-        action='store_true',
-        help="Print debug messages.  Default is False.")
+                        default=False,
+                        action='store_true',
+                        help="Print debug messages.  Default is False.")
 
     args = parser.parse_args()
 
@@ -82,22 +82,22 @@ def main():
     supplied_name = args.collection
 
     if supplied_name.endswith('s'):
-        schema_name = supplied_name.rstrip('s').replace('-','_') + '.json'
+        schema_name = supplied_name.rstrip('s').replace('-', '_') + '.json'
     elif supplied_name.endswith('.json'):
         schema_name = supplied_name
     else:
-        schema_name = supplied_name.replace('-','_') + '.json'
+        schema_name = supplied_name.replace('-', '_') + '.json'
 
     schema_uri = '/profiles/' + schema_name
     object_schema = encodedcc.get_ENCODE(schema_uri, connection)
     headings = []
     for schema_property in object_schema["properties"]:
         property_type = object_schema["properties"][schema_property]["type"]
-        if isinstance(property_type, list): # hack to deal with multi-typed properties, just pick the first one
+        if isinstance(property_type, list):  # hack to deal with multi-typed properties, just pick the first one
             property_type = property_type[0]
-        if property_type == 'string': #if it's a string type, the heading is just the property name
+        if property_type == 'string':  # if it's a string type, the heading is just the property name
             headings.append(schema_property)
-        elif property_type == 'array': #format the heading to be property_name:type:array or, if an array of strings, property_name:array
+        elif property_type == 'array':  # format the heading to be property_name:type:array or, if an array of strings, property_name:array
             if 'items' in object_schema["properties"][schema_property].keys():
                 whateveritscalled = "items"
             elif 'reference' in object_schema["properties"][schema_property].keys():
@@ -105,7 +105,7 @@ def main():
             elif 'url' in object_schema["properties"][schema_property].keys():
                 whateveritscalled = "url"
             else:
-                print (object_schema["properties"][schema_property].keys())
+                print(object_schema["properties"][schema_property].keys())
                 raise NameError("None of these match anything I know")
             if object_schema["properties"][schema_property][whateveritscalled]["type"] == 'string':
                 headings.append(schema_property + ':array')
@@ -114,13 +114,13 @@ def main():
                     headings.append(schema_property + ':' + object_schema["properties"][schema_property][whateveritscalled]["type"] + ':array')
                 except:
                     headings.append(schema_property + ':mixed:array')
-        else: #it isn't a string, and it isn't an array, so make the heading property_name:type
+        else:  # it isn't a string, and it isn't an array, so make the heading property_name:type
             headings.append(schema_property + ':' + property_type)
     headings.sort()
     if 'file' in supplied_name or 'dataset' in supplied_name or 'source' in supplied_name or 'award' in supplied_name:
         pass
     else:
-        #headings.append('award.rfa') #need to add a parameter to specify additional properties
+        # headings.append('award.rfa') #need to add a parameter to specify additional properties
         pass
     if 'file' in supplied_name:
         headings.append('replicate.biological_replicate_number')
@@ -152,10 +152,10 @@ def main():
         else:
             headstring += heading + '\t'
     headstring = headstring.rstrip()
-    print (headstring)
+    print(headstring)
 
     for item in collected_items:
-        #obj = encodedcc.get_ENCODE(item['@id'], connection)
+        # obj = encodedcc.get_ENCODE(item['@id'], connection)
         obj = item
         obj = encodedcc.flat_ENCODE(obj)
         rowstring = ""
@@ -182,7 +182,7 @@ def main():
             else:
                 rowstring += '\t'
         rowstring = rowstring.rstrip()
-        print (rowstring)
+        print(rowstring)
 
 if __name__ == '__main__':
     main()
