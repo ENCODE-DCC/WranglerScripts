@@ -141,7 +141,7 @@ class ENC_Item(object):
 				get_string = id + '&'
 			get_string += 'frame=%s' %(frame)
 			item = get_ENCODE(get_string, connection)
-			self.type = next(x for x in item['@type'] if x != 'item')
+			self.type = next(x for x in item['@type'] if x not in ['item','Item'])
 			self.properties = item
 
 	def get(self, key):
@@ -230,7 +230,7 @@ class ENC_Item(object):
 
 	def new_creds(self):
 
-		if self.type == 'file': #There is no id, so this is a new object to POST
+		if self.type in ['file', 'File']: #There is no id, so this is a new object to POST
 			r = requests.post("%s/%s/upload/" %(self.connection.server, self.id), auth=self.connection.auth, headers=self.connection.headers, data=json.dumps({}))
 			return r.json()['@graph'][0]['upload_credentials']
 		else:
