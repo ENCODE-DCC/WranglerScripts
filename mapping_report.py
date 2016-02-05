@@ -154,7 +154,7 @@ def main():
 	fieldnames = ['download link','experiment','target_type','target','biosample_name',
 		'biosample_type','biorep_id','lab','rfa','assembly','bam',
 		'hiq_reads','loq_reads','mappable','fract_mappable','end','r_lengths','usable_frags','fract_usable',
-		'NRF','PBC1','PBC2','frag_len','NSC','RSC','library','library aliases','derived_from','date_created','release status']
+		'NRF','PBC1','PBC2','frag_len','NSC','RSC','library','library aliases','from fastqs','date_created','release status']
 	writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter=',', quotechar='"')
 	writer.writeheader()
 
@@ -197,6 +197,7 @@ def main():
 			for bam in bams:
 				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from') or []]]
 				derived_from_fastqs = [f for f in fastqs if f.get('accession') in derived_from_accessions]
+				derived_from_fastq_accessions = [f.get('accession') for f in fastqs if f.get('accession') in derived_from_accessions]
 				bioreps = 		set([str(f.get('replicate').get('biological_replicate_number'))	for f in derived_from_fastqs])
 				library_uris = 	set([str(f.get('replicate').get('library')) 					for f in derived_from_fastqs])
 				read_lengths =	set([str(f.get('read_length')) 									for f in derived_from_fastqs])
@@ -214,7 +215,7 @@ def main():
 					'library': ','.join(libraries),
 					'library aliases': ','.join(aliases),
 					'r_lengths': ','.join(read_lengths),
-					'derived_from': ','.join(derived_from_accessions),
+					'from fastqs': ','.join(derived_from_fastq_accessions),
 					'date_created': bam.get('date_created'),
 					'release status': bam.get('status')
 				})
