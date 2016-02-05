@@ -217,7 +217,7 @@ def encoded_get(url, keypair=None, frame='object'):
 	if 'format' not in query:
 		new_url_list[3] += "&format=json"
 	if 'frame' not in query:
-		new_url_list[3] += "&frame=%s" %(frame)
+		new_url_list[3] += "&frame=object"
 	if 'limit' not in query:
 		new_url_list[3] += "&limit=all"
 	if new_url_list[3].startswith('&'):
@@ -306,4 +306,5 @@ def biorep_ns_generator(f,server,keypair):
 
 def biorep_ns(f,server,keypair):
 	return list(set(biorep_ns_generator(f,server,keypair)))
+
 

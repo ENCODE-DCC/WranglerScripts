@@ -123,6 +123,7 @@ def main():
 				obj_id = None
 			enc_object = ENC_Item(connection, obj_id)
 			#print "Got accessioned object %s with status %s" %(enc_object.get('accession'), enc_object.get('status'))
+			submit_new_file = False
 			for prop in new_metadata:
 				if new_metadata[prop].strip() == "":
 					if args.put: #if empty, pop out the old property from the object
@@ -141,9 +142,9 @@ def main():
 						# for line in subreader:
 						# 	for s in line:
 						# 		array_items.append(s)
-						print "new_metadata_string is %s" %(new_metadata_string)
+						logger.debug("new_metadata_string is %s" %(new_metadata_string))
 						array_items = json.loads(new_metadata_string)
-						print "array_items is %s" %(array_items)
+						logger.debug("array_items is %s" %(array_items))
 						json_obj = {prop_name: array_items}
 					elif prop_type == 'int' or prop_type == 'integer':
 						json_obj = {prop_name: int(new_metadata_string)}
@@ -151,8 +152,13 @@ def main():
 						json_obj = {prop_name: float(new_metadata_string)}
 					else:
 						json_obj = {prop_name: new_metadata_string} #default is string
+					if prop == 'submitted_file_name':
+						new_filename = new_metadata_string
+						old_filename = enc_object.properties['submitted_file_name']
+						if new_filename != old_filename:
+							submit_new_file = True
 					enc_object.properties.update(json_obj)
-			if 'submitted_file_name' in enc_object.properties:
+			if submit_new_file:
 				path = os.path.expanduser(enc_object.get('submitted_file_name'))
 				path = os.path.abspath(path)
 				basename = os.path.basename(path)
@@ -165,19 +171,24 @@ def main():
 			else:
 				logger.info('Syncing new object')
 			logger.debug('%s' %(json.dumps(enc_object.properties, sort_keys=True, indent=4, separators=(',', ': '))))
+			result = enc_object.sync(args.dryrun)
 			if not args.dryrun:
-				new_object = enc_object.sync()
 				try:
-					new_accession = new_object['accession']
+					assert result['status'] == 'success'
 				except:
-					pass
+					logger.error('New object sync failed ... Skipping. %s' %(result))
 				else:
-					print "New accession: %s" %(new_accession)
+					new_object = result['@graph'][0]
+					if 'accession' in new_object:
+						new_id = new_object['accession']
+					else:
+						new_id = new_object['uuid']
+					logger.info("New object: %s" %(new_id))
 					if enc_object.type == 'file' and 'submitted_file_name' in json_obj:
 						upload_credentials = enc_object.new_creds()
-						print upload_credentials
+						logger.debug(upload_credentials)
 						rc = upload_file(upload_credentials,path)
-						print "Upload rc: %d" %(rc)
+						logger.info("Upload rc: %d" %(rc))
 
 if __name__ == '__main__':
 	main()

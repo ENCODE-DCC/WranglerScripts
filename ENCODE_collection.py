@@ -13,7 +13,6 @@ import pdb
 
 EPILOG = '''Limitations:
 
-Gets all objects, no searching implemented yet.
 Arrays of strings come back with the items quoted, SO NOT SUITABLE FOR DIRECT PATCH back
 
 Examples:

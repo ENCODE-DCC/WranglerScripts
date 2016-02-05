@@ -314,7 +314,17 @@ def main():
 							'edw_key', 'experiment', 'file', 'file_relationship', 'human_donor', 'lab',\
 							'library', 'mouse_donor', 'organism', 'platform', 'replicate', 'rnai',\
 							'rnai_characterization', 'software', 'source', 'target', 'treatment', 'user',\
-							'analysis_step_run','pipeline', 'workflow_run', 'analysis_step','software_version','publication']
+							'analysis_step_run','pipeline', 'workflow_run', 'analysis_step','software_version','publication',\
+							'idr_quality_metric']
+	supported_JSON_LD_collections = ['AccessKey', 'AntibodyApproval', 'AntibodyCharacterization',\
+							'AntibodyLot', 'Award', 'Biosample', 'BiosampleCharacterization',\
+							'Construct', 'ConstructCharacterization', 'Dataset', 'Document', 'Donor',\
+							'EdwKey', 'Experiment', 'File', 'FileRelationship', 'HumanDonor', 'Lab',\
+							'Library', 'MouseDonor', 'Organism', 'Platform', 'Replicate', 'RNAi',\
+							'RNAiCharacterization', 'Software', 'Source', 'Target', 'Treatment', 'User',\
+							'AnalysisStepRun','Pipeline', 'WorkflowRun', 'AnalysisStep','SoftwareVersion','Publication','Reference',\
+							'IdrQualityMetric']
+	supported_collections.extend(supported_JSON_LD_collections)
 	type_list = new_json.pop('@type',[])
 	possible_collections = [x for x in type_list if x in supported_collections]
 	if possible_collections:
