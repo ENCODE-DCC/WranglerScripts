@@ -48,7 +48,6 @@ Examples:
 
 def upload_file(credentials, f_path):
 	#upload to S3
-
 	env = os.environ.copy()
 	env.update({
 		'AWS_ACCESS_KEY_ID': credentials['access_key'],
