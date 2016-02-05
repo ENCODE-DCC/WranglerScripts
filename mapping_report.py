@@ -26,8 +26,7 @@ def get_ENCODE(url, authid, authpw):
 	try:
 		response.raise_for_status()
 	except:
-		logging.error('HTTP GET failed: %s %s' %(response.status_code, response.reason))
-		raise
+		logging.debug('HTTP GET failed: %s %s' %(response.status_code, response.reason))
 
 	logging.debug("GET response code: %s" %(response.status_code))
 	try:
@@ -135,7 +134,7 @@ def main():
 			result = get_ENCODE(url,authid,authpw)
 			experiments.append(result)
 	else:
-		query = '/search/?type=experiment&field=assay_term_name&field=accession&field=biosample_term_name&field=biosample_type&field=lab.name&field=award.rfa&field=target.name&format=json&limit=all'
+		query = '/search/?type=experiment&field=assay_term_name&field=accession&field=biosample_term_name&field=biosample_type&field=lab.name&field=award.rfa&field=target.name&field=target.investigated_as&format=json&limit=all'
 		if args.assay:
 			query += '&assay_term_name=%s' %(args.assay)
 		if args.rfa:
@@ -152,77 +151,132 @@ def main():
 		result = get_ENCODE(url,authid,authpw)
 		experiments = result['@graph']
 
-	fieldnames = ['download link','experiment','target','biosample_name',
+	fieldnames = ['download link','experiment','target_type','target','biosample_name',
 		'biosample_type','biorep_id','lab','rfa','assembly','bam',
-		'hiq_reads','loq_reads','unique','fract_unique','distinct','fract_distinct',
-		'NRF','PBC1','PBC2','frag_len','NSC','RSC','library','library aliases']
+		'hiq_reads','loq_reads','mappable','fract_mappable','end','r_lengths','usable_frags','fract_usable',
+		'NRF','PBC1','PBC2','frag_len','NSC','RSC','library','library aliases','derived_from','date_created','release status']
 	writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter=',', quotechar='"')
 	writer.writeheader()
 
 	for experiment in experiments:
 		row_template = {
 			'experiment': urlparse.urljoin(server, '/experiments/%s' %(experiment.get('accession'))),
+			'target_type': ','.join(experiment.get('target',{}).get('investigated_as') or []),
 			'target': experiment.get('target',{}).get('name'),
 			'biosample_name': experiment.get('biosample_term_name'),
 			'biosample_type': experiment.get('biosample_type'),
 			'lab': experiment.get('lab',{}).get('name'),
 			'rfa': experiment.get('award',{}).get('rfa')
 		}
-		original_files = get_ENCODE(urlparse.urljoin(server,'/search/?type=file&dataset=/experiments/%s/&frame=embedded&format=json' %(experiment.get('accession'))),authid,authpw)['@graph']
+		original_files = get_ENCODE(urlparse.urljoin(server,'/search/?type=file&dataset=/experiments/%s/&file_format=fastq&file_format=bam&frame=embedded&format=json' %(experiment.get('accession'))),authid,authpw)['@graph']
 		fastqs = [f for f in original_files if f.get('file_format') == 'fastq' and f.get('status') not in ['deleted', 'revoked', 'replaced']]
 		bams = [f for f in original_files if f.get('file_format') == 'bam' and (not args.assembly or f.get('assembly') == args.assembly) and f.get('status') not in ['deleted', 'revoked', 'replaced']]
 
+		row = copy.deepcopy(row_template)
+
 		if not bams:
-			row = copy.deepcopy(row_template)
+			if not fastqs:
+				row.update({'bam': "no fastqs"})
+			else:
+				row.update({'bam': "pending"})
+
+				read_lengths =	set([str(f.get('read_length')) for f in fastqs])
+				row.update({'r_lengths': ",".join(read_lengths)})
+
+				paired_end_strs = []
+				if any([f.get('run_type') == "single-ended" for f in fastqs]):
+					paired_end_strs.append('SE')
+				if any([f.get('run_type') == "paired-ended" for f in fastqs]):
+					paired_end_strs.append('PE')
+				if any([f.get('run_type') == "unknown" for f in fastqs]):
+					paired_end_strs.append('unknown')
+				row.update({'end': ",".join(paired_end_strs)})
+
 			writer.writerow(row)
 		else:
 			for bam in bams:
-				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from')]]
-				bioreps = set([str(f.get('replicate').get('biological_replicate_number')) for f in fastqs if f.get('accession') in derived_from_accessions])
-				library_uris = set([str(f.get('replicate').get('library')) for f in fastqs if f.get('accession') in derived_from_accessions])
+				derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from') or []]]
+				derived_from_fastqs = [f for f in fastqs if f.get('accession') in derived_from_accessions]
+				bioreps = 		set([str(f.get('replicate').get('biological_replicate_number'))	for f in derived_from_fastqs])
+				library_uris = 	set([str(f.get('replicate').get('library')) 					for f in derived_from_fastqs])
+				read_lengths =	set([str(f.get('read_length')) 									for f in derived_from_fastqs])
 				aliases = []
 				libraries = []
 				for uri in library_uris:
 					library = get_ENCODE(urlparse.urljoin(server,'%s' %(uri)), authid, authpw)
 					libraries.append(library.get('accession'))
 					aliases.extend(library.get('aliases'))
-				row = copy.deepcopy(row_template)
 				row.update({
 					'biorep_id': ",".join(bioreps),
 					'assembly': bam.get('assembly'),
 					'bam': bam.get('accession'),
 					'download link': urlparse.urljoin(server,bam.get('href')),
 					'library': ','.join(libraries),
-					'library aliases': ','.join(aliases)
+					'library aliases': ','.join(aliases),
+					'r_lengths': ','.join(read_lengths),
+					'derived_from': ','.join(derived_from_accessions),
+					'date_created': bam.get('date_created'),
+					'release status': bam.get('status')
 				})
-				notes = json.loads(bam.get('notes'))
+				try:
+					notes = json.loads(bam.get('notes'))
+				except:
+					notes = None
+				quality_metrics = bam.get('quality_metrics')
+				# if quality_metrics:
+				# 	filter_qc = next(m for m in quality_metrics if "ChipSeqFilterQualityMetric" in m['@type'])
+				# 	xcor_qc = next(m for m in quality_metrics if "SamtoolsFlagstatsQualityMetric" in m['@type'])
+
+
+				# elif isinstance(notes,dict):
 				if isinstance(notes,dict):
-					raw_flagstats		= notes.get('qc')
-					filtered_flagstats	= notes.get('filtered_qc')
-					duplicates			= notes.get('dup_qc')
-					xcor				= notes.get('xcor_qc')
-					pbc					= notes.get('pbc_qc')
+					#this needs to support the two formats from the old accessionator and the new accession_analysis
+					if 'qc' in notes.get('qc'): #new way
+						qc_from_notes = notes.get('qc')
+					else:
+						qc_from_notes = notes
+					raw_flagstats		= qc_from_notes.get('qc')
+					filtered_flagstats	= qc_from_notes.get('filtered_qc')
+					duplicates			= qc_from_notes.get('dup_qc')
+					xcor				= qc_from_notes.get('xcor_qc')
+					pbc					= qc_from_notes.get('pbc_qc')
 
 					try:
-						fract_unique = float(raw_flagstats.get('mapped')[0])/float(raw_flagstats.get('in_total')[0])
+						fract_mappable = float(raw_flagstats.get('mapped')[0])/float(raw_flagstats.get('in_total')[0])
 					except:
-						fract_unique = ''
+						fract_mappable = ''
+
 					try:
-						fract_distinct = float(filtered_flagstats.get('in_total')[0])/float(raw_flagstats.get('in_total')[0])
+						paired_end = filtered_flagstats.get('read1')[0] or filtered_flagstats.get('read1')[1] or filtered_flagstats.get('read2')[0] or filtered_flagstats.get('read2')[1]
 					except:
-						fract_distinct = ''
+						paired_end_str = ''
+						usable_frags = ''
+					else:
+						if paired_end:
+							usable_frags = filtered_flagstats.get('in_total')[0]/2
+							paired_end_str = "PE"
+						else:
+							paired_end_str = "SE"
+							usable_frags = filtered_flagstats.get('in_total')[0]
+					row.update({'end': paired_end_str})
+
+					try:
+						fract_usable = float(filtered_flagstats.get('in_total')[0])/float(raw_flagstats.get('in_total')[0])
+					except:
+						fract_usable = ''
+
 
 					if raw_flagstats:
 						row.update({
 							'hiq_reads': raw_flagstats.get('in_total')[0],
 							'loq_reads': raw_flagstats.get('in_total')[1],
-							'unique': raw_flagstats.get('mapped')[0],
-							'fract_unique' : fract_unique,
+							'mappable': raw_flagstats.get('mapped')[0],
+							'fract_mappable' : fract_mappable
 							})
 					if filtered_flagstats:
 						row.update({
-							'distinct': filtered_flagstats.get('in_total')[0],
-							'fract_distinct': fract_distinct
+							'usable_frags': usable_frags,
+							'fract_usable': fract_usable
 							})
 					if pbc:
 						row.update({
@@ -238,6 +292,7 @@ def main():
 						})
 
 				writer.writerow(row)
+				sys.stdout.flush()
 
 if __name__ == '__main__':
 	main()
