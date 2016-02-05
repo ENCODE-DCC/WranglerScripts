@@ -22,7 +22,7 @@ def get_ENCODE(url, authid, authpw):
 			url += '?datastore=database'
 	url += '&limit=all'
 	logging.debug("GET %s" %(url))
-	response = requests.get(url, auth=(authid, authpw), headers={'content-type': 'application/json'})
+	response = requests.get(url, auth=(authid, authpw), headers={'accept': 'application/json'})
 	try:
 		response.raise_for_status()
 	except:

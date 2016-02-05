@@ -8,7 +8,7 @@
        "/analysis-steps/index-bismark-v-1-0/",
        "/analysis_step/mott-trim-align-bismark-v-1-0/",
        "/analysis_step/methylation-quantification-bismark-v-1-0/",
-       "/analysis_step/bigbed-convert/"
+       "/analysis-steps/bigbed-conversion-v-2-6/"
     ],
     "assay_term_id": "OBI:0001271",
     "assay_term_name": "WGBS",
@@ -18,6 +18,5 @@
     ],
     "name": "wgbs-pipeline-se-v-1-0",
     "title": "WGBS single-end pipeline",
-    "notes": "This is for single ended stranded data. Is the url correct?  We need documents.  What about version?  What about concat fastqs?",
     "status": "in progress"
 }

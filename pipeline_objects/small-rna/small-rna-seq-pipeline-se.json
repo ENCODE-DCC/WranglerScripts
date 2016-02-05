@@ -1,24 +1,17 @@
 {
    "@type": ["pipeline", "item"],
-    "aliases": ["encode:smal-rna-seq-se-1"],
-    "version": 1,
     "documents":[],
     "description": "ENCODE DAC/DCC run pipeline for small RNA-seq taking single-ended fastq input and producing stranded signals",
     "analysis_steps": [
-       "/analysis_step/small-rna-index-star-v-1-0",
-       "/analysis_step/small-rna-align-v-1-0",
-       "/analysis_step/small-rna-signals-v-1-0"
+       "/analysis_step/small-rna-star-indexing-step-v-1",
+       "/analysis_step/small-rna-se-star-alignment-step-v-1",
+       "/analysis_step/small-rna-star-stranded-signal-step-v-1"
     ],
     "lab": "encode-processing-pipeline",
     "award": "ENCODE",
     "assay_term_id": "OBI:0001271",
     "assay_term_name": "RNA-seq",
-    "end_points": [
-           "/analysis_step/small-rna-signals-v-1-0"
-    ],
-    "name": "small-rna-seq-pipeline-se",
     "title": "Small RNA-seq single-end pipeline",
-    "notes": "This is for single ended stranded data. Is the url correct?  We need documents.  What about version?  What about concat fastqs?",
     "source_url": "https://github.com/ENCODE-DCC/long-rna-seq-pipeline",
     "status": "in progress"
 }

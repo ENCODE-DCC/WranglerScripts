@@ -1,19 +1,20 @@
 {
    "@type": ["pipeline", "item"],
-    "aliases": ["encode:histone-pipeline-1"],
-    "version": 1,
-    "documents":[],
+    "aliases": ["encode:histone-pipeline-v-1-0"],
     "analysis_steps": [
-       "prep-bwa-v-1-0-0",
-       "align-and-filter-bwa",
-       "encode-histone-peak-calling-v-0-0-1",
-       "encode-peak-concordance-v-0-0-1"
+       "index-bwa-v-1-0",
+       "align-and-filter-bwa-v-1-0",
+       "encode-peaks-spp-v-1-0",
+       "overlap-peaks-v-1-0",
+       "bigbed-conversion-v-2-6"
     ],
     "assay_term_id": "OBI:0001271",
     "assay_term_name": "ChIP-seq",
     "end_points": [
     ],
-    "name": "histone-pipeline-v-1-0-0",
+    "name": "histone-pipeline-v-1-0",
+    "lab": "encode-processing-pipeline",
+    "award": "ENCODE",
     "title": "Histone ChIP-seq pipeline",
     "status": "in progress"
 }

@@ -1,7 +1,7 @@
 {
    "@type": ["analysis_step", "item"],
-    "aliases": ["encode:small-rna-signals-v1-0",
-                "dnanexus:applet-BX3fbp00F1GPkkjJjZj0vqQ0"],
+    "aliases": ["encode:small-rna-signals-v1-0"
+                ],
     "analysis_step_types": [
         "signal generation",
         "file format conversion"
@@ -17,9 +17,8 @@
         "encode:star 2.4.0g1",
         "encode:bedgraphtobigwig 4"
     ],
-    "parents":["/analysis_step/small-rna-align-v-1-0"],
-    "name": "small-rna-signals-v-1-0",
-    "title": "Small RNA stranded signal generation v1.0",
-    "status": "in progress",
-    "notes": "verify that all of these steps are stranded"
+    "parents":["/analysis_step/small-rna-se-star-alignment-step-v-1/"],
+    "name": "small-rna-star-stranded-signal-step-v-1",
+    "title": "Small RNA STAR stranded signal generation step - Version 1",
+    "status": "in progress"
 }
