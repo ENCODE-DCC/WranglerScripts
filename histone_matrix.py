@@ -138,6 +138,24 @@ def is_not_mismatched_controlled_by(experiment):
     return True
 
 
+def is_not_mismatched_controlled_by_run_type(experiment):
+    if 'audit' in experiment:
+        if 'WARNING' in experiment['audit']:
+            for au in experiment['audit']['WARNING']:
+                if au['category'] in ['mismatched controlled_by run_type']:
+                    return False
+    return True
+
+
+def is_not_mismatched_controlled_by_read_length(experiment):
+    if 'audit' in experiment:
+        if 'WARNING' in experiment['audit']:
+            for au in experiment['audit']['WARNING']:
+                if au['category'] in ['mismatched controlled_by read length']:
+                    return False
+    return True
+
+
 def is_not_missing_paired_with(experiment):
     if 'audit' in experiment:
         if 'NOT_COMPLIANT' in experiment['audit']:
@@ -191,11 +209,11 @@ FILE_IGNORE_STATUS = ['deleted','revoked','replaced', 'upload failed', 'format c
 keypair = ('K72CG7FY', 'hwzqj7gf3q5x3exk')
 server = 'https://www.encodeproject.org/'
 
-lab = '&lab.title=Bing Ren, UCSD'
-organism = '&replicates.library.biosample.donor.organism.scientific_name=Mus musculus'
+#lab = '&lab.title=Bing Ren, UCSD'
+#organism = '&replicates.library.biosample.donor.organism.scientific_name=Mus musculus'
 
-#lab = '&lab.title=Bradley Bernstein, Broad'
-#organism = '&replicates.library.biosample.donor.organism.scientific_name=Homo sapiens'
+lab = '&lab.title=Bradley Bernstein, Broad'
+organism = '&replicates.library.biosample.donor.organism.scientific_name=Homo sapiens'
 
 
 url = server +'search/?searchTerm=ctcf&type=Experiment&format=json&frame=object&limit=all'
@@ -294,6 +312,10 @@ for ac in histone_experiments_dict:
             statuses['antibody'].append('missing antybody')
         if is_not_mismatched_controlled_by(page) is False:
             statuses['control'].append('mismatched controled_by')
+        if is_not_mismatched_controlled_by_run_type(page) is False:
+            statuses['control'].append('mismatched controled_by run_type')
+        if is_not_mismatched_controlled_by_read_length(page) is False:
+            statuses['control'].append('mismatched controled_by read_length')
         if is_not_missing_controls(page) is False:
             statuses['control'].append('missing control')
         if is_not_missing_paired_with(page) is False:
@@ -384,14 +406,20 @@ with open("/Users/idan/Desktop/mat.csv", 'wb') as output:
                     cell_info = ''
                     for acc in accessionStatuses:
                         if len(accessionStatuses[acc]) < 1:
-                            cell_info += acc +'\r' + str(aliases[acc])
+
+                            cell_info += acc + ' ' + histone_experiments_dict[acc]['object']['status'] + \
+                                               '\r' + str(aliases[acc])
+
                         else:
                             statuses_string = ''
                             for status in accessionStatuses[acc]:
                                     statuses_string += status
-                            cell_info += acc +'\r' + str(aliases[acc]) + '\r' + statuses_string
+                            cell_info += acc + ' ' + histone_experiments_dict[acc]['object']['status'] + \
+                                               '\r' + str(aliases[acc]) + '\r' + \
+                                               statuses_string
                         cell_info += '\r\n'
-                    row.update({mark: 'Experiments number : '+str(total)+'\r'+ cell_info})
+                    row.update({mark: 'Experiments number : '+str(total)+'\r' +
+                               cell_info})
                 else:
                     row.update({mark: 'NONE'})
             else:
@@ -414,14 +442,18 @@ with open("/Users/idan/Desktop/mat.csv", 'wb') as output:
                     cell_info = ''
                     for acc in accessionStatuses:
                         if len(accessionStatuses[acc]) < 1:
-                            cell_info += acc +'\r' + str(aliases[acc])
+                            cell_info += acc + ' ' + histone_controls_dict[acc]['object']['status'] + \
+                                               '\r' + str(aliases[acc])
                         else:
                             statuses_string = ''
                             for status in accessionStatuses[acc]:
                                     statuses_string += status
-                            cell_info += acc +'\r' + str(aliases[acc]) + '\r' + statuses_string
+                            cell_info += acc + ' ' + histone_controls_dict[acc]['object']['status'] + \
+                                               '\r' + str(aliases[acc]) + '\r' + \
+                                               statuses_string
                         cell_info += '\r\n'
-                    row.update({mark: 'Experiments number : '+str(total)+'\r'+ cell_info})
+                    row.update({mark: 'Experiments number : '+str(total)+'\r' +
+                                      cell_info})
                 else:
                     row.update({mark: 'NONE'})
 
