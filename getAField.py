@@ -190,7 +190,7 @@ def main():
                ob = get_ENCODE(objList[i])
                id = ob.get('@id')
                if args.field in ob:
-                   field = str(ob[args.field])
+                   field = repr(ob[args.field])
            else:
               id = objList[i]
            print '\t'.join([id,field])
