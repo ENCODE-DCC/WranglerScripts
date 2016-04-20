@@ -152,6 +152,7 @@ def main():
 			row['file format'] = file_obj['file_format']
 			row['download link'] = DOWNLOAD_URL_BASE + file_obj['href']
 			row['submitted filename'] = file_obj['submitted_file_name']
+			row['derived_from'] = file_obj['derived_from']
 
 			try: #if the file has a replicate
 				replicate = file_obj['replicate'] #replicate is embedded in file

@@ -2,15 +2,11 @@
 # -*- coding: latin-1 -*-
 '''Read in a file of object, correction fields and patch each object'''
 
-import basicStart
 import argparse
 import requests
 import json
 import sys
 import os.path
-from base64 import b64encode
-from copy import deepcopy
-
 
 
 HEADERS = {'content-type': 'application/json'}
@@ -24,35 +20,34 @@ To get one ENCODE object from the server/keypair called "default" in the default
 To use a different key from the default keypair file:
 
         %(prog)s --id ENCBS000AAA --key submit
+
+For more details:
+
+        %(prog)s --help
 '''
-
-
-
-
 
 
 def get_ENCODE(obj_id):
         '''GET an ENCODE object as JSON and return as dict
         '''
-        #url = SERVER+obj_id+'?limit=all'
-        url = SERVER+obj_id+'?frame=object' #+'&datastore=database'
+        # url = SERVER+obj_id+'?limit=all'
+        url = SERVER+obj_id+'?format=json&frame=object'  # +'&datastore=database'
         print url
         if DEBUG_ON:
-                print "DEBUG: GET %s" %(url)
+                print "DEBUG: GET %s" % (url)
         response = requests.get(url, auth=(AUTHID, AUTHPW), headers=HEADERS)
         if DEBUG_ON:
-                print "DEBUG: GET RESPONSE code %s" %(response.status_code)
+                print "DEBUG: GET RESPONSE code %s" % (response.status_code)
                 try:
                         if response.json():
                                 print "DEBUG: GET RESPONSE JSON"
                                 print json.dumps(response.json(), indent=4, separators=(',', ': '))
                 except:
-                        print "DEBUG: GET RESPONSE text %s" %(response.text)
+                        print "DEBUG: GET RESPONSE text %s" % (response.text)
         if not response.status_code == requests.codes.ok:
                 print "Object missing: ", obj_id
-                #response.raise_for_status()
+                # response.raise_for_status()
         return response.json()
-
 
 
 def patch_ENCODE(obj_id, patch_input):
@@ -66,8 +61,8 @@ def patch_ENCODE(obj_id, patch_input):
                 print >> sys.stderr, 'Datatype to patch is not string or dict.'
         url = SERVER+obj_id
         if DEBUG_ON:
-                print "DEBUG: PATCH URL : %s" %(url)
-                print "DEBUG: PATCH data: %s" %(json_payload)
+                print "DEBUG: PATCH URL : %s" % (url)
+                print "DEBUG: PATCH data: %s" % (json_payload)
         response = requests.patch(url, auth=(AUTHID, AUTHPW), data=json_payload, headers=HEADERS)
         if DEBUG_ON:
                 print "DEBUG: PATCH RESPONSE"
@@ -88,7 +83,7 @@ def post_ENCODE(collection_id, post_input):
                 print >> sys.stderr, 'Datatype to post is not string or dict.'
         url = SERVER+collection_id
         if DEBUG_ON:
-                print "DEBUG: POST URL : %s" %(url)
+                print "DEBUG: POST URL : %s" % (url)
                 print "DEBUG: POST data:"
                 print json.dumps(post_input, sort_keys=True, indent=4, separators=(',', ': '))
         response = requests.post(url, auth=(AUTHID, AUTHPW), headers=HEADERS, data=json_payload)
@@ -102,25 +97,21 @@ def post_ENCODE(collection_id, post_input):
         return response.json()
 
 
-
-
-def set_ENCODE_keys(keyfile,key):
+def set_ENCODE_keys(keyfile, key):
         '''
           Set the global authentication keyds
         '''
 
-        keysf = open(keyfile,'r')
+        keysf = open(keyfile, 'r')
         keys_json_string = keysf.read()
         keysf.close()
 
         keys = json.loads(keys_json_string)
         key_dict = keys[key]
 
-
         global AUTHID
         global AUTHPW
         global SERVER
-
 
         AUTHID = key_dict['key']
         AUTHPW = key_dict['secret']
@@ -129,15 +120,7 @@ def set_ENCODE_keys(keyfile,key):
                 SERVER += "/"
         return
 
-
-## I need my attachment thing here
-
-
-
-
-
-
-
+# I need my attachment thing here
 
 
 def main():
@@ -147,10 +130,8 @@ def main():
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )
 
-        parser.add_argument('--infile', '-i',
-                            help="File containing the JSON object as a JSON string.")
-        parser.add_argument('--objDict',
-                            help="The object-dictionary of things to update.")
+        parser.add_argument('--infile',
+                            help="A two column list with identifier and value to patch (or remove)")
         parser.add_argument('--field',
                             help="The field to patch.")
         parser.add_argument('--key',
@@ -158,7 +139,7 @@ def main():
                             help="The keypair identifier from the keyfile.  Default is --key=default")
         parser.add_argument('--keyfile',
                             default=os.path.expanduser("~/keypairs.json"),
-                            help="The keypair file.  Default is --keyfile=%s" %(os.path.expanduser("~/keypairs.json")))
+                            help="The keypair file.  Default is --keyfile=%s" % (os.path.expanduser("~/keypairs.json")))
         parser.add_argument('--debug',
                             default=False,
                             action='store_true',
@@ -167,59 +148,79 @@ def main():
                             default=False,
                             action='store_true',
                             help="Field is an array.  Default is False.")
+        parser.add_argument('--remove',
+                            default=False,
+                            action='store_true',
+                            help="Patch to remove the value specified in the input file from the given field.  Default is False.")
+        parser.add_argument('--dryrun',
+                            default=False,
+                            action='store_true',
+                            help="Dry run of the script, no data will actually be patched.")
         args = parser.parse_args()
 
         DEBUG_ON = args.debug
-        print DEBUG_ON 
+        print DEBUG_ON
 
         set_ENCODE_keys(args.keyfile, args.key)
 
         FIELD = args.field
 
         objDict = {}
-        with open("objDict") as fd:
+        with open(args.infile) as fd:
             objDict = dict(line.strip().split(None, 1) for line in fd)
 
         for key in objDict:
 
             '''Interpret the new value'''
             if objDict[key].strip() == 'NULL':
-                objDict[key] = None 
+                objDict[key] = None
             elif objDict[key].strip() == 'False':
                 objDict[key] = False
             elif objDict[key].strip() == 'True':
-                objDict[key] = True 
+                objDict[key] = True
             elif objDict[key].isdigit():
-                objDict[key] = int(objDict[key]) 
-           
+                objDict[key] = int(objDict[key])
+
             object = get_ENCODE(key)
             old_thing = object.get(FIELD)
 
             if args.array:
                 if objDict[key] is None:
-                   patch_thing = []
-                elif old_thing == None:
-                   patch_thing = []
+                    patch_thing = []
+                elif old_thing is None:
+                    patch_thing = []
+                    patch_thing.append(objDict[key])
                 else:
-                   patch_thing = []
-                   for j in range(len(old_thing)):
-                       patch_thing.append(old_thing[j]) #['uuid'])
-                patch_thing.append(objDict[key])
-                temp = list(set(patch_thing))
-                patch_thing = temp
-                #patch_thing = [objDict[key]]
+                    patch_thing = list(old_thing)
+                    patch_thing.append(objDict[key])
+                    temp = list(set(patch_thing))
+                    patch_thing = temp
+
+                if args.remove:
+                    items = objDict[key].split(', ')
+                    print "Removing %s from %s" % (objDict[key], key)
+                    patch_thing = list(old_thing)
+                    for i in range(len(items)):
+                        patch_thing.remove(items[i])
+                    temp = list(set(patch_thing))
+                    patch_thing = temp
             else:
-                patch_thing = objDict[key]
+                if args.remove:
+                    patch_thing = None
+                else:
+                    patch_thing = objDict[key]
 
             '''construct a dictionary with the key and value to be changed'''
             patchdict = {FIELD: patch_thing}
-           
-            response = patch_ENCODE (key, patchdict)
-                  
+
+            if not args.dryrun:
+                response = patch_ENCODE(key, patchdict)
+            else:
+                print "In DRY RUN mode, no data will be patched..."
+
             '''print what we did'''
             print "Original:  %s" %(old_thing)
             print "PATCH:     %s" %(patch_thing)
-
 
 if __name__ == '__main__':
         main()
