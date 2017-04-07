@@ -70,9 +70,18 @@ main() {
     sra_size=$(wc -c "./sra/$SRR.sra" | awk '{print $1}')
     dx-jobutil-add-output sra_size $sra_size
 
-    mkdir -p /home/dnanexus/out/fastq
-    # converting to sam/bam
-    $root/sra/bin/fastq-dump --outdir /home/dnanexus/out/fastq $option /home/dnanexus/ncbi/$folder_name/sra/$SRR.sra
+    outdir="/home/dnanexus/out/fastq"
+    mkdir -p $outdir
+    # Convert to fastq
+    $root/sra/bin/fastq-dump --outdir $outdir $option /home/dnanexus/ncbi/$folder_name/sra/$SRR.sra
+
+    # Iterate over all the fastqs created and calculate 
+    declare -a fastq_filenames
+    fastq_filenames=($(ls $outdir))
+    declare -a fastq_md5s
+    fastq_md5s=($(for a in ${fastq_filenames[@]}; do (cd $outdir && md5sum $a | cut -f1 -d' '); done))
+    dx-jobutil-add-output --array fastq_filenames ${fastq_filenames[@]} 
+    dx-jobutil-add-output --array fastq_md5s ${fastq_md5s[@]}
 
     # uploading
     dx-upload-all-outputs --parallel

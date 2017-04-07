@@ -24,7 +24,7 @@
     {
       "name": "option",
       "class": "string",
-      "default": "--gzip --skip-technical --readids --dumpbase --split-files --clip"
+      "default": "--gzip --skip-technical --readids --dumpbase --split-files"
     }
   ],
   "outputSpec": [
@@ -39,6 +39,14 @@
     {
       "name": "sra_size",
       "class": "int"
+    },
+    {
+      "name": "fastq_filenames",
+      "class": "array:string"
+    },
+    {
+      "name": "fastq_md5s",
+      "class": "array:string"
     }
   ],
   "runSpec": {
