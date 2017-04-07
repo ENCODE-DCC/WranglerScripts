@@ -31,6 +31,14 @@
     {
       "name": "fastq",
       "class": "array:file"
+    },
+    {
+      "name": "sra_md5",
+      "class": "string"
+    },
+    {
+      "name": "sra_size",
+      "class": "int"
     }
   ],
   "runSpec": {
