@@ -34,8 +34,6 @@ fieldnames = [
     'library', 'library aliases', 'from fastqs', 'platform',
     'date_created', 'release status', 'internal status', 'dx_analysis']
 writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter=',', quotechar='"')
-# writer_lock = Lock()
-# with writer_lock:
 writer.writeheader()
 
 
@@ -53,31 +51,28 @@ def get_ENCODE(url, authid, authpw):
     logging.debug("GET %s" % (url))
     max_retries = 10
     retries = max_retries
-    sleep_increment = 1
+    sleep_increment = 6
     while retries:
         try:
             response = requests.get(url, auth=(authid, authpw), headers={'accept': 'application/json'})
-            response.raise_for_status()
-        except:
-            logging.debug('GET failed')
-            logging.debug(response.text)
-            logging.debug('Retry %d of %d' % ((max_retries-retries)+1, max_retries))
+        except requests.HTTPError:
+            logging.warning('GET %s failed with %s' % (url, response.text))
+            logging.warning('Retry %d of %d' % ((max_retries-retries)+1, max_retries))
+            retries -= 1
+            time.sleep(sleep_increment*(max_retries-retries))
+            continue
+        except Exception as e:
+            logging.warning('GET %s failed with %s' % (url, e))
+            logging.warning('Retry %d of %d' % ((max_retries-retries)+1, max_retries))
             retries -= 1
             time.sleep(sleep_increment*(max_retries-retries))
             continue
         else:
-            break
+            return response.json()
     try:
-        response.raise_for_status()
-    except:
-        logging.error('HTTP GET failed: %s %s %s' %(response.status_code, response.reason, url))
-
-    logging.debug("GET response code: %s" %(response.status_code))
-    try:
-        # logging.debug("GET response json: %s" %(json.dumps(response.json(), indent=4, separators=(',', ': '))))
-        return response.json()
-    except:
-        logging.debug("GET response text: %s" %(response.text))
+        raise
+    except Exception as e:
+        logging.error('Max retries, giving up.  GET %s failed: %s' % (url, e))
         return {}
 
 
@@ -156,7 +151,9 @@ def get_mapping_analysis(bam):
         job_alias = next(
             detail['dx_job_id'] for detail in bam['step_run']['dx_applet_details'])
     except:
-        logging.error('Failed to find step_run.dx_applet_details in bam\n%s' % (bam))
+        logging.error(
+            'Failed to find step_run.dx_applet_details in bam %s'
+            % (bam.get('accession')))
         raise
     job_id = re.findall('job-\w*', job_alias)[0]
     analysis_id = dxpy.describe(job_id)['parentAnalysis']
@@ -179,7 +176,7 @@ def get_crop_length(analysis):
     return str(crop_length)
 
 
-def write_rows(experiment, server, authid, authpw, args):
+def get_rows(experiment, server, authid, authpw, args):
     rows = []
     row_template = {
         'experiment': experiment.get('accession'),
@@ -355,8 +352,8 @@ def write_rows(experiment, server, authid, authpw, args):
                     })
 
             rows.append(row)
-    for row in rows:
-        writer.writerow(row)
+
+    return rows
 
 
 def main():
@@ -436,9 +433,11 @@ def main():
     result = get_ENCODE(url, authid, authpw)
     experiments = result['@graph']
 
-    pool = Pool(50)
-    write_rows_func = partial(write_rows, server=server, authid=authid, authpw=authpw, args=args)
-    pool.map(write_rows_func, experiments)
+    pool = Pool(100)
+    get_rows_func = partial(get_rows, server=server, authid=authid, authpw=authpw, args=args)
+    for rows in pool.imap_unordered(get_rows_func, experiments):
+        for row in rows:
+            writer.writerow(row)
     # for experiment in experiments:
         # t = Thread(target=write_rows, args=(experiment, server, authid, authpw, args))
         # t.start()
