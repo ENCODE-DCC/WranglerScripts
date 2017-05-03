@@ -29,7 +29,9 @@ fieldnames = [
     'biosample_name', 'biosample_type', 'biorep_id', 'lab', 'rfa',
     'assembly', 'bam', 'bam link', 'unfiltered bam', 'unfiltered bam link',
     'hiq_reads', 'loq_reads', 'mappable', 'fract_mappable', 'end',
-    'r_lengths', 'map_length', 'crop_length', 'usable_frags', 'fract_usable',
+    'r_lengths', 'map_length', 'crop_length',
+    'picard_read_pairs_examined', 'picard_unpaired_reads_examined',
+    'usable_frags', 'fract_usable',
     'NRF', 'PBC1', 'PBC2', 'frag_len', 'NSC', 'RSC', 'xcor plot',
     'library', 'library aliases', 'from fastqs', 'platform',
     'date_created', 'release status', 'internal status', 'dx_analysis']
@@ -176,6 +178,43 @@ def get_crop_length(analysis):
     return str(crop_length)
 
 
+# def dup_parse(dxlink):
+#     desc = dxpy.describe(dxlink)
+#     with dxpy.DXFile(desc['id'], mode='r') as dup_file:
+#         if not dup_file:
+#             return None
+
+#         lines = iter(dup_file.read().splitlines())
+
+#         for line in lines:
+#             if line.startswith('## METRICS CLASS'):
+#                 headers = lines.next().rstrip('\n').lower()
+#                 metrics = lines.next().rstrip('\n')
+#                 break
+
+#         headers = headers.split('\t')
+#         metrics = metrics.split('\t')
+#         headers.pop(0)
+#         metrics.pop(0)
+
+#         dup_qc = dict(zip(headers, metrics))
+#     return dup_qc
+
+
+# def get_picard_reads_examined(analysis):
+#     if not analysis:
+#         return None
+#     dup_qc_file = next(stage['execution']['output'].get('dup_file_qc') for stage in analysis['stages'])
+#     dup_qc = dup_parse(dup_qc_file)
+#     if dup_qc:
+#         return {
+#             'unpaired_reads_examined': dup_qc.get('UNPAIRED_READS_EXAMINED')
+#             'read_pairs_examined': dup_qc.get('READ_PAIRS_EXAMINED')
+#         }
+#     else:
+#         return None
+
+
 def get_rows(experiment, server, authid, authpw, args):
     rows = []
     row_template = {
@@ -200,9 +239,8 @@ def get_rows(experiment, server, authid, authpw, args):
     filtered_bams = [f for f in bams if f.get('output_type') == 'alignments']
     unfiltered_bams = [f for f in bams if f.get('output_type') == 'unfiltered alignments']
 
-    row = copy.deepcopy(row_template)
-
     if not bams:
+        row = copy.deepcopy(row_template)
         if not fastqs:
             row.update({'bam': "no fastqs"})
         else:
@@ -225,6 +263,7 @@ def get_rows(experiment, server, authid, authpw, args):
         rows.append(row)
     else:
         for bam in filtered_bams:
+            row = copy.deepcopy(row_template)
             # derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from') or []]]
             derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in bam.get('derived_from') or []]
             derived_from_fastqs = [f for f in fastqs if f.get('accession') in derived_from_accessions]
@@ -325,13 +364,12 @@ def get_rows(experiment, server, authid, authpw, args):
                 except:
                     fract_usable = ''
 
-
                 if raw_flagstats:
                     row.update({
                         'hiq_reads': raw_flagstats.get('in_total')[0],
                         'loq_reads': raw_flagstats.get('in_total')[1],
                         'mappable': raw_flagstats.get('mapped')[0],
-                        'fract_mappable' : fract_mappable
+                        'fract_mappable': fract_mappable
                         })
                 if filtered_flagstats:
                     row.update({
@@ -350,7 +388,11 @@ def get_rows(experiment, server, authid, authpw, args):
                         'NSC': xcor.get('phantomPeakCoef'),
                         'RSC': xcor.get('relPhantomPeakCoef')
                     })
-
+                if duplicates:
+                    row.update({
+                        'picard_read_pairs_examined': duplicates.get('read_pairs_examined'),
+                        'picard_unpaired_reads_examined': duplicates.get('unpaired_reads_examined')
+                    })
             rows.append(row)
 
     return rows
