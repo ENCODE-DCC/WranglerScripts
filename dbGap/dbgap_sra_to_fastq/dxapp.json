@@ -1,0 +1,71 @@
+{
+  "name": "dbgap_sra_to_fastq",
+  "title": "dbGaP-SRA to FASTQ",
+  "summary": "Downloads from an SRA repository into FASTQ files",
+  "dxapi": "1.0.0",
+  "inputSpec": [
+    {
+      "name": "SRR",
+      "class": "string",
+      "optional": false
+    },
+    {
+      "name": "ngc_key",
+      "class": "file",
+      "patterns": ["*.ngc"],
+      "optional": false
+    },
+    {
+      "name": "mkfg",
+      "class": "file",
+      "patterns": ["*.mkfg"],
+      "optional": false
+    },
+    {
+      "name": "option",
+      "class": "string",
+      "default": "--gzip --skip-technical --readids --dumpbase --split-files"
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "fastq",
+      "class": "array:file"
+    },
+    {
+      "name": "sra_md5",
+      "class": "string"
+    },
+    {
+      "name": "sra_size",
+      "class": "int"
+    },
+    {
+      "name": "fastq_filenames",
+      "class": "array:string"
+    },
+    {
+      "name": "fastq_md5s",
+      "class": "array:string"
+    }
+  ],
+  "runSpec": {
+    "execDepends": [
+      {
+        "name": "samtools"
+      }
+    ],
+    "systemRequirements": {
+      "main": {
+        "instanceType": "mem2_hdd2_x2"
+      }
+    },
+    "file": "src/code.sh",
+    "interpreter": "bash"
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  }
+}
