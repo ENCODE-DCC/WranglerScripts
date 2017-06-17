@@ -24,7 +24,7 @@ def get_args():
 
     parser.add_argument('experiments',  help='List of experiment accessions to report on', nargs='*', default=None)
     parser.add_argument('--infile',     help='File containing experiment accessions', type=argparse.FileType('r'), default=sys.stdin)
-    parser.add_argument('--all',        help='Report on all possible IDR experiments', default=False, action='store_true')
+    parser.add_argument('--all',        help='Report on all possible dIDR experiments', default=False, action='store_true')
     parser.add_argument('--outfile',    help='csv output', type=argparse.FileType('wb'), default=sys.stdout)
     parser.add_argument('--debug',      help="Print debug messages", default=False, action='store_true')
     parser.add_argument('--key',        help="The keypair identifier from the keyfile.", default='www')
@@ -96,6 +96,7 @@ def main():
 
     fieldnames = [  'date','analysis','analysis id','experiment','target','biosample_term_name','biosample_type','lab','rfa','assembly',
                     'Nt','Np','N1','N2','rescue_ratio','self_consistency_ratio','reproducibility_test',
+                    'Ft','Fp','F1','F2',
                     'state','release','total price','notes']
     writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames, delimiter='\t', quotechar='"')
     writer.writeheader()
@@ -181,10 +182,18 @@ def main():
             continue
 
         if args.all:  # we've already gotten all the experiment objects
-            experiment = \
-                next(e for e in all_experiments
-                     if e['accession'] == experiment_accession)
-        else:
+            try:
+                experiment = \
+                    next(e for e in all_experiments
+                         if e['accession'] == experiment_accession)
+            except StopIteration:
+                logger.error('Experiment %s not found in all_experiments' % (experiment_accession))
+                experiment = None
+            except:
+                raise
+            else:
+                experiment = None
+        if not args.all or experiment is None:
             experiment = \
                 common.encoded_get(urlparse.urljoin(
                     server,
@@ -238,6 +247,10 @@ def main():
                 N1 = idr_stage['output'].get('N1')
                 N2 = idr_stage['output'].get('N2')
                 Nt = idr_stage['output'].get('Nt')
+                Fp = idr_stage['output'].get('Fp')
+                F1 = idr_stage['output'].get('F1')
+                F2 = idr_stage['output'].get('F2')
+                Ft = idr_stage['output'].get('Ft')
                 rescue_ratio = idr_stage['output'].get('rescue_ratio')
                 self_consistency_ratio = idr_stage['output'].get('self_consistency_ratio')
                 reproducibility_test = idr_stage['output'].get('reproducibility_test')
@@ -279,6 +292,10 @@ def main():
             'rescue_ratio': rescue_ratio,
             'self_consistency_ratio': self_consistency_ratio,
             'reproducibility_test': reproducibility_test,
+            'Fp':           Fp,
+            'F1':           F1,
+            'F2':           F2,
+            'Ft':           Ft,
             'state':        desc.get('state'),
             'release':      experiment['status'],
             'total price':  desc.get('totalPrice')
