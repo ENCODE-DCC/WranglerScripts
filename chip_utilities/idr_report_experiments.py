@@ -139,7 +139,7 @@ def main():
                   'release',
                   'total price',
                   'notes']
-    writer = csv.DictWriter(sys.stdout,
+    writer = csv.DictWriter(args.outfile,
                             fieldnames=fieldnames,
                             delimiter='\t',
                             quotechar='"')
