@@ -81,33 +81,6 @@ def get_args():
     return args
 
 
-def get_experiment_accession(analysis):
-    m_executableName = re.search('(ENCSR[0-9]{3}[A-Z]{3})',
-                                 analysis['executableName'])
-    m_name = re.search('(ENCSR[0-9]{3}[A-Z]{3})',
-                       analysis['name'])
-    if not (m_executableName or m_name):
-        logger.error("No experiment accession in name %s or executableName %s."
-                     % (analysis['name'], analysis['executableName']))
-        return
-    elif (m_executableName and m_name):
-        executableName_accession = m_executableName.group(1)
-        name_accession = m_name.group(1)
-        if executableName_accession == name_accession:
-            return executableName_accession
-        else:
-            logger.error('Different experiment accessions '
-                         'in name %s and executableName %s.'
-                         % (analysis['name'], analysis['executableName']))
-            return None
-    else:
-        m = (m_executableName or m_name)
-        experiment_accession = m.group(1)
-        logger.debug("get_experiment_accession returning %s"
-                     % (experiment_accession))
-        return experiment_accession
-
-
 def main():
 
     args = get_args()
@@ -126,19 +99,6 @@ def main():
 
     if args.experiments:
         ids = args.experiments
-    # elif args.created_after:
-    #   analyses = []
-    #   for state in args.state:
-    #       analyses.extend(dxpy.find_analyses(name="ENCSR*",
-    #                                           name_mode='glob',
-    #                                           state=state,
-    #                                           include_subjobs=True,
-    #                                           return_handler=True,
-    #                                           created_after="%s"
-    #                                           % (args.created_after)))
-    #   ids = [analysis.get_id() for analysis in analyses
-    #                            if analysis.describe()['executableName'] == 'tf_chip_seq'
-    #                            or analysis.describe()['executableName'].startswith('ENCSR783QUL Peaks')]
     elif args.all:
         exp_query = "/search/?type=Experiment"\
                     "&assay_title=ChIP-seq"\
@@ -243,7 +203,8 @@ def main():
         idr_step_run = common.encoded_get(server + idr_step_run_uri,
                                           keypair)
         try:
-            dx_job_id_str = idr_step_run.get('dx_applet_details')[0].get('dx_job_id')
+            dx_job_id_str = idr_step_run.get('dx_applet_details')[0]\
+                                        .get('dx_job_id')
         except:
             logger.warning("Failed to get dx_job_id from"
                            " step_run.dx_applet_details.dx_job_id")
@@ -258,8 +219,6 @@ def main():
         logger.debug('%s' % (analysis_id))
         analysis = dxpy.DXAnalysis(analysis_id)
         desc = analysis.describe()
-        project = desc.get('project')
-
         m = re.match('^(ENCSR[0-9]{3}[A-Z]{3}) Peaks', desc['name'])
         if m:
             experiment_accession = m.group(1)
