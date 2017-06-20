@@ -90,7 +90,7 @@ def main():
                             level=logging.DEBUG)
         logger.setLevel(logging.DEBUG)
     else:
-        # use the defaulf logging level
+        # Use the default logging level.
         logging.basicConfig(format='%(levelname)s:%(message)s')
         logger.setLevel(logging.INFO)
 
@@ -100,6 +100,7 @@ def main():
     if args.experiments:
         ids = args.experiments
     elif args.all:
+        # Get metadata for all ChIP-seq Experiments.
         exp_query = "/search/?type=Experiment"\
                     "&assay_title=ChIP-seq"\
                     "&award.project=ENCODE"\
@@ -107,16 +108,18 @@ def main():
                     "&status=in+progress&status=started&status=release+ready"
         all_experiments = common.encoded_get(server + exp_query,
                                              keypair)['@graph']
+        # Extract Experiment accessions.
         ids = [exp.get('accession') for exp in all_experiments]
     elif args.infile:
         ids = args.infile
     else:
-        # never reached because inile defaults to stdin
+        # Never reached because infile defaults to stdin.
         raise InputError("Must supply experiment id's"
                          " in arguments or --infile")
+    # Define column names for TSV.
     fieldnames = ['date',
                   'analysis',
-                  'analysis id',
+                  'analysis_id',
                   'experiment',
                   'target',
                   'biosample_term_name',
@@ -137,14 +140,14 @@ def main():
                   'F2',
                   'state',
                   'release',
-                  'total price',
+                  'total_price',
                   'notes']
     writer = csv.DictWriter(args.outfile,
                             fieldnames=fieldnames,
                             delimiter='\t',
                             quotechar='"')
     writer.writeheader()
-
+    # Get metadata for all IDR output Files.
     idr_query = "/search/?type=File"\
                 "&assembly=%s"\
                 "&file_format=bed"\
@@ -162,6 +165,7 @@ def main():
             continue
         experiment_id = experiment_id.rstrip()
         experiment_uri = '/experiments/%s/' % (experiment_id)
+        # Select only Files part of specified Experiment.
         idr_files = \
             [f for f in all_idr_files if f['dataset'] == experiment_uri]
         idr_step_runs = set([f.get('step_run') for f in idr_files])
@@ -183,15 +187,14 @@ def main():
             idr_qc_uris.extend(quality_metrics)
             assembly = f.get('assembly')
             if not assembly:
-                logger.error(
-                    '%s: File %s has no assembly'
-                    % (experiment_id, f.get('accession')))
+                logger.error('%s: File %s has no assembly'
+                             % (experiment_id, f.get('accession')))
             assemblies.append(assembly)
         idr_qc_uris = set(idr_qc_uris)
         if not len(idr_qc_uris) == 1:
-            logger.error(
-                '%s: Expected one unique IDR metric, found %d. Skipping.'
-                % (experiment_id, len(idr_qc_uris)))
+            logger.error('%s: Expected one unique IDR metric,'
+                         ' found %d. Skipping.' % (experiment_id,
+                                                   len(idr_qc_uris)))
             continue
         assemblies = set(assemblies)
         if not len(assemblies) == 1:
@@ -202,6 +205,9 @@ def main():
         idr_step_run_uri = next(iter(idr_step_runs))
         idr_step_run = common.encoded_get(server + idr_step_run_uri,
                                           keypair)
+
+        ### BEGIN DNANexus-specific code.
+        # Extract dx:job.
         try:
             dx_job_id_str = idr_step_run.get('dx_applet_details')[0]\
                                         .get('dx_job_id')
@@ -214,19 +220,27 @@ def main():
         dx_job_id = dx_job_id_str.rpartition(':')[2]
         dx_job = dxpy.DXJob(dx_job_id)
         job_desc = dx_job.describe()
+        # Get description of job.
         analysis_id = job_desc.get('analysis')
-
         logger.debug('%s' % (analysis_id))
         analysis = dxpy.DXAnalysis(analysis_id)
+        # Get description of analysis.
         desc = analysis.describe()
         m = re.match('^(ENCSR[0-9]{3}[A-Z]{3}) Peaks', desc['name'])
+        # Re-extract Experiment accession?
         if m:
             experiment_accession = m.group(1)
         else:
             logger.error("No accession in %s, skipping." % (desc['name']))
             continue
+        ### END DNANexus-specific code.
 
-        if args.all:  # we've already gotten all the experiment objects
+        # experiment_accession = experiment_id instead?
+
+        # Experiment objects stored in all_experiments.
+        # Find one that matches accession or pull from
+        # production. Check if in specified lab or skip.
+        if args.all:
             try:
                 experiment = \
                     next(e for e in all_experiments
@@ -247,12 +261,15 @@ def main():
         logger.debug('ENCODEd experiment %s' % (experiment['accession']))
         if args.lab and experiment['lab'].split('/')[2] not in args.lab:
             continue
+
+        ### BEGIN DNANexus-specific code.
         try:
             idr_stage = next(s['execution'] for s in desc['stages']
                              if s['execution']['name'] == "Final IDR peak calls")
         except:
             logger.error('Failed to find final IDR stage in %s'
                          % (analysis_id))
+        # Need this else section now?
         else:
             # Final IDR peak calls stage not done, so loop through
             # intermediate IDR stages to find errors
@@ -265,10 +282,10 @@ def main():
                 self_consistency_ratio = None
                 reproducibility_test = None
                 notes = []
-                # note this list contains a mis-spelled form of
+                # Note this list contains a mis-spelled form of
                 # IDR Pooled Pseudoreplicates because until 11/13/15
-                # the pipeline stage name was misspelled - need to be
-                # able to report on those runs
+                # the pipeline stage name was misspelled. Need to be
+                # able to report on those runs.
                 idr_stage_names = ['IDR True Replicates',
                                    'IDR Rep 1 Self-pseudoreplicates',
                                    'IDR Rep 2 Self-pseudoreplicates',
@@ -283,6 +300,7 @@ def main():
                     except:
                         raise
                     if idr_stage['state'] == 'failed':
+                        # Find reason for failure?
                         try:
                             job_log = subprocess.check_output('dx watch %s'
                                                               % (idr_stage['id']),
@@ -310,6 +328,7 @@ def main():
                     done_time = "Not done or failed"
                 except:
                     raise
+            # Pull values from output of Final IDR peak calls on DNANexus.
             else:
                 Np = idr_stage['output'].get('Np')
                 N1 = idr_stage['output'].get('N1')
@@ -324,8 +343,6 @@ def main():
                 reproducibility_test = idr_stage['output'].get('reproducibility_test')
                 notes = "IDR Complete"
                 try:
-                    # done_time = next(transition['setAt'] for transition in
-                    # desc['stateTransitions'] if transition['newState'] == "done")
                     done_time = next(transition['setAt'] for transition
                                      in idr_stage['stateTransitions']
                                      if transition['newState'] == "done")
@@ -333,25 +350,31 @@ def main():
                     done_time = None
                 except:
                     raise
-
+        # Parse time analysis step completed.
         if done_time:
             date = time.strftime("%Y-%m-%d %H:%M:%S",
                                  time.localtime(done_time / 1000))
         else:
             date = "Running"
+        # Link to DNANexus analysis and experiment.
         analysis_link = 'https://platform.dnanexus.com/projects/%s/monitor/analysis/%s'\
                         % (desc.get('project').split('-')[1],
                            desc.get('id').split('-')[1])
+        ### END DNANexus_specific code.
+
+
         experiment_link = '%sexperiments/%s' % (server,
                                                 experiment.get('accession'))
+        # Grab award value.
         award = common.encoded_get(server+experiment.get('award'), keypair)
+        # Grab project phase, e.g. ENCODE4.
         try:
             rfa = award.get('rfa')
         except:
             rfa = ""
         row = {'date': date,
                'analysis': analysis_link,
-               'analysis id': desc.get('id'),
+               'analysis_id': desc.get('id'),
                'experiment': experiment_link,
                'target': experiment['target'].split('/')[2],
                'biosample_term_name': experiment.get('biosample_term_name'),
@@ -359,26 +382,22 @@ def main():
                'lab': experiment['lab'].split('/')[2],
                'rfa': rfa,
                'assembly': assembly,
+               'Nt': Nt,
                'Np': Np,
                'N1': N1,
                'N2': N2,
-               'Nt': Nt,
                'rescue_ratio': rescue_ratio,
                'self_consistency_ratio': self_consistency_ratio,
                'reproducibility_test': reproducibility_test,
+               'Ft': Ft,
                'Fp': Fp,
                'F1': F1,
                'F2': F2,
-               'Ft': Ft,
                'state': desc.get('state'),
                'release': experiment['status'],
-               'total price': desc.get('totalPrice')
+               'total_price': desc.get('totalPrice'),
+               'notes': notes if notes else 'OK'
                }
-
-        if notes:
-            row.update({'notes': '%s' % (notes)})
-        else:
-            row.update({'notes': '%s' % ('OK')})
         # log = subprocess.check_output('dx watch %s' %(analysis.))
         writer.writerow(row)
 
