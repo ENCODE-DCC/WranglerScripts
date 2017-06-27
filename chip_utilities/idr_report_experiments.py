@@ -2,14 +2,9 @@
 
 import os.path
 import sys
-import subprocess
 import logging
-import re
-import urlparse
 import csv
-import time
 import common
-import dxpy
 
 logger = logging.getLogger(__name__)
 
@@ -32,48 +27,34 @@ def get_args():
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument('experiments',
-                        help='List of experiment accessions to report on',
+                        help='List of experiment accessions to report on.',
                         nargs='*',
                         default=None)
     parser.add_argument('--infile',
-                        help='File containing experiment accessions',
+                        help='File containing experiment accessions.',
                         type=argparse.FileType('r'),
-                        default=sys.stdin)
+                        default=None)
     parser.add_argument('--all',
-                        help='Report on all possible dIDR experiments',
+                        help='Report on all possible IDR experiments.',
                         default=False,
                         action='store_true')
     parser.add_argument('--outfile',
-                        help='csv output',
+                        help='CSV output.',
                         type=argparse.FileType('wb'),
                         default=sys.stdout)
     parser.add_argument('--debug',
-                        help="Print debug messages",
+                        help='Print debug messages.',
                         default=False,
                         action='store_true')
     parser.add_argument('--key',
-                        help="The keypair identifier from the keyfile.",
+                        help='The keypair identifier from the keyfile.',
                         default='www')
     parser.add_argument('--keyfile',
-                        help="The keyfile.",
-                        default=os.path.expanduser("~/keypairs.json"))
-    parser.add_argument('--created_after',
-                        help="String to search for analyses (instead of "
-                        "looking in --infile or arguments) in the DNAnexus"
-                        " form like -5d",
-                        default=None)
-    parser.add_argument('--state',
-                        help="One or more analysis states to report on "
-                        "(only with --created_after)",
-                        nargs='*',
-                        default=["done"])
-    parser.add_argument('--lab',
-                        help="One or more labs to limit the reporting to",
-                        nargs='*',
-                        default=[])
+                        help='The keyfile.',
+                        default=os.path.expanduser('~/keypairs.json'))
     parser.add_argument('--assembly',
-                        help="Genome assembly to report on"
-                        " (e.g. hg19 or GRCg38",
+                        help='Genome assembly to report on'
+                        ' (e.g. hg19 or GRCg38',
                         required=True)
 
     args = parser.parse_args()
@@ -82,9 +63,7 @@ def get_args():
 
 
 def main():
-
     args = get_args()
-
     if args.debug:
         logging.basicConfig(format='%(levelname)s:%(message)s',
                             level=logging.DEBUG)
@@ -93,19 +72,17 @@ def main():
         # Use the default logging level.
         logging.basicConfig(format='%(levelname)s:%(message)s')
         logger.setLevel(logging.INFO)
-
     authid, authpw, server = common.processkey(args.key, args.keyfile)
     keypair = (authid, authpw)
-
     if args.experiments:
         ids = args.experiments
     elif args.all:
         # Get metadata for all ChIP-seq Experiments.
-        exp_query = "/search/?type=Experiment"\
-                    "&assay_title=ChIP-seq"\
-                    "&award.project=ENCODE"\
-                    "&status=released&status=submitted"\
-                    "&status=in+progress&status=started&status=release+ready"
+        exp_query = '/search/?type=Experiment'\
+                    '&assay_title=ChIP-seq'\
+                    '&award.project=ENCODE'\
+                    '&status=released&status=submitted'\
+                    '&status=in+progress&status=started&status=release+ready'
         all_experiments = common.encoded_get(server + exp_query,
                                              keypair)['@graph']
         # Extract Experiment accessions.
@@ -114,12 +91,12 @@ def main():
         ids = args.infile
     else:
         # Never reached because infile defaults to stdin.
-        raise InputError("Must supply experiment id's"
-                         " in arguments or --infile")
+        raise InputError('Must supply experiment ids'
+                         ' in arguments or --infile.')
     # Define column names for TSV.
     fieldnames = ['date',
                   'analysis',
-                  'analysis_id',
+                  'uuid',
                   'experiment',
                   'target',
                   'biosample_term_name',
@@ -140,39 +117,37 @@ def main():
                   'F2',
                   'state',
                   'release',
-                  'total_price',
-                  'notes']
+                  'output_type']
     writer = csv.DictWriter(args.outfile,
                             fieldnames=fieldnames,
                             delimiter='\t',
                             quotechar='"')
     writer.writeheader()
     # Get metadata for all IDR output Files.
-    idr_query = "/search/?type=File"\
-                "&assembly=%s"\
-                "&file_format=bed"\
-                "&output_type=optimal+idr+thresholded+peaks"\
-                "&output_type=conservative+idr+thresholded+peaks"\
-                "&lab.title=ENCODE+Processing+Pipeline"\
-                "&lab.title=J.+Michael+Cherry,+Stanford"\
-                "&status=in+progress&status=released"\
-                "&status=uploading&status=uploaded" % (args.assembly)
-    
-    all_idr_files = common.encoded_get(server+idr_query, keypair)['@graph']
-
+    idr_query = '/search/?type=File'\
+                '&assembly=%s'\
+                '&file_format=bed'\
+                '&output_type=optimal+idr+thresholded+peaks'\
+                '&output_type=conservative+idr+thresholded+peaks'\
+                '&output_type=pseudoreplicated+idr+thresholded+peaks'\
+                '&lab.title=ENCODE+Processing+Pipeline'\
+                '&lab.title=J.+Michael+Cherry,+Stanford'\
+                '&status=in+progress&status=released'\
+                '&status=uploading&status=uploaded' % (args.assembly)
+    all_idr_files = common.encoded_get(server + idr_query, keypair)['@graph']
+    na = 'not_available'
     for (i, experiment_id) in enumerate(ids):
         if experiment_id.startswith('#'):
             continue
         experiment_id = experiment_id.rstrip()
         experiment_uri = '/experiments/%s/' % (experiment_id)
         # Select only Files part of specified Experiment.
-        idr_files = \
-            [f for f in all_idr_files if f['dataset'] == experiment_uri]
-        idr_step_runs = set([f.get('step_run') for f in idr_files])
-        if not len(idr_step_runs):
+        idr_files = [
+            f for f in all_idr_files if f['dataset'] == experiment_uri]
+        if not idr_files:
             if not args.all:
                 logger.warning(
-                    "%s: Found %d IDR step runs. Skipping"
+                    '%s: Found %d IDR step runs. Skipping'
                     % (experiment_id, len(idr_step_runs)))
             continue
         idr_qc_uris = []
@@ -201,180 +176,39 @@ def main():
             logger.error('%s: Expected one unique assembly, found %d.'
                          ' Skipping.' % (experiment_id, len(assemblies)))
             continue
+        # Grab unique value from set.
+        idr_qc_uri = next(iter(idr_qc_uris))
         assembly = next(iter(assemblies))
-        idr_step_run_uri = next(iter(idr_step_runs))
-        idr_step_run = common.encoded_get(server + idr_step_run_uri,
-                                          keypair)
-
-        ### BEGIN DNANexus-specific code.
-        # Extract dx:job.
-        try:
-            dx_job_id_str = idr_step_run.get('dx_applet_details')[0]\
-                                        .get('dx_job_id')
-        except:
-            logger.warning("Failed to get dx_job_id from"
-                           " step_run.dx_applet_details.dx_job_id")
-            logger.debug(idr_step_run)
-            # could try to pull it from alias
-            dx_job_id_str = None
-        dx_job_id = dx_job_id_str.rpartition(':')[2]
-        dx_job = dxpy.DXJob(dx_job_id)
-        job_desc = dx_job.describe()
-        # Get description of job.
-        analysis_id = job_desc.get('analysis')
-        logger.debug('%s' % (analysis_id))
-        analysis = dxpy.DXAnalysis(analysis_id)
-        # Get description of analysis.
-        desc = analysis.describe()
-        m = re.match('^(ENCSR[0-9]{3}[A-Z]{3}) Peaks', desc['name'])
-        # Re-extract Experiment accession?
-        if m:
-            experiment_accession = m.group(1)
-        else:
-            logger.error("No accession in %s, skipping." % (desc['name']))
-            continue
-        ### END DNANexus-specific code.
-
-        # experiment_accession = experiment_id instead?
-
-        # Experiment objects stored in all_experiments.
-        # Find one that matches accession or pull from
-        # production. Check if in specified lab or skip.
-        if args.all:
-            try:
-                experiment = \
-                    next(e for e in all_experiments
-                         if e['accession'] == experiment_accession)
-            except StopIteration:
-                logger.error('Experiment %s not found in all_experiments'
-                             % (experiment_accession))
-                experiment = None
-            except:
-                raise
-            else:
-                experiment = None
-        if not args.all or experiment is None:
-            experiment = \
-                common.encoded_get(urlparse.urljoin(
-                    server,
-                    '/experiments/%s' % (experiment_accession)), keypair)
-        logger.debug('ENCODEd experiment %s' % (experiment['accession']))
-        if args.lab and experiment['lab'].split('/')[2] not in args.lab:
-            continue
-
-        ### BEGIN DNANexus-specific code.
-        try:
-            idr_stage = next(s['execution'] for s in desc['stages']
-                             if s['execution']['name'] == "Final IDR peak calls")
-        except:
-            logger.error('Failed to find final IDR stage in %s'
-                         % (analysis_id))
-        # Need this else section now?
-        else:
-            # Final IDR peak calls stage not done, so loop through
-            # intermediate IDR stages to find errors
-            if idr_stage['state'] != 'done':
-                Np = None
-                N1 = None
-                N2 = None
-                Nt = None
-                rescue_ratio = None
-                self_consistency_ratio = None
-                reproducibility_test = None
-                notes = []
-                # Note this list contains a mis-spelled form of
-                # IDR Pooled Pseudoreplicates because until 11/13/15
-                # the pipeline stage name was misspelled. Need to be
-                # able to report on those runs.
-                idr_stage_names = ['IDR True Replicates',
-                                   'IDR Rep 1 Self-pseudoreplicates',
-                                   'IDR Rep 2 Self-pseudoreplicates',
-                                   'IDR Pooled Pseudoreplicates',
-                                   'IDR Pooled Pseudoeplicates']
-                for stage_name in idr_stage_names:
-                    try:
-                        idr_stage = next(s['execution'] for s in desc['stages']
-                                         if s['execution']['name'] == stage_name)
-                    except StopIteration:
-                        continue
-                    except:
-                        raise
-                    if idr_stage['state'] == 'failed':
-                        # Find reason for failure?
-                        try:
-                            job_log = subprocess.check_output('dx watch %s'
-                                                              % (idr_stage['id']),
-                                                              shell=True,
-                                                              stderr=subprocess.STDOUT)
-                        except subprocess.CalledProcessError as e:
-                            job_log = e.output
-                        else:
-                            job_log = None
-                        if job_log:
-                            patterns = [r'Peak files must contain at '
-                                        'least 20 peaks post-merge']
-                            for p in patterns:
-                                m = re.search(p, job_log)
-                                if m:
-                                    notes.append("%s: %s" % (stage_name,
-                                                             m.group(0)))
-                        if not notes:
-                            notes.append(idr_stage['failureMessage'])
-                try:
-                    done_time = next(transition['setAt'] for transition
-                                     in desc['stateTransitions']
-                                     if transition['newState'] == "failed")
-                except StopIteration:
-                    done_time = "Not done or failed"
-                except:
-                    raise
-            # Pull values from output of Final IDR peak calls on DNANexus.
-            else:
-                Np = idr_stage['output'].get('Np')
-                N1 = idr_stage['output'].get('N1')
-                N2 = idr_stage['output'].get('N2')
-                Nt = idr_stage['output'].get('Nt')
-                Fp = idr_stage['output'].get('Fp')
-                F1 = idr_stage['output'].get('F1')
-                F2 = idr_stage['output'].get('F2')
-                Ft = idr_stage['output'].get('Ft')
-                rescue_ratio = idr_stage['output'].get('rescue_ratio')
-                self_consistency_ratio = idr_stage['output'].get('self_consistency_ratio')
-                reproducibility_test = idr_stage['output'].get('reproducibility_test')
-                notes = "IDR Complete"
-                try:
-                    done_time = next(transition['setAt'] for transition
-                                     in idr_stage['stateTransitions']
-                                     if transition['newState'] == "done")
-                except StopIteration:
-                    done_time = None
-                except:
-                    raise
-        # Parse time analysis step completed.
-        if done_time:
-            date = time.strftime("%Y-%m-%d %H:%M:%S",
-                                 time.localtime(done_time / 1000))
-        else:
-            date = "Running"
-        # Link to DNANexus analysis and experiment.
-        analysis_link = 'https://platform.dnanexus.com/projects/%s/monitor/analysis/%s'\
-                        % (desc.get('project').split('-')[1],
-                           desc.get('id').split('-')[1])
-        ### END DNANexus_specific code.
-
-
+        # Get IDR object.
+        idr = common.encoded_get(server + idr_qc_uri,
+                                 keypair)
+        # Pull metrics of interest.
+        Np = idr.get('Np', na)
+        N1 = idr.get('N1', na)
+        N2 = idr.get('N2', na)
+        Nt = idr.get('Nt', na)
+        Fp = idr.get('Fp', na)
+        F1 = idr.get('F1', na)
+        F2 = idr.get('F2', na)
+        Ft = idr.get('Ft', na)
+        output_type = idr.get('output_type', na)
+        date = idr.get('date_created', na)
+        rescue_ratio = idr.get('rescue_ratio', na)
+        self_consistency_ratio = idr.get('self_consistency_ratio', na)
+        reproducibility_test = idr.get('reproducibility_test', na)
+        # Get Experiment object.
+        experiment = common.encoded_get(server + experiment_id,
+                                        keypair)
         experiment_link = '%sexperiments/%s' % (server,
                                                 experiment.get('accession'))
-        # Grab award value.
-        award = common.encoded_get(server+experiment.get('award'), keypair)
+        analysis_link = '%s%s' % (server, idr.get('step_run')[1:])
+        # Get Award object.
+        award = common.encoded_get(server + experiment.get('award'), keypair)
         # Grab project phase, e.g. ENCODE4.
-        try:
-            rfa = award.get('rfa')
-        except:
-            rfa = ""
+        rfa = award.get('rfa', na)
         row = {'date': date,
                'analysis': analysis_link,
-               'analysis_id': desc.get('id'),
+               'uuid': idr.get('uuid'),
                'experiment': experiment_link,
                'target': experiment['target'].split('/')[2],
                'biosample_term_name': experiment.get('biosample_term_name'),
@@ -393,12 +227,10 @@ def main():
                'Fp': Fp,
                'F1': F1,
                'F2': F2,
-               'state': desc.get('state'),
+               'state': 'done',
                'release': experiment['status'],
-               'total_price': desc.get('totalPrice'),
-               'notes': notes if notes else 'OK'
+               'output_type': output_type
                }
-        # log = subprocess.check_output('dx watch %s' %(analysis.))
         writer.writerow(row)
 
 
