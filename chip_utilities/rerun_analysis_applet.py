@@ -19,9 +19,10 @@ logger = logging.getLogger(__name__)
 # TEST_ANALYSIS_ID = 'analysis-F3BZ8v8036977yg98x815zB3'\
 ACCESSION_OUTPUT_FOLDER = "/accession_log/"
 
-APPLETS_PROJECT_ID = next(dxpy.find_projects(
-    name='ENCODE - ChIP Production',
-    return_handler=True)).get_id()
+# APPLETS_PROJECT_ID = next(dxpy.find_projects(
+#     name='ENCODE - ChIP Production',
+#     return_handler=True)).get_id()
+APPLETS_PROJECT_ID = dxpy.PROJECT_CONTEXT_ID
 APPLETS = {}
 
 EPILOG = '''Notes:
