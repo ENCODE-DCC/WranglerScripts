@@ -94,7 +94,7 @@ def main():
         #never reached because inile defaults to stdin
         raise InputError("Must supply experiment id's in arguments or --infile")
 
-    fieldnames = [  'date','analysis','analysis id','experiment','target','biosample_term_name','biosample_type','lab','rfa','assembly',
+    fieldnames = [  'date','analysis','analysis id','experiment','target','biosample_term_name','biosample_type','replication','lab','rfa','assembly',
                     'Nt','Np','N1','N2','rescue_ratio','self_consistency_ratio','reproducibility_test',
                     'Ft','Fp','F1','F2',
                     'state','release','total price','notes']
@@ -107,6 +107,7 @@ def main():
         "&file_format=bed" + \
         "&output_type=optimal+idr+thresholded+peaks" + \
         "&output_type=conservative+idr+thresholded+peaks" + \
+        "&output_type=pseudoreplicated+idr+thresholded+peaks" + \
         "&lab.title=ENCODE+Processing+Pipeline" + \
         "&lab.title=J.+Michael+Cherry,+Stanford" + \
         "&status=in+progress&status=released&status=uploading&status=uploaded"
@@ -282,6 +283,7 @@ def main():
             'target':       experiment['target'].split('/')[2],
             'biosample_term_name':  experiment.get('biosample_term_name'),
             'biosample_type':   experiment.get('biosample_type'),
+            'replication':  experiment['replication_type'],
             'lab':          experiment['lab'].split('/')[2],
             'rfa':          rfa,
             'assembly':     assembly,
