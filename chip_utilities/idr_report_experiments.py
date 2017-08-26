@@ -257,7 +257,7 @@ def get_args():
                         default=os.path.expanduser('~/keypairs.json'))
     parser.add_argument('--assembly',
                         help='Genome assembly to report on'
-                        ' (e.g. hg19 or GRCh38',
+                        ' (e.g. hg19 or GRCh38).',
                         required=True)
     parser.add_argument('--create_google_sheet',
                         help='Create Google Sheet with conditional formatting.'
@@ -316,6 +316,7 @@ def main():
                   'target',
                   'biosample_term_name',
                   'biosample_type',
+                  'replication',
                   'lab',
                   'rfa',
                   'assembly',
@@ -349,11 +350,11 @@ def main():
         '&file_format=bed'\
         '&output_type=optimal+idr+thresholded+peaks'\
         '&output_type=conservative+idr+thresholded+peaks'\
-                '&output_type=pseudoreplicated+idr+thresholded+peaks'\
-                '&lab.title=ENCODE+Processing+Pipeline'\
-                '&lab.title=J.+Michael+Cherry,+Stanford'\
-                '&status=in+progress&status=released'\
-                '&status=uploading&status=uploaded' % (args.assembly)
+        '&output_type=pseudoreplicated+idr+thresholded+peaks'\
+        '&lab.title=ENCODE+Processing+Pipeline'\
+        '&lab.title=J.+Michael+Cherry,+Stanford'\
+        '&status=in+progress&status=released'\
+        '&status=uploading&status=uploaded' % (args.assembly)
     all_idr_files = common.encoded_get(server + idr_query, keypair)['@graph']
     na = 'not_available'
     for (i, experiment_id) in enumerate(ids):
@@ -433,6 +434,7 @@ def main():
                'target': experiment['target'].split('/')[2],
                'biosample_term_name': experiment.get('biosample_term_name'),
                'biosample_type': experiment.get('biosample_type'),
+               'replication': experiment.get('replication_type'),
                'lab': experiment['lab'].split('/')[2],
                'rfa': rfa,
                'assembly': assembly,
