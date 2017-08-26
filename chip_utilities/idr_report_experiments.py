@@ -458,7 +458,9 @@ def main():
         idr_data = pd.read_table(temp_file)
         idr_data = idr_data.replace('not_available', '')
         idr_data.date = idr_data.date.apply(lambda x: pd.to_datetime(x))
-        idr_data = idr_data.sort_values(by='date', ascending=False)
+        idr_data = idr_data.sort_values(
+          by=['lab', 'biosample_term_name', 'target', 'experiment'],
+          ascending=[True, True, True, True])
         idr_data.date = idr_data.date.astype('str')
         idr_data = idr_data.reset_index(drop=True)
         # Read sheet title and create unique page title.
