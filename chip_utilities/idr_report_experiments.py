@@ -461,8 +461,8 @@ def main():
         idr_data = idr_data.replace('not_available', '')
         idr_data.date = idr_data.date.apply(lambda x: pd.to_datetime(x))
         idr_data = idr_data.sort_values(
-          by=['lab', 'biosample_term_name', 'target', 'experiment'],
-          ascending=[True, True, True, True])
+            by=['lab', 'biosample_term_name', 'target', 'experiment'],
+            ascending=[True, True, True, True])
         idr_data.date = idr_data.date.astype('str')
         idr_data = idr_data.reset_index(drop=True)
         # Read sheet title and create unique page title.
@@ -482,7 +482,7 @@ def main():
         # Clear worksheet.
         wks.clear()
         # Add data from DataFrame.
-        wks.set_dataframe(idr_data, copy_head=True, start='A1')
+        wks.set_dataframe(idr_data, copy_head=True, fit=True, start='A1')
         # Apply formatting and conditions.
         header['repeatCell']['range']['sheetId'] = wks.id
         wks.client.sh_batch_update(wks.spreadsheet.id, header)

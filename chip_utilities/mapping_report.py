@@ -649,7 +649,7 @@ def main():
         # Clear worksheet.
         wks.clear()
         # Add data from DataFrame.
-        wks.set_dataframe(mapping_data, copy_head=True, start='A1')
+        wks.set_dataframe(mapping_data, copy_head=True, fit=True, start='A1')
         # Apply formatting and conditions.
         header['repeatCell']['range']['sheetId'] = wks.id
         wks.client.sh_batch_update(wks.spreadsheet.id, header)
