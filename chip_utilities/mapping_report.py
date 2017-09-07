@@ -8,17 +8,47 @@ import csv
 import copy
 import logging
 import sys
+import numpy as np
 import os.path
+import pandas as pd
+import pygsheets
 import urlparse
 import re
 import time
-# from threading import Lock, Thread
 from multiprocessing import Pool
 from functools import partial
 import dxpy
 
+from datetime import datetime
+from googleapiclient.errors import HttpError
+
 EPILOG = '''
 '''
+
+# To authorize access to Google Drive/Sheets for particular account: Find
+# client_secret file from Google and run
+# gc = pygsheets.authorize(outh_file='client_secret_xxxx.json')
+# This creates the sheets.googleapis.com-python.json that --apikey argument
+# must point to.
+
+# Conditional formatting rules for Google Sheet.
+header = {
+    "repeatCell": {
+        "range": {
+            "startRowIndex": 0,
+            "endRowIndex": 1,
+        },
+        "cell": {
+            "userEnteredFormat": {
+                "textFormat": {
+                    "fontSize": 9,
+                    "bold": True
+                }
+            }
+        },
+        "fields": "userEnteredFormat(textFormat)"
+    }
+}
 
 CACHED_PLATFORMS = []
 STATUS_TO_IGNORE = ['deleted', 'revoked', 'replaced', 'archived']
@@ -467,6 +497,18 @@ def main():
                         help='CSV output.',
                         type=argparse.FileType('wb'),
                         default=sys.stdout)
+    parser.add_argument('--create_google_sheet',
+                        help='Create Google Sheet with conditional formatting.'
+                        ' Default is False. Requires API key.',
+                        default=False,
+                        action='store_true')
+    parser.add_argument('--sheet_title',
+                        help='Name of Google Sheet.',
+                        default='ENCODE3 ChIP QC')
+    parser.add_argument('--apikey',
+                        help='Path to secret credential for Google Sheets.',
+                        default=os.path.expanduser(
+                            '~/sheets.googleapis.com-python.json'))
     args = parser.parse_args()
     if args.debug:
         logging.basicConfig(
@@ -562,6 +604,11 @@ def main():
         'release status',
         'internal status',
         'dx_analysis']
+    if args.create_google_sheet:
+        # Force creation of temporary CSV that can be loaded into a DataFrame,
+        # written to Google Sheets, then deleted.
+        temp_file = 'temp_mapping_%s.tsv' % (args.assembly)
+        args.outfile = open(temp_file, 'w')
     writer = csv.DictWriter(args.outfile,
                             fieldnames=fieldnames,
                             delimiter='\t',
@@ -576,6 +623,38 @@ def main():
     for rows in pool.imap_unordered(get_rows_func, experiments):
         for row in rows:
             writer.writerow(row)
+    if args.create_google_sheet:
+        args.outfile.close()
+        # Load CSV data, sort.
+        mapping_data = pd.read_table(temp_file)
+        mapping_data = mapping_data.fillna('')
+        mapping_data = mapping_data.sort_values(
+            by=['lab', 'biosample_name', 'target', 'experiment'],
+            ascending=[True, True, True, True])
+        mapping_data = mapping_data.reset_index(drop=True)
+        # Read sheet title and create unique page title.
+        date = datetime.now().strftime('%m_%d_%Y')
+        sheet_title = args.sheet_title
+        page_title = '%s_mapping_%s' % (args.assembly, date)
+        # Open/create Google Sheet.
+        gc = pygsheets.authorize(args.apikey)
+        try:
+            sh = gc.open(sheet_title)
+        except pygsheets.exceptions.SpreadsheetNotFound:
+            sh = gc.create(sheet_title)
+        try:
+            wks = sh.add_worksheet(page_title)
+        except HttpError:
+            wks = sh.worksheet_by_title(page_title)
+        # Clear worksheet.
+        wks.clear()
+        # Add data from DataFrame.
+        wks.set_dataframe(mapping_data, copy_head=True, start='A1')
+        # Apply formatting and conditions.
+        header['repeatCell']['range']['sheetId'] = wks.id
+        wks.client.sh_batch_update(wks.spreadsheet.id, header)
+        # Remove temp file.
+        os.remove(temp_file)
     # for experiment in experiments:
         # t = Thread(target=write_rows, args=(experiment, server, authid, authpw, args))
         # t.start()
