@@ -24,55 +24,6 @@ CACHED_PLATFORMS = []
 STATUS_TO_IGNORE = ['deleted', 'revoked', 'replaced', 'archived']
 LAB_NAMES = ['encode-processing-pipeline']
 
-fieldnames = [
-    'experiment',
-    'experiment link',
-    'target_type',
-    'target',
-    'biosample_name',
-    'biosample_type',
-    'biorep_id',
-    'lab',
-    'rfa',
-    'assembly',
-    'bam',
-    'bam link',
-    'unfiltered bam',
-    'unfiltered bam link',
-    'hiq_reads',
-    'loq_reads',
-    'mappable',
-    'fract_mappable',
-    'end',
-    'r_lengths',
-    'map_length',
-    'crop_length',
-    'picard_read_pairs_examined',
-    'picard_unpaired_reads_examined',
-    'usable_frags',
-    'fract_usable',
-    'NRF',
-    'PBC1',
-    'PBC2',
-    'frag_len',
-    'NSC',
-    'RSC',
-    'xcor plot',
-    'library',
-    'library aliases',
-    'from fastqs',
-    'platform',
-    'date_created',
-    'release status',
-    'internal status',
-    'dx_analysis']
-
-writer = csv.DictWriter(sys.stdout,
-                        fieldnames=fieldnames,
-                        delimiter=',',
-                        quotechar='"')
-writer.writeheader()
-
 
 def get_ENCODE(url, authid, authpw):
     '''
@@ -512,6 +463,10 @@ def main():
     parser.add_argument('--query_terms',
                         help='Additional query terms in the form "&term=value".',
                         default=None)
+    parser.add_argument('--outfile',
+                        help='CSV output.',
+                        type=argparse.FileType('wb'),
+                        default=sys.stdout)
     args = parser.parse_args()
     if args.debug:
         logging.basicConfig(
@@ -565,6 +520,53 @@ def main():
     logging.debug(url)
     result = get_ENCODE(url, authid, authpw)
     experiments = result['@graph']
+    fieldnames = [
+        'experiment',
+        'experiment link',
+        'target_type',
+        'target',
+        'biosample_name',
+        'biosample_type',
+        'biorep_id',
+        'lab',
+        'rfa',
+        'assembly',
+        'bam',
+        'bam link',
+        'unfiltered bam',
+        'unfiltered bam link',
+        'hiq_reads',
+        'loq_reads',
+        'mappable',
+        'fract_mappable',
+        'end',
+        'r_lengths',
+        'map_length',
+        'crop_length',
+        'picard_read_pairs_examined',
+        'picard_unpaired_reads_examined',
+        'usable_frags',
+        'fract_usable',
+        'NRF',
+        'PBC1',
+        'PBC2',
+        'frag_len',
+        'NSC',
+        'RSC',
+        'xcor plot',
+        'library',
+        'library aliases',
+        'from fastqs',
+        'platform',
+        'date_created',
+        'release status',
+        'internal status',
+        'dx_analysis']
+    writer = csv.DictWriter(args.outfile,
+                            fieldnames=fieldnames,
+                            delimiter='\t',
+                            quotechar='"')
+    writer.writeheader()
     pool = Pool(100)
     get_rows_func = partial(get_rows,
                             server=server,
