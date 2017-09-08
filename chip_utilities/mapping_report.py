@@ -38,13 +38,18 @@ colors = np.array([[252, 1, 1],
                    [253, 154, 0],
                    [246, 205, 206],
                    [220, 220, 220],
-                   [205, 216, 244]]) / 255.0
+                   [205, 216, 244],
+                   [253, 231, 181],
+                   [255, 255, 255]]) / 255.0
 
 red = colors[0]
 orange = colors[1]
 pink = colors[2]
 gray = colors[3]
 blue = colors[4]
+yellow = colors[5]
+white = colors[6]
+
 
 header = {
     "repeatCell": {
@@ -105,6 +110,68 @@ number_format = {
         "fields": "userEnteredFormat.numberFormat"
     }
 }
+
+condition_dict = {
+    "addConditionalFormatRule": {
+        "rule": {
+            "ranges": [
+                {
+                    "startRowIndex": 1,
+                }
+            ],
+            "booleanRule": {
+                "condition": {
+                    "type": "",
+                    "values": []
+                },
+                "format": {
+                    "backgroundColor": {
+                        "red": "",
+                        "green": "",
+                        "blue": ""
+                    },
+                }
+            }
+        }, "index": 0
+    }
+}
+
+# https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets#ConditionType
+condition_cols = {'target': {'conditions': [('CUSTOM_FORMULA', ['=if(OR((if(iferror(search("control",C2)),TRUE,FALSE)),(if(iferror(search("broad histone mark",C2)),TRUE,FALSE))),TRUE,FALSE)'], blue)]},
+                  'r_lengths': {'conditions': [('NUMBER_LESS', ['30'], red),
+                                               ('NUMBER_LESS',
+                                                ['50'], orange),
+                                               ('TEXT_CONTAINS', [','], yellow)]},
+                  'map_length': {'conditions': [('NUMBER_LESS', ['30'], red),
+                                                ('NUMBER_LESS', ['50'], orange)]},
+                  'crop_length': {'conditions': [('NUMBER_LESS', ['30'], red),
+                                                 ('NUMBER_LESS', ['50'], orange)]},
+                  'usable_frags': {'conditions': [('CUSTOM_FORMULA', [
+                                                   '=if(AND(OR((if(iferror(search("control",C2)),TRUE,FALSE)),(if(iferror(search("broad histone mark",C2)),TRUE,FALSE))),Y2<20000000),TRUE,FALSE)'], red),
+                                                  ('CUSTOM_FORMULA', [
+                                                   '=if(AND(OR((if(iferror(search("control",C2)),TRUE,FALSE)),(if(iferror(search("broad histone mark",C2)),TRUE,FALSE))),AND(20000000<=Y2,Y2<45000000)),TRUE,FALSE)'], orange),
+                                                  ('CUSTOM_FORMULA', [
+                                                   '=if(AND(AND(NOT(if(iferror(search("control",C2)),TRUE,FALSE)),NOT(if(iferror(search("broad histone mark",C2)),TRUE,FALSE))),Y2<10000000),TRUE,FALSE)'], red),
+                                                  ('CUSTOM_FORMULA', [
+                                                   '=if(AND(AND(NOT(if(iferror(search("control",C2)),TRUE,FALSE)),NOT(if(iferror(search("broad histone mark",C2)),TRUE,FALSE))),AND(10000000<=Y2,Y2<20000000)),TRUE,FALSE)'], orange),
+                                                  ('BLANK', [], white)]},
+                  'NRF': {'conditions': [('NUMBER_LESS', ['0.7'], red),
+                                         ('NUMBER_BETWEEN', [
+                                          '0.7', '0.8'], orange),
+                                         ('NUMBER_BETWEEN', ['0.8', '0.9'], pink)]},
+                  'PBC1': {'conditions': [('NUMBER_LESS', ['0.5'], red),
+                                          ('NUMBER_BETWEEN', ['0.5', '0.8'], orange)]},
+                  'PBC2': {'conditions': [('NUMBER_LESS', ['1'], red),
+                                          ('NUMBER_BETWEEN', [
+                                           '1', '3'], orange),
+                                          ('NUMBER_BETWEEN', ['3', '10'], pink)]},
+                  'NSC': {'conditions': [('NUMBER_LESS', ['1.02'], orange),
+                                         ('NUMBER_BETWEEN', [
+                                          '1.02', '1.05'], pink),
+                                         ('NUMBER_BETWEEN', ['1.05', '1.1'], gray)]},
+                  'RSC': {'conditions': [('NUMBER_LESS', ['0.8'], orange),
+                                         ('NUMBER_LESS', ['1'], pink)]}
+                  }
 
 notes_dict = {'bam': 'Accession of the bam file after mapping. "no fastqs" -> no fastqs have been submitted. "pending" -> fastqs have been submitted but mapping has not been done pending metadata review.',
               'hiq_reads': 'Number of reads input to the mapping pipeline.',
@@ -739,14 +806,17 @@ def main():
         freeze_header['updateSheetProperties']['properties']['sheetId'] = wks.id
         wks.client.sh_batch_update(wks.spreadsheet.id, freeze_header)
         # Add notes.
+        batch_notes = []
         for k, v in notes_dict.items():
             num = mapping_data.columns.get_loc(k)
             note['repeatCell']['range']['startColumnIndex'] = num
             note['repeatCell']['range']['endColumnIndex'] = num + 1
             note['repeatCell']['cell']['note'] = v
             note['repeatCell']['range']['sheetId'] = wks.id
-            wks.client.sh_batch_update(wks.spreadsheet.id, note)
-         # Format numbers.
+            batch_notes.append(note)
+        wks.client.sh_batch_update(wks.spreadsheet.id, batch_notes)
+        # Format numbers.
+        batch_numbers = []
         for k, v in number_cols.items():
             # Apply pattern to every column in cols.
             for col in v['cols']:
@@ -755,11 +825,43 @@ def main():
                 number_format['repeatCell']['range']['endColumnIndex'] = num + 1
                 number_format['repeatCell']['range']['sheetId'] = wks.id
                 number_format['repeatCell']['cell']['userEnteredFormat']['numberFormat']['pattern'] = v['pattern']
-                wks.client.sh_batch_update(wks.spreadsheet.id, number_format)
+                batch_numbers.append(number_format)
+        wks.client.sh_batch_update(wks.spreadsheet.id, batch_numbers)
+        # Apply conditional formatting.
+        batch_conditions = []
+        for k, v in condition_cols.items():
+            for condition in v['conditions']:
+                # Don't overwrite template.
+                blank_condition = copy.deepcopy(condition_dict)
+                # More descriptive names.
+                condition_type = condition[0]
+                condition_values = condition[1]
+                condition_color = condition[2]
+                # Fill in specifics.
+                blank_condition['addConditionalFormatRule']['rule']['booleanRule']['condition']['type'] = condition_type
+                # Don't do this for conditions (e.g. BLANK) that don't require values.
+                if condition_values:
+                    # Must loop through because NUMBER_BETWEEN condition requires two objects.
+                    for value in condition_values:
+                        blank_condition['addConditionalFormatRule']['rule']['booleanRule']['condition']['values'].append({
+                            "userEnteredValue": value})
+                blank_condition['addConditionalFormatRule']['rule']['booleanRule']['format']['backgroundColor']['red'] = condition_color[0]
+                blank_condition['addConditionalFormatRule']['rule']['booleanRule'][
+                    'format']['backgroundColor']['green'] = condition_color[1]
+                blank_condition['addConditionalFormatRule']['rule']['booleanRule'][
+                    'format']['backgroundColor']['blue'] = condition_color[2]
+                # Find column number.
+                num = mapping_data.columns.get_loc(k)
+                blank_condition['addConditionalFormatRule']['rule']['ranges'][0]['startColumnIndex'] = num
+                blank_condition['addConditionalFormatRule']['rule']['ranges'][0]['endColumnIndex'] = num + 1
+                blank_condition['addConditionalFormatRule']['rule']['ranges'][0]['sheetId'] = wks.id
+                batch_conditions.append(blank_condition)
+        wks.client.sh_batch_update(wks.spreadsheet.id, batch_conditions)
         # Resize all columns.
         for i in range(wks.cols):
             try:
                 wks.adjust_column_width(i, pixel_size=55)
+                time.sleep(0.5)
             except RequestError:
                 # Try again if response takes too long.
                 wks.adjust_column_width(i, pixel_size=55)
@@ -767,10 +869,11 @@ def main():
                              'bam',
                              'unfiltered bam',
                              'library',
-                             'from fastqs']
+                             'from fastqs',
+                             'target']
         # Resize accession columns.
         for i in [mapping_data.columns.get_loc(x) for x in accession_columns]:
-            wks.adjust_column_width(i, pixel_size=100)
+            wks.adjust_column_width(i, pixel_size=120)
         # Remove temp file.
         os.remove(temp_file)
 
