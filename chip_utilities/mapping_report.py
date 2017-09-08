@@ -21,6 +21,7 @@ import dxpy
 
 from datetime import datetime
 from googleapiclient.errors import HttpError
+from pygsheets.exceptions import RequestError
 
 EPILOG = '''
 '''
@@ -32,6 +33,19 @@ EPILOG = '''
 # must point to.
 
 # Conditional formatting rules for Google Sheet.
+
+colors = np.array([[252, 1, 1],
+                   [253, 154, 0],
+                   [246, 205, 206],
+                   [220, 220, 220],
+                   [205, 216, 244]]) / 255.0
+
+red = colors[0]
+orange = colors[1]
+pink = colors[2]
+gray = colors[3]
+blue = colors[4]
+
 header = {
     "repeatCell": {
         "range": {
@@ -47,6 +61,74 @@ header = {
             }
         },
         "fields": "userEnteredFormat(textFormat)"
+    }
+}
+
+freeze_header = {
+    "updateSheetProperties": {
+        "properties": {
+            "gridProperties": {"frozenRowCount": 1}
+        },
+        "fields": "gridProperties(frozenRowCount)"
+    }
+}
+
+number_cols = {
+    'three_decimal_cols': {'pattern': '0.000', 'cols': ['fract_mappable',
+                                                        'fract_usable']},
+    'two_decimal_cols': {'pattern': '0.00', 'cols': ['NRF',
+                                                     'PBC1',
+                                                     'PBC2',
+                                                     'NSC',
+                                                     'RSC']},
+    'million_cols': {'pattern': '0.0,,"M"', 'cols': ['hiq_reads',
+                                                     'mappable',
+                                                     'picard_read_pairs_examined',
+                                                     'picard_unpaired_reads_examined',
+                                                     'usable_frags']}
+}
+
+number_format = {
+    "repeatCell": {
+        "range": {
+            "startRowIndex": 1
+        },
+        "cell": {
+            "userEnteredFormat": {
+                "numberFormat": {
+                    "type": "NUMBER",
+                    "pattern": "0.00"
+                }
+
+            }
+        },
+        "fields": "userEnteredFormat.numberFormat"
+    }
+}
+
+notes_dict = {'bam': 'Accession of the bam file after mapping. "no fastqs" -> no fastqs have been submitted. "pending" -> fastqs have been submitted but mapping has not been done pending metadata review.',
+              'hiq_reads': 'Number of reads input to the mapping pipeline.',
+              'mappable': 'Number of reads mapping to a unique genomic location.',
+              'r_lengths': '<30 Red, <50 Orange (ENCODE3 standard), Mixed read lengths Yellow.',
+              'map_length': '<30 Red, <50 Orange (ENCODE3 standard), Blank means bam has no mapped_read_length property, assumed to be native length of the fastqs.',
+              'usable_frags': 'Number of non-duplicated reads surviving the filter. ENCODE2: >10M for narrow marks, >20M for broad. ENCODE3: should be >20M-25M for narrow marks, >45M-50M for broad marks.',
+              'NRF': 'Non redundant fraction (indicates library complexity). 0.0-0.7 very poor, 0.7-0.8 poor, 0.8-0.9 moderate, >0.9 high. Number of distinct unique mapping reads (i.e. after removing duplicates) / Total number of reads.',
+              'PBC1': 'PCR Bottlenecking coefficient 1 (indicates library complexity). 0 - 0.5 (red): severe, 0.5 - 0.8 (orange): moderate, 0.8 - 0.9 (pink): mild, > 0.9: no bottlenecking. = M1/M_DISTINCT, M1: number of genomic locations where exactly one read maps uniquely, M_DISTINCT: number of distinct genomic locations to which some read maps uniquely.',
+              'PBC2': 'PCR Bottlenecking coefficient 2 (indicates library complexity). 0 - 1 (red): severe, 1 - 3 (orange): moderate, 3 -10 (pink): mild, > 10 : no bottlenecking. = M1/M2, M1: number of genomic locations where only one read maps uniquely, M2: number of genomic locations where 2 reads map uniquely.',
+              'frag_len': 'Fragment length/strandshift. This is the estimated fragment length/strand shift for each dataset as estimated by strand cross-correlation analysis.',
+              'NSC': 'Normalized strand cross-correlation (A data quality measure). FRAGLEN_CC / MIN_CC. Ratio of strand cross-correlation at estimated fragment length to the minimum cross-correlation over all shifts. Values are always >1. NSC < 1.05 is flagged as potential low signal-to-noise. Could be due to: low enrichment, few number of peaks due to biology of factor, broad chromatin mark. orange: < 1.02 (very low), pink: 1.02 < NSC < 1.05 (low), grey: 1.05 < NSC < 1.1 (moderate), >= 1.1 (high).',
+              'RSC': 'Relative cross correlation coefficient. Ratio of strand cross-correlation at fragment length and at read length. Enriched datasets should have values > 1 or very close to 1 (> 0.8).'}
+
+note = {
+    "repeatCell": {
+        "range": {
+            "startRowIndex": 0,
+            "endRowIndex": 1,
+        },
+        "cell": {
+            "note": ""
+        },
+        "fields": "note"
     }
 }
 
@@ -653,8 +735,45 @@ def main():
         # Apply formatting and conditions.
         header['repeatCell']['range']['sheetId'] = wks.id
         wks.client.sh_batch_update(wks.spreadsheet.id, header)
+        # Freeze header.
+        freeze_header['updateSheetProperties']['properties']['sheetId'] = wks.id
+        wks.client.sh_batch_update(wks.spreadsheet.id, freeze_header)
+        # Add notes.
+        for k, v in notes_dict.items():
+            num = mapping_data.columns.get_loc(k)
+            note['repeatCell']['range']['startColumnIndex'] = num
+            note['repeatCell']['range']['endColumnIndex'] = num + 1
+            note['repeatCell']['cell']['note'] = v
+            note['repeatCell']['range']['sheetId'] = wks.id
+            wks.client.sh_batch_update(wks.spreadsheet.id, note)
+         # Format numbers.
+        for k, v in number_cols.items():
+            # Apply pattern to every column in cols.
+            for col in v['cols']:
+                num = mapping_data.columns.get_loc(col)
+                number_format['repeatCell']['range']['startColumnIndex'] = num
+                number_format['repeatCell']['range']['endColumnIndex'] = num + 1
+                number_format['repeatCell']['range']['sheetId'] = wks.id
+                number_format['repeatCell']['cell']['userEnteredFormat']['numberFormat']['pattern'] = v['pattern']
+                wks.client.sh_batch_update(wks.spreadsheet.id, number_format)
+        # Resize all columns.
+        for i in range(wks.cols):
+            try:
+                wks.adjust_column_width(i, pixel_size=55)
+            except RequestError:
+                # Try again if response takes too long.
+                wks.adjust_column_width(i, pixel_size=55)
+        accession_columns = ['experiment',
+                             'bam',
+                             'unfiltered bam',
+                             'library',
+                             'from fastqs']
+        # Resize accession columns.
+        for i in [mapping_data.columns.get_loc(x) for x in accession_columns]:
+            wks.adjust_column_width(i, pixel_size=100)
         # Remove temp file.
         os.remove(temp_file)
+
     # for experiment in experiments:
         # t = Thread(target=write_rows, args=(experiment, server, authid, authpw, args))
         # t.start()
