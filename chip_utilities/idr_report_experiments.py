@@ -92,7 +92,11 @@ font_size_columns = ['Nt',
                      'Ft',
                      'Fp',
                      'F1',
-                     'F2']
+                     'F2',
+                     'reproducibility_test',
+                     'state',
+                     'release',
+                     'total_price']
 
 font_size_format = {
     "repeatCell": {
@@ -543,7 +547,8 @@ def main():
             wks.adjust_column_width(i, pixel_size=55)
         make_wider_columns = ['date',
                               'target',
-                              'reproducibility_test']
+                              'reproducibility_test',
+                              'lab']
         for i in [idr_data.columns.get_loc(x) for x in make_wider_columns]:
             wks.adjust_column_width(i, pixel_size=120)
         # Remove temp file.
