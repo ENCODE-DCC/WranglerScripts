@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import csv
+import dxpy
 import common
 import numpy as np
 import pandas as pd
@@ -311,7 +312,7 @@ def main():
     # Define column names for TSV.
     fieldnames = ['date',
                   'analysis',
-                  'uuid',
+                  'analysis_id',
                   'experiment',
                   'target',
                   'biosample_term_name',
@@ -333,6 +334,7 @@ def main():
                   'F2',
                   'state',
                   'release',
+                  'total_price',
                   'quality_metric_of']
     if args.create_google_sheet:
         # Force creation of temporary CSV that can be loaded into a DataFrame,
@@ -362,14 +364,14 @@ def main():
             continue
         experiment_id = experiment_id.rstrip()
         experiment_uri = '/experiments/%s/' % (experiment_id)
-        # Select only Files part of specified Experiment.
-        idr_files = [
-            f for f in all_idr_files if f['dataset'] == experiment_uri]
-        if not idr_files:
+        idr_files = \
+            [f for f in all_idr_files if f['dataset'] == experiment_uri]
+        idr_step_runs = set([f.get('step_run') for f in idr_files])
+        if not len(idr_step_runs):
             if not args.all:
                 logger.warning(
-                    '%s: Found %d IDR files. Skipping'
-                    % (experiment_id, len(idr_files)))
+                    "%s: Found %d IDR step runs. Skipping"
+                    % (experiment_id, len(idr_step_runs)))
             continue
         idr_qc_uris = []
         assemblies = []
@@ -400,6 +402,28 @@ def main():
         # Grab unique value from set.
         idr_qc_uri = next(iter(idr_qc_uris))
         assembly = next(iter(assemblies))
+        # Get analysis_id from DNAnexus, create analysis_link.
+        idr_step_run_uri = next(iter(idr_step_runs))
+        idr_step_run = common.encoded_get(server + idr_step_run_uri, keypair)
+        try:
+            dx_job_id_str = idr_step_run.get('dx_applet_details')[
+                0].get('dx_job_id')
+        except:
+            logger.warning(
+                "Failed to get dx_job_id from step_run.dx_applet_details.dx_job_id")
+            logger.debug(idr_step_run)
+            # Could try to pull it from alias.
+            dx_job_id_str = None
+        dx_job_id = dx_job_id_str.rpartition(':')[2]
+        dx_job = dxpy.DXJob(dx_job_id)
+        job_desc = dx_job.describe()
+        analysis_id = job_desc.get('analysis')
+        logger.debug('%s' % (analysis_id))
+        analysis = dxpy.DXAnalysis(analysis_id)
+        desc = analysis.describe()
+        project = desc.get('project')
+        analysis_link = 'https://platform.dnanexus.com/projects/%s/monitor/analysis/%s' % (
+            desc.get('project').split('-')[1], desc.get('id').split('-')[1])
         # Get IDR object.
         idr = common.encoded_get(server + idr_qc_uri,
                                  keypair)
@@ -422,14 +446,13 @@ def main():
                                         keypair)
         experiment_link = '%sexperiments/%s' % (server,
                                                 experiment.get('accession'))
-        analysis_link = '%s%s' % (server, idr.get('step_run')[1:])
         # Get Award object.
         award = common.encoded_get(server + experiment.get('award'), keypair)
         # Grab project phase, e.g. ENCODE4.
         rfa = award.get('rfa', na)
         row = {'date': date,
                'analysis': analysis_link,
-               'uuid': idr.get('uuid'),
+               'analysis_id': desc.get('id'),
                'experiment': experiment_link,
                'target': experiment['target'].split('/')[2],
                'biosample_term_name': experiment.get('biosample_term_name'),
@@ -449,9 +472,10 @@ def main():
                'Fp': Fp,
                'F1': F1,
                'F2': F2,
-               'state': 'done',
+               'state': desc.get('state'),
                'release': experiment['status'],
-               'quality_metric_of': quality_metric_of
+               'total_price':  desc.get('totalPrice'),
+               'quality_metric_of': ', '.join(quality_metric_of)
                }
         writer.writerow(row)
     if args.create_google_sheet:
@@ -517,6 +541,11 @@ def main():
         # Optional. Smaller column width to match original.
         for i in range(wks.cols):
             wks.adjust_column_width(i, pixel_size=55)
+        make_wider_columns = ['date',
+                              'target',
+                              'reproducibility_test']
+        for i in [idr_data.columns.get_loc(x) for x in make_wider_columns]:
+            wks.adjust_column_width(i, pixel_size=120)
         # Remove temp file.
         os.remove(temp_file)
 
