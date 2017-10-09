@@ -41,14 +41,15 @@ def get_args():
 
 def main():
     args = get_args()
-    applets = list(dxpy.find_data_objects(classname='applet', name='dbgap_sra_to_fastq', project=args.project, return_handler=True))
-    assert len(applets) == 1
-    applet = applets[0]
+    applets = list(dxpy.find_data_objects(classname='applet', name='dbgap_sra_to_fastq*', name_mode='glob', project=args.project, return_handler=True))
+    assert applets
     srrs = args.SRRs or args.infile
     fieldnames = ['SRR', 'sra_size', 'sra_md5', 'fastq_id', 'fastq_alias', 'fastq_size', 'fastq_name', 'fastq_md5']
     writer = csv.DictWriter(args.outfile, fieldnames, delimiter='\t')
     writer.writeheader()
-    jobs = list(dxpy.find_executions(executable=applet, describe=True))
+    jobs = []
+    for applet in applets:
+        jobs.extend(list(dxpy.find_executions(executable=applet, describe=True)))
     for row in srrs:
         if row.startswith('#'):
             continue
