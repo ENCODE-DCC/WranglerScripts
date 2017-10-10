@@ -55,6 +55,13 @@
         "name": "samtools"
       }
     ],
+    "systemRequirementsByRegion": {
+      "aws:us-east-1": {
+        "main": {
+          "instanceType": "mem2_hdd2_x2"
+        }
+      }
+    },
     "systemRequirements": {
       "main": {
         "instanceType": "mem2_hdd2_x2"

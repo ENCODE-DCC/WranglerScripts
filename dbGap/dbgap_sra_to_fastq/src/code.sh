@@ -52,7 +52,7 @@ main() {
     spot_count_SRA=$($root/sra/bin/sra-stat -x --quick "$SRR" | perl -ne 'if($_=~/Run accession.+spot_count=\"(\d+)/){print "$1\n"}')
     echo "SRA Spots COUNT = $spot_count_SRA"
 
-    $root/sra/bin/prefetch -c "$SRR"
+    $root/sra/bin/prefetch --max-size 40000000 -c "$SRR"
     $root/sra/bin/vdb-validate -v "./sra/$SRR.sra"
     
     spot_count_local=$($root/sra/bin/sra-stat -x --quick "./sra/$SRR.sra" | perl -ne 'if($_=~/Run accession.+spot_count=\"(\d+)/){print "$1\n"}')
@@ -80,8 +80,8 @@ main() {
     fastq_filenames=($(ls $outdir))
     declare -a fastq_md5s
     fastq_md5s=($(for a in ${fastq_filenames[@]}; do (cd $outdir && md5sum $a | cut -f1 -d' '); done))
-    dx-jobutil-add-output --array fastq_filenames ${fastq_filenames[@]} 
-    dx-jobutil-add-output --array fastq_md5s ${fastq_md5s[@]}
+    for a in ${fastq_filenames[@]}; do dx-jobutil-add-output --array fastq_filenames $a; done 
+    for a in ${fastq_md5s[@]}; do dx-jobutil-add-output --array fastq_md5s $a; done
 
     # uploading
     dx-upload-all-outputs --parallel
