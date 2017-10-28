@@ -61,8 +61,7 @@ def main():
         else:
             if not any([job.get('state') == 'done' for job in srr_jobs]):
                 for job in srr_jobs:
-                    if job.get('state') != 'done':
-                        writer.writerow({'SRR': "%s: job %s %s" %(srr, job.get('id'), job.get('state'))})
+                    writer.writerow({'SRR': "%s: job %s %s" %(srr, job.get('id'), job.get('state'))})
             else:
                 for job in [j for j in srr_jobs if j.get('state') == 'done']:
                     outrow = {
