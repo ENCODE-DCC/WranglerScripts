@@ -1,0 +1,137 @@
+{
+  "name": "sra_fastq_importer",
+  "title": "SRA FASTQ Importer",
+  "summary": "Download SE or PE reads in FASTQ or FASTA format from SRA using SRR accessions",
+  "tags": [
+    "Import"
+  ],
+  "dxapi": "1.0.0",
+  "inputSpec": [
+    {
+      "name": "accession",
+      "label": "SRR accession",
+      "help": "Single SRR accession",
+      "class": "string",
+      "optional": false
+    },
+    {
+      "name": "output_type",
+      "label": "Output Type",
+      "help": "Whether to output FASTQ or FASTA files.",
+      "class": "string",
+      "optional": false,
+      "default": "fastq",
+      "choices": [
+        "fasta",
+        "fastq"
+      ]
+    },
+    {
+      "name": "validate",
+      "label": "Prefetch and validate",
+      "help": "Run prefetch and vdb-validate before fastq dump.",
+      "class": "boolean",
+      "optional": false,
+      "default": false
+    },
+    {
+      "name": "gzip",
+      "label": "Gzip files?",
+      "help": "Output files in .gz format.",
+      "class": "boolean",
+      "optional": false,
+      "default": true
+    },
+    {
+      "name": "split_files",
+      "label": "Split reads?",
+      "help": "Dump each read into separate file. Files will receive suffix corresponding to read number.",
+      "class": "boolean",
+      "optional": false,
+      "default": true
+    },
+    {
+      "name": "read_ids",
+      "label": "Append Read IDs?",
+      "help": "Append read id after spot id as 'accession.spot.readid' on defline.",
+      "class": "boolean",
+      "optional": false,
+      "default": true
+    },
+    {
+      "name": "dumpbase",
+      "label": "Use base space?",
+      "help": "Format sequences using base space (for all applications other than SOLiD.)",
+      "class": "boolean",
+      "optional": false,
+      "default": true
+    },
+    {
+      "name": "skip_technical",
+      "label": "Skip Technical Reads?",
+      "help": "Dump only biological reads, no technical reads.",
+      "class": "boolean",
+      "optional": false,
+      "default": true
+    },
+    {
+      "name": "advanced",
+      "label": "Extra command line options for fastq-dump",
+      "help": "Extra arguments for fastq-dump, e.g. -X 10000 to retrieve max. 10000 fastq records",
+      "class": "string",
+      "optional": true,
+      "default": "",
+      "group": "Advanced"
+    }
+  ],
+  "outputSpec": [
+    {
+      "name": "reads_fastq",
+      "label": "Reads",
+      "help": "Output fastq files, gzipped unless changed in advanced options.",
+      "class": "array:file",
+      "patterns": ["*.fastq.gz", "*.fastq", "*.fasta", "*.fasta.gz"]
+    },
+    {
+      "name": "reads2_fastq",
+      "label": "Reads (Right Mates)",
+      "help": "Output fastq files, gzipped unless changed in advanced options.",
+      "class": "array:file",
+      "patterns": ["*.fastq.gz", "*.fastq", "*.fasta", "*.fasta.gz"],
+      "optional": true
+    }
+  ],
+  "runSpec": {
+    "systemRequirementsByRegion": {
+      "aws:us-east-1": {
+        "*": {
+          "instanceType": "mem1_ssd1_x8"
+        }
+      }
+    },
+    "systemRequirements": {
+      "*": {
+        "instanceType": "mem1_ssd1_x8"
+      }
+    },
+    "file": "src/code.sh",
+    "release": "14.04",
+    "interpreter": "bash",
+    "timeoutPolicy": {
+      "main": {
+        "hours": 12
+      }
+    },
+    "distribution": "Ubuntu"
+  },
+  "access": {
+    "network": [
+      "*"
+    ]
+  },
+  "details": {
+    "upstreamUrl": "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=software",
+    "upstreamVersion": "2.8.0",
+    "whatsNew": "* 1.0.0: Initial release using SRA toolkit version 2.8.0"
+  }
+}

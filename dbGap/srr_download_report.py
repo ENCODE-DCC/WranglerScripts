@@ -71,10 +71,14 @@ def main():
                     }
                     for i, fastq in enumerate(job['output'].get('fastq')):
                         fh = dxpy.DXFile(job['output'].get('fastq')[i])
+                        try:
+                            file_size = fh.describe().get('size')
+                        except dxpy.exceptions.ResourceNotFound:
+                            file_size = 'deleted'
                         outrow.update({
                             'fastq_id': fh.get_id(),
                             'fastq_alias': ":".join(["dnanexus", fh.get_id()]),
-                            'fastq_size': fh.describe().get('size'),
+                            'fastq_size': file_size,
                             'fastq_name': job['output'].get('fastq_filenames')[i],
                             'fastq_md5': job['output'].get('fastq_md5s')[i]
                         })

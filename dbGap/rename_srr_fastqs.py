@@ -103,9 +103,9 @@ def main():
             print("%s: no fastq(s) found.  Skipping." % (srr_dxfile.name))
             continue
         if end_num == '1':
-            fastqs = [f for f in all_fastqs if f.get('run_type') == 'single-ended' or f.get('paired-end') == end_num]
-        elif end_num == '2':
-            fastqs = [f for f in all_fastqs if f.get('run_type') == 'paired-ended' and f.get('paired-end') == end_num]
+            fastqs = [f for f in all_fastqs if f.get('run_type') == 'single-ended' or f.get('paired_end') == end_num]
+        elif end_num in ['2', '3']:
+            fastqs = [f for f in all_fastqs if f.get('run_type') == 'paired-ended' and f.get('paired_end') == '2']
         if not fastqs:
             print("%s: no fastq(s) found for paired_end %s.  Skipping" % (srr_basename, end_num))
             continue
