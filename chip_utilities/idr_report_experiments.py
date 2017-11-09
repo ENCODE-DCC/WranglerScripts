@@ -101,7 +101,8 @@ font_size_columns = ['Nt',
 font_size_format = {
     "repeatCell": {
         "range": {
-            "startRowIndex": 1
+            "startRowIndex": 1,
+            "startColumnIndex": 0
         },
         "cell": {
             "userEnteredFormat": {
@@ -521,13 +522,9 @@ def main():
             number_format['repeatCell']['range']['endColumnIndex'] = num + 1
             number_format['repeatCell']['range']['sheetId'] = wks.id
             wks.client.sh_batch_update(wks.spreadsheet.id, number_format)
-        # Font size.
-        for col in font_size_columns:
-            num = idr_data.columns.get_loc(col)
-            font_size_format['repeatCell']['range']['startColumnIndex'] = num
-            font_size_format['repeatCell']['range']['endColumnIndex'] = num + 1
-            font_size_format['repeatCell']['range']['sheetId'] = wks.id
-            wks.client.sh_batch_update(wks.spreadsheet.id, font_size_format)
+        # Resize font.
+        font_size_format['repeatCell']['range']['sheetId'] = wks.id
+        wks.client.sh_batch_update(wks.spreadsheet.id, font_size_format)
         # Add conditional formatting.
         for conditional in conditions:
             num = idr_data.columns.get_loc("reproducibility_test")
@@ -544,13 +541,24 @@ def main():
             wks.client.sh_batch_update(wks.spreadsheet.id, note)
         # Optional. Smaller column width to match original.
         for i in range(wks.cols):
-            wks.adjust_column_width(i, pixel_size=55)
-        make_wider_columns = ['date',
-                              'target',
-                              'reproducibility_test',
-                              'lab']
-        for i in [idr_data.columns.get_loc(x) for x in make_wider_columns]:
-            wks.adjust_column_width(i, pixel_size=105)
+            wks.adjust_column_width(i, pixel_size=38)
+        # Resize tiny columns.
+        tiny_columns = ['experiment',
+                        'analysis']
+        for i in [idr_data.columns.get_loc(x) for x in tiny_columns]:
+            wks.adjust_column_width(i, pixel_size=25)
+        # Resize medium columns.
+        medium_columns = ['replication',
+                          'assembly',
+                          'rfa']
+        for i in [idr_data.columns.get_loc(x) for x in medium_columns]:
+            wks.adjust_column_width(i, pixel_size=65)
+        # Resize wide columns.
+        wide_columns = ['target',
+                        'reproducibility_test',
+                        'lab']
+        for i in [idr_data.columns.get_loc(x) for x in wide_columns]:
+            wks.adjust_column_width(i, pixel_size=85)
         # Remove temp file.
         os.remove(temp_file)
 

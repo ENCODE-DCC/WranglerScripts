@@ -889,7 +889,7 @@ def main():
                 time.sleep(0.5)
             except RequestError:
                 # Try again if response takes too long.
-                wks.adjust_column_width(i, pixel_size=45)
+                wks.adjust_column_width(i, pixel_size=38)
         tiny_columns = ['experiment link',
                         'bam link',
                         'unfiltered bam',
@@ -898,7 +898,7 @@ def main():
                         'end',
                         'xcor plot',
                         'dx_analysis']
-        # Resize accession columns.
+        # Resize tiny columns.
         for i in [mapping_data.columns.get_loc(x) for x in tiny_columns]:
             wks.adjust_column_width(i, pixel_size=25)
         accession_columns = ['experiment',
