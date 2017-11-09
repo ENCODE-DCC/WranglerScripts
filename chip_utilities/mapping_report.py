@@ -808,24 +808,28 @@ def main():
         # Add notes.
         batch_notes = []
         for k, v in notes_dict.items():
+            # Don't overwrite template.
+            blank_note = copy.deepcopy(note)
             num = mapping_data.columns.get_loc(k)
-            note['repeatCell']['range']['startColumnIndex'] = num
-            note['repeatCell']['range']['endColumnIndex'] = num + 1
-            note['repeatCell']['cell']['note'] = v
-            note['repeatCell']['range']['sheetId'] = wks.id
-            batch_notes.append(note)
+            blank_note['repeatCell']['range']['startColumnIndex'] = num
+            blank_note['repeatCell']['range']['endColumnIndex'] = num + 1
+            blank_note['repeatCell']['cell']['note'] = v
+            blank_note['repeatCell']['range']['sheetId'] = wks.id
+            batch_notes.append(blank_note)
         wks.client.sh_batch_update(wks.spreadsheet.id, batch_notes)
         # Format numbers.
         batch_numbers = []
         for k, v in number_cols.items():
             # Apply pattern to every column in cols.
             for col in v['cols']:
+                # Don't overwrite template.
+                blank_number_format = copy.deepcopy(number_format)
                 num = mapping_data.columns.get_loc(col)
-                number_format['repeatCell']['range']['startColumnIndex'] = num
-                number_format['repeatCell']['range']['endColumnIndex'] = num + 1
-                number_format['repeatCell']['range']['sheetId'] = wks.id
-                number_format['repeatCell']['cell']['userEnteredFormat']['numberFormat']['pattern'] = v['pattern']
-                batch_numbers.append(number_format)
+                blank_number_format['repeatCell']['range']['startColumnIndex'] = num
+                blank_number_format['repeatCell']['range']['endColumnIndex'] = num + 1
+                blank_number_format['repeatCell']['range']['sheetId'] = wks.id
+                blank_number_format['repeatCell']['cell']['userEnteredFormat']['numberFormat']['pattern'] = v['pattern']
+                batch_numbers.append(blank_number_format)
         wks.client.sh_batch_update(wks.spreadsheet.id, batch_numbers)
         # Apply conditional formatting.
         batch_conditions = []
