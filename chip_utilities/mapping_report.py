@@ -111,6 +111,24 @@ number_format = {
     }
 }
 
+
+font_size_format = {
+    "repeatCell": {
+        "range": {
+            "startRowIndex": 1,
+            "startColumnIndex": 0
+        },
+        "cell": {
+            "userEnteredFormat": {
+                "textFormat": {
+                    "fontSize": 9,
+                }
+            }
+        },
+        "fields": "userEnteredFormat(textFormat)"
+    }
+}
+
 condition_dict = {
     "addConditionalFormatRule": {
         "rule": {
@@ -805,6 +823,9 @@ def main():
         # Freeze header.
         freeze_header['updateSheetProperties']['properties']['sheetId'] = wks.id
         wks.client.sh_batch_update(wks.spreadsheet.id, freeze_header)
+        # Resize font.
+        font_size_format['repeatCell']['range']['sheetId'] = wks.id
+        wks.client.sh_batch_update(wks.spreadsheet.id, font_size_format)
         # Add notes.
         batch_notes = []
         for k, v in notes_dict.items():
@@ -864,20 +885,31 @@ def main():
         # Resize all columns.
         for i in range(wks.cols):
             try:
-                wks.adjust_column_width(i, pixel_size=55)
+                wks.adjust_column_width(i, pixel_size=38)
                 time.sleep(0.5)
             except RequestError:
                 # Try again if response takes too long.
-                wks.adjust_column_width(i, pixel_size=55)
+                wks.adjust_column_width(i, pixel_size=45)
+        tiny_columns = ['experiment link',
+                        'bam link',
+                        'unfiltered bam',
+                        'unfiltered bam link',
+                        'loq_reads',
+                        'end',
+                        'xcor plot',
+                        'dx_analysis']
+        # Resize accession columns.
+        for i in [mapping_data.columns.get_loc(x) for x in tiny_columns]:
+            wks.adjust_column_width(i, pixel_size=25)
         accession_columns = ['experiment',
                              'bam',
-                             'unfiltered bam',
                              'library',
+                             'library aliases',
                              'from fastqs',
                              'target']
         # Resize accession columns.
         for i in [mapping_data.columns.get_loc(x) for x in accession_columns]:
-            wks.adjust_column_width(i, pixel_size=120)
+            wks.adjust_column_width(i, pixel_size=90)
         # Remove temp file.
         os.remove(temp_file)
 

@@ -47,7 +47,7 @@ header = {
         "cell": {
             "userEnteredFormat": {
                 "textFormat": {
-                    "fontSize": 10,
+                    "fontSize": 9,
                     "bold": True
                 }
             }
@@ -550,7 +550,7 @@ def main():
                               'reproducibility_test',
                               'lab']
         for i in [idr_data.columns.get_loc(x) for x in make_wider_columns]:
-            wks.adjust_column_width(i, pixel_size=120)
+            wks.adjust_column_width(i, pixel_size=105)
         # Remove temp file.
         os.remove(temp_file)
 
