@@ -56,7 +56,7 @@
       "help": "Append read id after spot id as 'accession.spot.readid' on defline.",
       "class": "boolean",
       "optional": false,
-      "default": true
+      "default": false
     },
     {
       "name": "dumpbase",

@@ -24,7 +24,7 @@
     {
       "name": "option",
       "class": "string",
-      "default": "--gzip --skip-technical --readids --dumpbase --split-files"
+      "default": "--gzip --skip-technical --dumpbase --split-files"
     }
   ],
   "outputSpec": [
