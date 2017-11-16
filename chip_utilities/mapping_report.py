@@ -702,6 +702,7 @@ def main():
     else:
         query += '&status!=deleted'\
                  '&status!=revoked'\
+                 '&status!=archived'\
                  '&status!=replaced'
         if args.assay:
             query += '&assay_term_name=%s' % (args.assay)
