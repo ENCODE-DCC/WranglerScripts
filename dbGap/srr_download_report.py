@@ -73,13 +73,16 @@ def main():
                         fh = dxpy.DXFile(job['output'].get('fastq')[i])
                         try:
                             file_size = fh.describe().get('size')
+                            file_name = fh.name
                         except dxpy.exceptions.ResourceNotFound:
                             file_size = 'deleted'
+                            file_name = 'deleted'
                         outrow.update({
                             'fastq_id': fh.get_id(),
                             'fastq_alias': ":".join(["dnanexus", fh.get_id()]),
                             'fastq_size': file_size,
-                            'fastq_name': job['output'].get('fastq_filenames')[i],
+                            # 'fastq_name': job['output'].get('fastq_filenames')[i],
+                            'fastq_name': file_name,
                             'fastq_md5': job['output'].get('fastq_md5s')[i]
                         })
                         writer.writerow(outrow)
