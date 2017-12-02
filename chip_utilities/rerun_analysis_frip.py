@@ -151,7 +151,6 @@ def accession_analysis(analysis):
         'analysis_ids': [analysis.get_id()],
         'wait_on_files': [],
         'fqcheck': False,
-        'skip_control': True,
         'force_patch': True,
         'encoded_check': False
     }
