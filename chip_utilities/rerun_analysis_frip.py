@@ -51,6 +51,8 @@ def get_args():
     parser.add_argument('--infile', help='File containing analysis IDs', type=argparse.FileType('r'), default=sys.stdin)
     parser.add_argument('--accession', help='Automatically accession the results to the ENCODE Portal', type=t_or_f, default=None)
     parser.add_argument('--debug', help="Print debug messages", type=t_or_f, default=None)
+    parser.add_argument('--dryrun', help="Set up workflow but don't run.", type=t_or_f, default=None)
+
     return parser.parse_args()
 
 
@@ -81,7 +83,7 @@ def stage_named(name, analysis):
     return stage
 
 
-def rerun_with_frip(analysis_id):
+def rerun_with_frip(analysis_id, dryrun):
     logger.debug(
         'rerun_with_frip: analysis_id %s'
         % (analysis_id))
@@ -107,7 +109,12 @@ def rerun_with_frip(analysis_id):
     new_input = final_idr_stage['execution']['input']
     encode_spp_stage_input = \
         stage_named("SPP Peaks", analysis)['execution']['input']
-    spp_input_names = ['rep1_ta', 'rep1_xcor', 'rep2_ta', 'rep2_xcor']
+    # include only the input names actually used - this allows support
+    # for both replicated and unreplicated analysis where there is no
+    # rep2
+    spp_input_names = \
+        [i for i in ['rep1_ta', 'rep1_xcor', 'rep2_ta', 'rep2_xcor']
+         if i in encode_spp_stage_input]
     new_input.update(dict(zip(
         spp_input_names,
         map(lambda name: encode_spp_stage_input[name], spp_input_names)
@@ -132,13 +139,18 @@ def rerun_with_frip(analysis_id):
         'experiment_accession': accession,
         'original_analysis': analysis_id
     })
-    logger.debug(
-        'rerun_with_frip: running workflow')
-    return new_workflow.run(
-        {},
-        project=project_id,
-        name="%s frip" % (analysis.name),
-        properties=analysis_properties)
+    if dryrun:
+        logger.debug(
+            'rerun_with_frip: workflow created but dryrun so no analysis run')
+        return new_workflow
+    else:
+        logger.debug(
+            'rerun_with_frip: running workflow')
+        return new_workflow.run(
+            {},
+            project=project_id,
+            name="%s frip" % (analysis.name),
+            properties=analysis_properties)
 
 
 def accession_analysis(analysis):
@@ -208,17 +220,23 @@ def main():
             continue
 
         try:
-            new_analysis = rerun_with_frip(analysis_id)
+            new_analysis = rerun_with_frip(analysis_id, args.dryrun)
         except:
             row = "%s\terror" % (analysis_id)
             print("%s\t%s" % (analysis_id, "error"), file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
         else:
-            project = dxpy.DXProject(new_analysis.describe()['project'])
+            if args.dryrun:
+                # since it's only a temporary workflow, the project is just a termporary
+                # container, which has only an ID and not a name
+                project_name = new_analysis.describe().get('project')
+            else:
+                project = dxpy.DXProject(new_analysis.describe().get('project'))
+                project_name = project.name
             row = "%s\t%s\t%s" % (
                 analysis_id,
                 new_analysis.get_id(),
-                project.name
+                project_name
             )
 
             if args.accession:
@@ -230,7 +248,7 @@ def main():
                 else:
                     row += "\t%s" % (None if not accessioning_job else accessioning_job.get_id())
             else:
-                row += "manually"
+                row += " manually"
 
         if first_row:
             print("old_analysis\tnew_analysis\tproject\taccession_job")
