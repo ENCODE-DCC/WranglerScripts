@@ -671,7 +671,7 @@ def main():
                         action='store_true')
     parser.add_argument('--sheet_title',
                         help='Name of Google Sheet.',
-                        default='ENCODE3 ChIP QC')
+                        default='ENCODE ChIP QC')
     parser.add_argument('--apikey',
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
