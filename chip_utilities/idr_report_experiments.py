@@ -272,7 +272,7 @@ def get_args():
                         action='store_true')
     parser.add_argument('--sheet_title',
                         help='Name of Google Sheet.',
-                        default='ENCODE3 ChIP QC')
+                        default='ENCODE ChIP QC')
     parser.add_argument('--apikey',
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
@@ -409,7 +409,11 @@ def main():
         assembly = next(iter(assemblies))
         # Get analysis_id from DNAnexus, create analysis_link.
         idr_step_run_uri = next(iter(idr_step_runs))
-        idr_step_run = common.encoded_get(server + idr_step_run_uri, keypair)
+        try:
+            idr_step_run = common.encoded_get(server + idr_step_run_uri, keypair)
+        except Exception as e:
+            print(experiment_id, e, 'Skipping.')
+            continue
         try:
             dx_job_id_str = idr_step_run.get('dx_applet_details')[
                 0].get('dx_job_id')
