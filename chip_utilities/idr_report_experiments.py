@@ -28,8 +28,10 @@ Examples:
 # This creates the sheets.googleapis.com-python.json that --apikey argument
 # must point to.
 
-# Conditional formatting rules for Google Sheet.
+# Independent of keypairs file for --released_only flag.
+PUBLIC_SERVER = 'https://www.encodeproject.org/'
 
+# Conditional formatting rules for Google Sheet.
 colors = np.array([[183, 225, 205],
                    [253, 231, 181],
                    [243, 200, 194]]) / 255.0
@@ -277,6 +279,10 @@ def get_args():
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
                             '~/sheets.googleapis.com-python.json'))
+    parser.add_argument('--released_only',
+                        help='Bypasses authentication and only shows public results.',
+                        default=False,
+                        action='store_true')
 
     args = parser.parse_args()
 
@@ -293,17 +299,19 @@ def main():
         # Use the default logging level.
         logging.basicConfig(format='%(levelname)s:%(message)s')
         logger.setLevel(logging.INFO)
-    authid, authpw, server = common.processkey(args.key, args.keyfile)
-    keypair = (authid, authpw)
+    if args.released_only:
+        keypair = None
+        server = PUBLIC_SERVER
+    else:
+        authid, authpw, server = common.processkey(args.key, args.keyfile)
+        keypair = (authid, authpw)
     if args.experiments:
         ids = args.experiments
     elif args.all:
         # Get metadata for all ChIP-seq Experiments.
-        exp_query = '/search/?type=Experiment'\
-            '&assay_title=ChIP-seq'\
-            '&award.project=ENCODE'\
-            '&status=released&status=submitted'\
-            '&status=in+progress&status=started&status=release+ready'
+        base_exp_query = '/search/?type=Experiment&assay_title=ChIP-seq&award.project=ENCODE&status=released'
+        extended_query = '&status=submitted&status=in+progress&status=started&status=release+ready'
+        exp_query = base_exp_query if args.released_only else (base_exp_query + extended_query)
         all_experiments = common.encoded_get(server + exp_query,
                                              keypair)['@graph']
         # Extract Experiment accessions.
@@ -352,16 +360,17 @@ def main():
                             quotechar='"')
     writer.writeheader()
     # Get metadata for all IDR output Files.
-    idr_query = '/search/?type=File'\
-        '&assembly=%s'\
-        '&file_format=bed'\
-        '&output_type=optimal+idr+thresholded+peaks'\
-        '&output_type=conservative+idr+thresholded+peaks'\
-        '&output_type=pseudoreplicated+idr+thresholded+peaks'\
-        '&lab.title=ENCODE+Processing+Pipeline'\
-        '&lab.title=J.+Michael+Cherry,+Stanford'\
-        '&status=in+progress&status=released'\
-        '&status=uploading&status=uploaded' % (args.assembly)
+    base_idr_query = (
+        '/search/?type=File&assembly=%s&file_format=bed'
+        '&output_type=optimal+idr+thresholded+peaks'
+        '&output_type=conservative+idr+thresholded+peaks'
+        '&output_type=pseudoreplicated+idr+thresholded+peaks'
+        '&lab.title=ENCODE+Processing+Pipeline'
+        '&lab.title=J.+Michael+Cherry,+Stanford'
+        '&status=released' % (args.assembly)
+    )
+    extended_idr_query = '&status=in+progress&status=uploading&status=uploaded'
+    idr_query = base_idr_query if args.released_only else (base_idr_query + extended_idr_query)
     all_idr_files = common.encoded_get(server + idr_query, keypair)['@graph']
     na = 'not_available'
     for (i, experiment_id) in enumerate(ids):
@@ -424,19 +433,28 @@ def main():
             # Could try to pull it from alias.
             dx_job_id_str = None
         dx_job_id = dx_job_id_str.rpartition(':')[2]
-        dx_job = dxpy.DXJob(dx_job_id)
-        job_desc = dx_job.describe()
-        analysis_id = job_desc.get('analysis')
-        logger.debug('%s' % (analysis_id))
-        analysis = dxpy.DXAnalysis(analysis_id)
-        desc = analysis.describe()
-        project = desc.get('project')
-        analysis_link = 'https://platform.dnanexus.com/projects/%s/monitor/analysis/%s' % (
-            desc.get('project').split('-')[1], desc.get('id').split('-')[1])
+        if not args.released_only:
+            dx_job = dxpy.DXJob(dx_job_id)
+            job_desc = dx_job.describe()
+            analysis_id = job_desc.get('analysis')
+            logger.debug('%s' % (analysis_id))
+            analysis = dxpy.DXAnalysis(analysis_id)
+            desc = analysis.describe()
+            project = desc.get('project')
+            analysis_link = 'https://platform.dnanexus.com/projects/%s/monitor/analysis/%s' % (
+                desc.get('project').split('-')[1], desc.get('id').split('-')[1])
+        else:
+            analysis_link = na
+            desc = {}
+            
         # Get IDR object.
         idr = common.encoded_get(server + idr_qc_uri,
                                  keypair)
         # Pull metrics of interest.
+        idr_status = idr.get('status', na)
+        if (args.released_only and (idr_status == na or idr_status != 'released')):
+            logger.error('%s: Expected released IDR metric. Skipping.' % idr_qc_uris)
+            continue
         Np = idr.get('Np', na)
         N1 = idr.get('N1', na)
         N2 = idr.get('N2', na)
@@ -445,7 +463,7 @@ def main():
         F1 = idr.get('F1', na)
         F2 = idr.get('F2', na)
         Ft = idr.get('Ft', na)
-        quality_metric_of = idr.get('quality_metric_of', na)
+        quality_metric_of = idr.get('quality_metric_of', [])
         date = idr.get('date_created', na)
         rescue_ratio = idr.get('rescue_ratio', na)
         self_consistency_ratio = idr.get('self_consistency_ratio', na)
@@ -461,7 +479,7 @@ def main():
         rfa = award.get('rfa', na)
         row = {'date': date,
                'analysis': analysis_link,
-               'analysis_id': desc.get('id'),
+               'analysis_id': desc.get('id', na),
                'experiment': experiment_link,
                'target': experiment['target'].split('/')[2],
                'biosample_term_name': experiment.get('biosample_term_name'),
@@ -481,9 +499,9 @@ def main():
                'Fp': Fp,
                'F1': F1,
                'F2': F2,
-               'state': desc.get('state'),
+               'state': desc.get('state', na),
                'release': experiment['status'],
-               'total_price':  desc.get('totalPrice'),
+               'total_price':  desc.get('totalPrice', na),
                'quality_metric_of': ', '.join(quality_metric_of)
                }
         writer.writerow(row)
@@ -500,7 +518,10 @@ def main():
         idr_data = idr_data.reset_index(drop=True)
         # Read sheet title and create unique page title.
         date = datetime.now().strftime('%m_%d_%Y')
-        sheet_title = args.sheet_title
+        sheet_title = (
+            args.sheet_title if not args.released_only
+            else '{} Released Only'.format(args.sheet_title)
+        )
         page_title = '%s_IDR_FRIP_%s' % (args.assembly, date)
         # Open/create Google Sheet.
         gc = pygsheets.authorize(args.apikey)
