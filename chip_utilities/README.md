@@ -29,4 +29,6 @@ $ python mapping_report.py --key www --assembly GRCh38 --create_google_sheet
 $ python idr_report_experiments.py --all --key www --assembly GRCh38 --create_google_sheet
 ```
 
+Note `--released_only`, which only shows results for released experiments, will bypass need for `--key` and DNAnexus credentials.
+
 5. Examine results posted to Google Sheets.
