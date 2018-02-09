@@ -28,7 +28,7 @@ Examples:
 # This creates the sheets.googleapis.com-python.json that --apikey argument
 # must point to.
 
-# Independent of keypairs file for --released_only flag.
+# Independent of keypairs file for --released flag.
 PUBLIC_SERVER = 'https://www.encodeproject.org/'
 
 # Conditional formatting rules for Google Sheet.
@@ -279,7 +279,7 @@ def get_args():
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
                             '~/sheets.googleapis.com-python.json'))
-    parser.add_argument('--released_only',
+    parser.add_argument('--released',
                         help='Bypasses authentication and only shows public results.',
                         default=False,
                         action='store_true')
@@ -299,7 +299,7 @@ def main():
         # Use the default logging level.
         logging.basicConfig(format='%(levelname)s:%(message)s')
         logger.setLevel(logging.INFO)
-    if args.released_only:
+    if args.released:
         keypair = None
         server = PUBLIC_SERVER
     else:
@@ -311,7 +311,7 @@ def main():
         # Get metadata for all ChIP-seq Experiments.
         base_exp_query = '/search/?type=Experiment&assay_title=ChIP-seq&award.project=ENCODE&status=released'
         extended_query = '&status=submitted&status=in+progress&status=started&status=release+ready'
-        exp_query = base_exp_query if args.released_only else (base_exp_query + extended_query)
+        exp_query = base_exp_query if args.released else (base_exp_query + extended_query)
         all_experiments = common.encoded_get(server + exp_query,
                                              keypair)['@graph']
         # Extract Experiment accessions.
@@ -370,7 +370,7 @@ def main():
         '&status=released' % (args.assembly)
     )
     extended_idr_query = '&status=in+progress&status=uploading&status=uploaded'
-    idr_query = base_idr_query if args.released_only else (base_idr_query + extended_idr_query)
+    idr_query = base_idr_query if args.released else (base_idr_query + extended_idr_query)
     all_idr_files = common.encoded_get(server + idr_query, keypair)['@graph']
     na = 'not_available'
     for (i, experiment_id) in enumerate(ids):
@@ -433,7 +433,7 @@ def main():
             # Could try to pull it from alias.
             dx_job_id_str = None
         dx_job_id = dx_job_id_str.rpartition(':')[2]
-        if not args.released_only:
+        if not args.released:
             dx_job = dxpy.DXJob(dx_job_id)
             job_desc = dx_job.describe()
             analysis_id = job_desc.get('analysis')
@@ -452,7 +452,7 @@ def main():
                                  keypair)
         # Pull metrics of interest.
         idr_status = idr.get('status', na)
-        if (args.released_only and (idr_status == na or idr_status != 'released')):
+        if (args.released and (idr_status == na or idr_status != 'released')):
             logger.error('%s: Expected released IDR metric. Skipping.' % idr_qc_uris)
             continue
         Np = idr.get('Np', na)
@@ -519,8 +519,8 @@ def main():
         # Read sheet title and create unique page title.
         date = datetime.now().strftime('%m_%d_%Y')
         sheet_title = (
-            args.sheet_title if not args.released_only
-            else '{} Released Only'.format(args.sheet_title)
+            args.sheet_title if not args.released
+            else '{} Released'.format(args.sheet_title)
         )
         page_title = '%s_IDR_FRIP_%s' % (args.assembly, date)
         # Open/create Google Sheet.

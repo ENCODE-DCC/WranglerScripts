@@ -32,7 +32,7 @@ EPILOG = '''
 # This creates the sheets.googleapis.com-python.json that --apikey argument
 # must point to.
 
-# Independent of keypairs file for --released_only flag. 
+# Independent of keypairs file for --released flag. 
 PUBLIC_SERVER = 'https://www.encodeproject.org/'
 
 # Conditional formatting rules for Google Sheet.
@@ -515,7 +515,7 @@ def get_rows(experiment, server, authid, authpw, args):
                 xcor_plot_link = urlparse.urljoin(server, xcor_plot_uri)
             # mapping_analysis = get_mapping_analysis(bam)
             try:
-                mapping_analysis = None if args.released_only else get_mapping_analysis(bam)
+                mapping_analysis = None if args.released else get_mapping_analysis(bam)
             except:
                 mapping_analysis = None
             row.update({
@@ -677,8 +677,8 @@ def main():
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
                             '~/sheets.googleapis.com-python.json'))
-    parser.add_argument('--released_only',
-                        help='Bypasses authentication and only shows public results.',
+    parser.add_argument('--released',
+                        help='Bypasses authentication and only shows released results.',
                         default=False,
                         action='store_true')
     args = parser.parse_args()
@@ -688,7 +688,7 @@ def main():
     else:
         logging.basicConfig(
             format='%(levelname)s:%(message)s', level=logging.WARNING)
-    if args.released_only:
+    if args.released:
         keypair, authid, authpw = None, None, None
         server = PUBLIC_SERVER
     else:
@@ -812,8 +812,8 @@ def main():
         # Read sheet title and create unique page title.
         date = datetime.now().strftime('%m_%d_%Y')
         sheet_title = (
-            args.sheet_title if not args.released_only
-            else '{} Released Only'.format(args.sheet_title)
+            args.sheet_title if not args.released
+            else '{} Released'.format(args.sheet_title)
         )
         page_title = '%s_mapping_%s' % (args.assembly, date)
         # Open/create Google Sheet.
