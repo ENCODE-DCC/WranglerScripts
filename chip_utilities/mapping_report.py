@@ -32,8 +32,10 @@ EPILOG = '''
 # This creates the sheets.googleapis.com-python.json that --apikey argument
 # must point to.
 
-# Conditional formatting rules for Google Sheet.
+# Independent of keypairs file for --released_only flag. 
+PUBLIC_SERVER = 'https://www.encodeproject.org/'
 
+# Conditional formatting rules for Google Sheet.
 colors = np.array([[252, 1, 1],
                    [253, 154, 0],
                    [246, 205, 206],
@@ -244,7 +246,7 @@ def get_ENCODE(url, authid, authpw):
     while retries:
         try:
             response = requests.get(url,
-                                    auth=(authid, authpw),
+                                    auth=(authid, authpw) if all([authid, authpw]) else None,
                                     headers={'accept': 'application/json'})
         except requests.HTTPError:
             logging.warning('GET %s failed with %s' % (url, response.text))
@@ -416,207 +418,217 @@ def get_crop_length(analysis):
 #     else:
 #         return None
 def get_rows(experiment, server, authid, authpw, args):
-    rows = []
-    row_template = {
-        'experiment': experiment.get('accession'),
-        'experiment link': urlparse.urljoin(server, '/experiments/%s' % (experiment.get('accession'))),
-        'target_type': ','.join(experiment.get('target', {}).get('investigated_as') or []),
-        'target': experiment.get('target', {}).get('name'),
-        'biosample_name': experiment.get('biosample_term_name'),
-        'biosample_type': experiment.get('biosample_type'),
-        'lab': experiment.get('lab', {}).get('name'),
-        'rfa': experiment.get('award', {}).get('rfa'),
-        'internal status': experiment.get('internal_status')
-    }
-    original_files = get_ENCODE(
-        urlparse.urljoin(server,
-                         '/search/?type=file&dataset=/experiments/%s/&'
-                         'file_format=fastq&file_format=bam&frame=embed'
-                         'ded&format=json'
-                         % (experiment.get('accession'))), authid, authpw)['@graph']
-    fastqs = [f for f in original_files if f.get(
-        'file_format') == 'fastq' and f.get('status') not in STATUS_TO_IGNORE]
-    bams = [f for f in original_files
-            if f.get('file_format') == 'bam'
-            and (not args.assembly
-                 or f.get('assembly') == args.assembly)
-            and f.get('status') not in STATUS_TO_IGNORE
-            and f['lab']['name'] in LAB_NAMES]
-    filtered_bams = [f for f in bams if f.get('output_type') == 'alignments']
-    unfiltered_bams = [f for f in bams
-                       if f.get('output_type') == 'unfiltered alignments']
-
-    if not bams:
-        row = copy.deepcopy(row_template)
-        if not fastqs:
-            row.update({'bam': 'no fastqs'})
-        else:
-            row.update({'bam': 'pending'})
-            read_lengths = set([str(f.get('read_length')) for f in fastqs])
-            row.update({'r_lengths': ','.join(read_lengths)})
-            paired_end_strs = []
-            if any([f.get('run_type') == 'single-ended' for f in fastqs]):
-                paired_end_strs.append('SE')
-            if any([f.get('run_type') == 'paired-ended' for f in fastqs]):
-                paired_end_strs.append('PE')
-            if any([f.get('run_type') == 'unknown' for f in fastqs]):
-                paired_end_strs.append('unknown')
-            row.update({'end': ','.join(paired_end_strs)})
-            row.update({'platform': ','.join(
-                get_platform_strings(fastqs, server, authid, authpw))})
-        rows.append(row)
-    else:
-        for bam in filtered_bams:
-            row = copy.deepcopy(row_template)
-            # derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from') or []]]
-            derived_from_accessions = [os.path.basename(uri.rstrip('/')) for
-                                       uri in bam.get('derived_from') or []]
-            derived_from_fastqs = [f for f in fastqs
-                                   if f.get('accession') in derived_from_accessions]
-            derived_from_fastq_accessions = [f.get('accession') for f in fastqs
-                                             if f.get('accession') in derived_from_accessions]
-            unfiltered_bam_accession = None
-            unfiltered_bam_link = None
-            for unfiltered_bam in unfiltered_bams:
-                # ub_derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in unfiltered_bam.get('derived_from') or []]]
-                ub_derived_from_accessions = [os.path.basename(uri.rstrip('/'))
-                                              for uri in unfiltered_bam.get('derived_from')
-                                              or []]
-                if set(derived_from_accessions) == set(ub_derived_from_accessions):
-                    unfiltered_bam_accession = unfiltered_bam.get('accession')
-                    unfiltered_bam_link = urlparse.urljoin(server,
-                                                           unfiltered_bam.get('href'))
-                    break
-            bioreps = set([str(f.get('replicate').get('biological_replicate_number'))
-                           for f in derived_from_fastqs])
-            library_uris = set([str(f.get('replicate').get('library').get('@id'))
-                                for f in derived_from_fastqs])
-            read_lengths = set([str(f.get('read_length'))
-                                for f in derived_from_fastqs])
-            aliases = []
-            libraries = []
-            for uri in library_uris:
-                library = get_ENCODE(urlparse.urljoin(
-                    server, '%s' % (uri)), authid, authpw)
-                libraries.append(library.get('accession'))
-                aliases.extend(library.get('aliases'))
-            platform_strs = get_platform_strings(derived_from_fastqs,
-                                                 server,
-                                                 authid,
-                                                 authpw)
-            try:
-                xcor_plot_uri = next(qc['@id'] + qc['cross_correlation_plot'].get('href')
-                                     for qc in bam.get('quality_metrics') if qc.get('cross_correlation_plot'))
-            except StopIteration:
-                xcor_plot_link = 'Missing'
+    attempt = 0
+    while True:
+        try:
+            rows = []
+            row_template = {
+                'experiment': experiment.get('accession'),
+                'experiment link': urlparse.urljoin(server, '/experiments/%s' % (experiment.get('accession'))),
+                'target_type': ','.join(experiment.get('target', {}).get('investigated_as') or []),
+                'target': experiment.get('target', {}).get('name'),
+                'biosample_name': experiment.get('biosample_term_name'),
+                'biosample_type': experiment.get('biosample_type'),
+                'lab': experiment.get('lab', {}).get('name'),
+                'rfa': experiment.get('award', {}).get('rfa'),
+                'internal status': experiment.get('internal_status')
+            }
+            original_files = get_ENCODE(
+                urlparse.urljoin(server,
+                                 '/search/?type=file&dataset=/experiments/%s/&'
+                                 'file_format=fastq&file_format=bam&frame=embed'
+                                 'ded&format=json'
+                                 % (experiment.get('accession'))), authid, authpw)['@graph']
+            fastqs = [f for f in original_files if f.get(
+                'file_format') == 'fastq' and f.get('status') not in STATUS_TO_IGNORE]
+            bams = [f for f in original_files
+                    if f.get('file_format') == 'bam'
+                    and (not args.assembly
+                         or f.get('assembly') == args.assembly)
+                    and f.get('status') not in STATUS_TO_IGNORE
+                    and f['lab']['name'] in LAB_NAMES]
+            filtered_bams = [f for f in bams if f.get('output_type') == 'alignments']
+            unfiltered_bams = [f for f in bams
+                               if f.get('output_type') == 'unfiltered alignments']
+            if not bams:
+                row = copy.deepcopy(row_template)
+                if not fastqs:
+                    row.update({'bam': 'no fastqs'})
+                else:
+                    row.update({'bam': 'pending'})
+                    read_lengths = set([str(f.get('read_length')) for f in fastqs])
+                    row.update({'r_lengths': ','.join(read_lengths)})
+                    paired_end_strs = []
+                    if any([f.get('run_type') == 'single-ended' for f in fastqs]):
+                        paired_end_strs.append('SE')
+                    if any([f.get('run_type') == 'paired-ended' for f in fastqs]):
+                        paired_end_strs.append('PE')
+                    if any([f.get('run_type') == 'unknown' for f in fastqs]):
+                        paired_end_strs.append('unknown')
+                    row.update({'end': ','.join(paired_end_strs)})
+                    row.update({'platform': ','.join(
+                        get_platform_strings(fastqs, server, authid, authpw))})
+                rows.append(row)
             else:
-                xcor_plot_link = urlparse.urljoin(server, xcor_plot_uri)
-            # mapping_analysis = get_mapping_analysis(bam)
-            try:
-                mapping_analysis = get_mapping_analysis(bam)
-            except:
-                mapping_analysis = None
-            row.update({
-                'biorep_id': ','.join(bioreps),
-                'assembly': bam.get('assembly'),
-                'platform': ','.join(platform_strs),
-                'bam': bam.get('accession'),
-                'bam link': urlparse.urljoin(server, bam.get('href')),
-                'unfiltered bam': unfiltered_bam_accession,
-                'unfiltered bam link': unfiltered_bam_link,
-                'xcor plot': xcor_plot_link,
-                'library': ','.join(libraries),
-                'library aliases': ','.join(aliases),
-                'r_lengths': ','.join(read_lengths),
-                'from fastqs': ','.join(derived_from_fastq_accessions),
-                'date_created': bam.get('date_created'),
-                'release status': bam.get('status'),
-                'dx_analysis': get_analysis_url(mapping_analysis),
-                'map_length': bam.get('mapped_read_length', ''),
-                'crop_length': get_crop_length(mapping_analysis)
-            })
-            try:
-                notes = json.loads(bam.get('notes'))
-            except:
-                notes = None
-            quality_metrics = bam.get('quality_metrics')
-            # if quality_metrics:
-            #   filter_qc = next(m for m in quality_metrics if "ChipSeqFilterQualityMetric" in m['@type'])
-            #   xcor_qc = next(m for m in quality_metrics if "SamtoolsFlagstatsQualityMetric" in m['@type'])
-            # elif isinstance(notes,dict):
-            if isinstance(notes, dict):
-                # This needs to support the two formats from the old
-                # accessionator and the new accession_analysis.
-                if 'qc' in notes.get('qc'):  # new way
-                    qc_from_notes = notes.get('qc')
-                else:
-                    qc_from_notes = notes
-                raw_flagstats = qc_from_notes.get('qc')
-                filtered_flagstats = qc_from_notes.get('filtered_qc')
-                duplicates = qc_from_notes.get('dup_qc')
-                xcor = qc_from_notes.get('xcor_qc')
-                pbc = qc_from_notes.get('pbc_qc')
-                try:
-                    fract_mappable = (float(raw_flagstats.get('mapped')[0])
-                                      / float(raw_flagstats.get('in_total')[0]))
-                except:
-                    fract_mappable = ''
-                try:
-                    paired_end = (filtered_flagstats.get('read1')[0]
-                                  or filtered_flagstats.get('read1')[1]
-                                  or filtered_flagstats.get('read2')[0]
-                                  or filtered_flagstats.get('read2')[1])
-                except:
-                    paired_end_str = ''
-                    usable_frags = ''
-                else:
-                    if paired_end:
-                        usable_frags = (
-                            filtered_flagstats.get('in_total')[0] / 2)
-                        paired_end_str = 'PE'
+                for bam in filtered_bams:
+                    row = copy.deepcopy(row_template)
+                    # derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in bam.get('derived_from') or []]]
+                    derived_from_accessions = [os.path.basename(uri.rstrip('/')) for
+                                               uri in bam.get('derived_from') or []]
+                    derived_from_fastqs = [f for f in fastqs
+                                           if f.get('accession') in derived_from_accessions]
+                    derived_from_fastq_accessions = [f.get('accession') for f in fastqs
+                                                     if f.get('accession') in derived_from_accessions]
+                    unfiltered_bam_accession = None
+                    unfiltered_bam_link = None
+                    for unfiltered_bam in unfiltered_bams:
+                        # ub_derived_from_accessions = [os.path.basename(uri.rstrip('/')) for uri in [obj.get('accession') for obj in unfiltered_bam.get('derived_from') or []]]
+                        ub_derived_from_accessions = [os.path.basename(uri.rstrip('/'))
+                                                      for uri in unfiltered_bam.get('derived_from')
+                                                      or []]
+                        if set(derived_from_accessions) == set(ub_derived_from_accessions):
+                            unfiltered_bam_accession = unfiltered_bam.get('accession')
+                            unfiltered_bam_link = urlparse.urljoin(server,
+                                                                   unfiltered_bam.get('href'))
+                            break
+                    bioreps = set([str(f.get('replicate').get('biological_replicate_number'))
+                                   for f in derived_from_fastqs])
+                    library_uris = set([str(f.get('replicate').get('library').get('@id'))
+                                        for f in derived_from_fastqs])
+                    read_lengths = set([str(f.get('read_length'))
+                                        for f in derived_from_fastqs])
+                    aliases = []
+                    libraries = []
+                    for uri in library_uris:
+                        library = get_ENCODE(urlparse.urljoin(
+                            server, '%s' % (uri)), authid, authpw)
+                        if library.get('accession'):
+                            libraries.append(library.get('accession'))
+                            aliases.extend(library.get('aliases'))
+                    platform_strs = get_platform_strings(derived_from_fastqs,
+                                                         server,
+                                                         authid,
+                                                         authpw)
+                    try:
+                        xcor_plot_uri = next(qc['@id'] + qc['cross_correlation_plot'].get('href')
+                                             for qc in bam.get('quality_metrics') if qc.get('cross_correlation_plot'))
+                    except StopIteration:
+                        xcor_plot_link = 'Missing'
                     else:
-                        paired_end_str = 'SE'
-                        usable_frags = filtered_flagstats.get('in_total')[0]
-                row.update({'end': paired_end_str})
+                        xcor_plot_link = urlparse.urljoin(server, xcor_plot_uri)
+                    # mapping_analysis = get_mapping_analysis(bam)
+                    try:
+                        mapping_analysis = None if args.released_only else get_mapping_analysis(bam)
+                    except:
+                        mapping_analysis = None
+                    row.update({
+                        'biorep_id': ','.join(bioreps),
+                        'assembly': bam.get('assembly'),
+                        'platform': ','.join(platform_strs),
+                        'bam': bam.get('accession'),
+                        'bam link': urlparse.urljoin(server, bam.get('href')),
+                        'unfiltered bam': unfiltered_bam_accession,
+                        'unfiltered bam link': unfiltered_bam_link,
+                        'xcor plot': xcor_plot_link,
+                        'library': ','.join(libraries),
+                        'library aliases': ','.join(aliases),
+                        'r_lengths': ','.join(read_lengths),
+                        'from fastqs': ','.join(derived_from_fastq_accessions),
+                        'date_created': bam.get('date_created'),
+                        'release status': bam.get('status'),
+                        'dx_analysis': get_analysis_url(mapping_analysis),
+                        'map_length': bam.get('mapped_read_length', ''),
+                        'crop_length': get_crop_length(mapping_analysis)
+                    })
+                    try:
+                        notes = json.loads(bam.get('notes'))
+                    except:
+                        notes = None
+                    quality_metrics = bam.get('quality_metrics')
+                    # if quality_metrics:
+                    #   filter_qc = next(m for m in quality_metrics if "ChipSeqFilterQualityMetric" in m['@type'])
+                    #   xcor_qc = next(m for m in quality_metrics if "SamtoolsFlagstatsQualityMetric" in m['@type'])
+                    # elif isinstance(notes,dict):
+                    if isinstance(notes, dict):
+                        # This needs to support the two formats from the old
+                        # accessionator and the new accession_analysis.
+                        if 'qc' in notes.get('qc'):  # new way
+                            qc_from_notes = notes.get('qc')
+                        else:
+                            qc_from_notes = notes
+                        raw_flagstats = qc_from_notes.get('qc')
+                        filtered_flagstats = qc_from_notes.get('filtered_qc')
+                        duplicates = qc_from_notes.get('dup_qc')
+                        xcor = qc_from_notes.get('xcor_qc')
+                        pbc = qc_from_notes.get('pbc_qc')
+                        try:
+                            fract_mappable = (float(raw_flagstats.get('mapped')[0])
+                                              / float(raw_flagstats.get('in_total')[0]))
+                        except:
+                            fract_mappable = ''
+                        try:
+                            paired_end = (filtered_flagstats.get('read1')[0]
+                                          or filtered_flagstats.get('read1')[1]
+                                          or filtered_flagstats.get('read2')[0]
+                                          or filtered_flagstats.get('read2')[1])
+                        except:
+                            paired_end_str = ''
+                            usable_frags = ''
+                        else:
+                            if paired_end:
+                                usable_frags = (
+                                    filtered_flagstats.get('in_total')[0] / 2)
+                                paired_end_str = 'PE'
+                            else:
+                                paired_end_str = 'SE'
+                                usable_frags = filtered_flagstats.get('in_total')[0]
+                        row.update({'end': paired_end_str})
 
-                try:
-                    fract_usable = (float(filtered_flagstats.get('in_total')[0])
-                                    / float(raw_flagstats.get('in_total')[0]))
-                except:
-                    fract_usable = ''
+                        try:
+                            fract_usable = (float(filtered_flagstats.get('in_total')[0])
+                                            / float(raw_flagstats.get('in_total')[0]))
+                        except:
+                            fract_usable = ''
 
-                if raw_flagstats:
-                    row.update({
-                        'hiq_reads': raw_flagstats.get('in_total')[0],
-                        'loq_reads': raw_flagstats.get('in_total')[1],
-                        'mappable': raw_flagstats.get('mapped')[0],
-                        'fract_mappable': fract_mappable
-                    })
-                if filtered_flagstats:
-                    row.update({
-                        'usable_frags': usable_frags,
-                        'fract_usable': fract_usable
-                    })
-                if pbc:
-                    row.update({
-                        'NRF': pbc.get('NRF'),
-                        'PBC1': pbc.get('PBC1'),
-                        'PBC2': pbc.get('PBC2')
-                    })
-                if xcor:
-                    row.update({
-                        'frag_len': xcor.get('estFragLen'),
-                        'NSC': xcor.get('phantomPeakCoef'),
-                        'RSC': xcor.get('relPhantomPeakCoef')
-                    })
-                if duplicates:
-                    row.update({
-                        'picard_read_pairs_examined': duplicates.get('read_pairs_examined'),
-                        'picard_unpaired_reads_examined': duplicates.get('unpaired_reads_examined')
-                    })
-            rows.append(row)
-    return rows
-
+                        if raw_flagstats:
+                            row.update({
+                                'hiq_reads': raw_flagstats.get('in_total')[0],
+                                'loq_reads': raw_flagstats.get('in_total')[1],
+                                'mappable': raw_flagstats.get('mapped')[0],
+                                'fract_mappable': fract_mappable
+                            })
+                        if filtered_flagstats:
+                            row.update({
+                                'usable_frags': usable_frags,
+                                'fract_usable': fract_usable
+                            })
+                        if pbc:
+                            row.update({
+                                'NRF': pbc.get('NRF'),
+                                'PBC1': pbc.get('PBC1'),
+                                'PBC2': pbc.get('PBC2')
+                            })
+                        if xcor:
+                            row.update({
+                                'frag_len': xcor.get('estFragLen'),
+                                'NSC': xcor.get('phantomPeakCoef'),
+                                'RSC': xcor.get('relPhantomPeakCoef')
+                            })
+                        if duplicates:
+                            row.update({
+                                'picard_read_pairs_examined': duplicates.get('read_pairs_examined'),
+                                'picard_unpaired_reads_examined': duplicates.get('unpaired_reads_examined')
+                            })
+                    rows.append(row)
+            return rows
+        except Exception as e:
+            attempt += 1
+            print 'ERROR', attempt, e, len(rows), experiment['accession']
+            if attempt <= 3:
+                print 'Retry'
+            else:
+                print 'SKIPPING!'
+                return []
 
 def main():
     import argparse
@@ -676,6 +688,10 @@ def main():
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
                             '~/sheets.googleapis.com-python.json'))
+    parser.add_argument('--released_only',
+                        help='Bypasses authentication and only shows public results.',
+                        default=False,
+                        action='store_true')
     args = parser.parse_args()
     if args.debug:
         logging.basicConfig(
@@ -683,8 +699,12 @@ def main():
     else:
         logging.basicConfig(
             format='%(levelname)s:%(message)s', level=logging.WARNING)
-    server, authid, authpw = processkeys(args)
-    keypair = (authid, authpw)
+    if args.released_only:
+        keypair, authid, authpw = None, None, None
+        server = PUBLIC_SERVER
+    else:
+        server, authid, authpw = processkeys(args)
+        keypair = (authid, authpw)
     if args.assembly in ['hg19', 'GRCh38', 'GRCh38-minimal']:
         organism_name = 'human'
     elif args.assembly in ['mm10', 'mm9', 'mm10-minimal']:
@@ -802,7 +822,10 @@ def main():
         mapping_data = mapping_data.reset_index(drop=True)
         # Read sheet title and create unique page title.
         date = datetime.now().strftime('%m_%d_%Y')
-        sheet_title = args.sheet_title
+        sheet_title = (
+            args.sheet_title if not args.released_only
+            else '{} Released Only'.format(args.sheet_title)
+        )
         page_title = '%s_mapping_%s' % (args.assembly, date)
         # Open/create Google Sheet.
         gc = pygsheets.authorize(args.apikey)
