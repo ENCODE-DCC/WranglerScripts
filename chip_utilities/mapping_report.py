@@ -32,8 +32,10 @@ EPILOG = '''
 # This creates the sheets.googleapis.com-python.json that --apikey argument
 # must point to.
 
-# Conditional formatting rules for Google Sheet.
+# Independent of keypairs file for --released flag. 
+PUBLIC_SERVER = 'https://www.encodeproject.org/'
 
+# Conditional formatting rules for Google Sheet.
 colors = np.array([[252, 1, 1],
                    [253, 154, 0],
                    [246, 205, 206],
@@ -244,7 +246,7 @@ def get_ENCODE(url, authid, authpw):
     while retries:
         try:
             response = requests.get(url,
-                                    auth=(authid, authpw),
+                                    auth=(authid, authpw) if all([authid, authpw]) else None,
                                     headers={'accept': 'application/json'})
         except requests.HTTPError:
             logging.warning('GET %s failed with %s' % (url, response.text))
@@ -445,7 +447,6 @@ def get_rows(experiment, server, authid, authpw, args):
     filtered_bams = [f for f in bams if f.get('output_type') == 'alignments']
     unfiltered_bams = [f for f in bams
                        if f.get('output_type') == 'unfiltered alignments']
-
     if not bams:
         row = copy.deepcopy(row_template)
         if not fastqs:
@@ -498,8 +499,9 @@ def get_rows(experiment, server, authid, authpw, args):
             for uri in library_uris:
                 library = get_ENCODE(urlparse.urljoin(
                     server, '%s' % (uri)), authid, authpw)
-                libraries.append(library.get('accession'))
-                aliases.extend(library.get('aliases'))
+                if library.get('accession'):
+                    libraries.append(library.get('accession'))
+                    aliases.extend(library.get('aliases'))
             platform_strs = get_platform_strings(derived_from_fastqs,
                                                  server,
                                                  authid,
@@ -513,7 +515,7 @@ def get_rows(experiment, server, authid, authpw, args):
                 xcor_plot_link = urlparse.urljoin(server, xcor_plot_uri)
             # mapping_analysis = get_mapping_analysis(bam)
             try:
-                mapping_analysis = get_mapping_analysis(bam)
+                mapping_analysis = None if args.released else get_mapping_analysis(bam)
             except:
                 mapping_analysis = None
             row.update({
@@ -617,7 +619,6 @@ def get_rows(experiment, server, authid, authpw, args):
             rows.append(row)
     return rows
 
-
 def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__,
@@ -676,6 +677,10 @@ def main():
                         help='Path to secret credential for Google Sheets.',
                         default=os.path.expanduser(
                             '~/sheets.googleapis.com-python.json'))
+    parser.add_argument('--released',
+                        help='Bypasses authentication and only shows released results.',
+                        default=False,
+                        action='store_true')
     args = parser.parse_args()
     if args.debug:
         logging.basicConfig(
@@ -683,8 +688,12 @@ def main():
     else:
         logging.basicConfig(
             format='%(levelname)s:%(message)s', level=logging.WARNING)
-    server, authid, authpw = processkeys(args)
-    keypair = (authid, authpw)
+    if args.released:
+        keypair, authid, authpw = None, None, None
+        server = PUBLIC_SERVER
+    else:
+        server, authid, authpw = processkeys(args)
+        keypair = (authid, authpw)
     if args.assembly in ['hg19', 'GRCh38', 'GRCh38-minimal']:
         organism_name = 'human'
     elif args.assembly in ['mm10', 'mm9', 'mm10-minimal']:
@@ -802,7 +811,10 @@ def main():
         mapping_data = mapping_data.reset_index(drop=True)
         # Read sheet title and create unique page title.
         date = datetime.now().strftime('%m_%d_%Y')
-        sheet_title = args.sheet_title
+        sheet_title = (
+            args.sheet_title if not args.released
+            else '{} Released'.format(args.sheet_title)
+        )
         page_title = '%s_mapping_%s' % (args.assembly, date)
         # Open/create Google Sheet.
         gc = pygsheets.authorize(args.apikey)
