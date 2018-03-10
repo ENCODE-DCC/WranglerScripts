@@ -336,7 +336,7 @@ def pprint_ENCODE(JSON_obj):
 
 def get_platform_strings(fastqs, server, authid, authpw):
     platform_strings = []
-    platform_uris = set([f.get('platform') for f in fastqs])
+    platform_uris = set([f.get('platform')['@id'] for f in fastqs])
     for uri in platform_uris:
         if not uri:
             platform_strings.append('Missing')
