@@ -13,7 +13,8 @@ HISTONE_PEAK_FILES_QUERY = (
     '&lab.title=ENCODE+Processing+Pipeline'
     '&file_format=bed'
     '&status=released'
-    '&status=in+progress&status=uploading'
+    '&status=in+progress'
+    '&status=uploading'
 )
 
 CHIP_EXPERIMENTS_QUERY = (
@@ -21,7 +22,8 @@ CHIP_EXPERIMENTS_QUERY = (
     '&assay_title=ChIP-seq'
     '&award.project=ENCODE'
     '&status=released'
-    '&status=in+progress&status=submitted'
+    '&status=in+progress'
+    '&status=submitted'
 )
 
 # Only download needed fields.
@@ -76,12 +78,18 @@ def parse_json(json_object, fields):
 
 
 def get_data(url, keypair):
+    '''
+    Makes GET request.
+    '''
     logging.debug('Getting %s' % url)
     results = common.encoded_get(url, keypair)
     return results['@graph']
 
 
 def get_experiments_and_files(base_url, keypair):
+    '''
+    Returns all relevant experiment and files.
+    '''
     experiment_url = make_url(base_url, CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY)
     experiment_data = get_data(experiment_url, keypair)
     file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY)
@@ -124,7 +132,6 @@ def main():
     logging.basicConfig(level=args.log_level)
     authid, authpw, base_url = common.processkey(args.key, args.keyfile)
     keypair = (authid, authpw)
-
     experiment_data, file_data = get_experiments_and_files(base_url, keypair)
 
 
