@@ -1,9 +1,9 @@
 import pytest
 from histone_qc_report import (
-    histone_qc_fields,
+    HISTONE_QC_FIELDS,
     parse_json,
     make_url,
-    histone_peak_files_query,
+    HISTONE_PEAK_FILES_QUERY,
     LIMIT_ALL_JSON
 )
 
@@ -49,14 +49,14 @@ def histone_qc():
     ]
 )
 def test_parse_json(key, value, histone_qc):
-    parsed_qc = parse_json(histone_qc, histone_qc_fields)
+    parsed_qc = parse_json(histone_qc, HISTONE_QC_FIELDS)
     assert parsed_qc[key] == value
 
 
 def test_make_url(base_url):
-    assert make_url(base_url, histone_peak_files_query, '') == (
-        base_url + histone_peak_files_query
+    assert make_url(base_url, HISTONE_PEAK_FILES_QUERY, '') == (
+        base_url + HISTONE_PEAK_FILES_QUERY
     )
-    assert make_url(base_url, histone_peak_files_query) == (
-        base_url + histone_peak_files_query + LIMIT_ALL_JSON
+    assert make_url(base_url, HISTONE_PEAK_FILES_QUERY) == (
+        base_url + HISTONE_PEAK_FILES_QUERY + LIMIT_ALL_JSON
     )
