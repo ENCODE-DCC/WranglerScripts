@@ -1,8 +1,16 @@
 import pytest
 from histone_qc_report import (
     histone_qc_fields,
-    parse_json
+    parse_json,
+    make_url,
+    histone_peak_files_query,
+    LIMIT_ALL_JSON
 )
+
+
+@pytest.fixture
+def base_url():
+    return 'https://www.encodeproject.org'
 
 
 @pytest.fixture
@@ -43,3 +51,12 @@ def histone_qc():
 def test_parse_json(key, value, histone_qc):
     parsed_qc = parse_json(histone_qc, histone_qc_fields)
     assert parsed_qc[key] == value
+
+
+def test_make_url(base_url):
+    assert make_url(base_url, histone_peak_files_query, '') == (
+        base_url + histone_peak_files_query
+    )
+    assert make_url(base_url, histone_peak_files_query) == (
+        base_url + histone_peak_files_query + LIMIT_ALL_JSON
+    )

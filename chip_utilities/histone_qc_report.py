@@ -4,28 +4,24 @@ import common
 import logging
 import os
 
-limit_all_json = '&limit=all&format=json'
+LIMIT_ALL_JSON = '&limit=all&format=json'
 
 histone_peak_files_query = (
-    base_url +
     '/search/?type=File'
     '&output_type=replicated+peaks'
     '&output_type=stable+peaks'
     '&lab.title=ENCODE+Processing+Pipeline'
     '&file_format=bed'
     '&status=released'
-    '&status=in+progress&status=uploading' +
-    limit_all_json
+    '&status=in+progress&status=uploading'
 )
 
 histone_experiments_query = (
-    base_url +
     '/search/?type=Experiment'
     '&assay_title=ChIP-seq'
     '&award.project=ENCODE'
     '&status=released'
-    '&status=in+progress&status=submitted' +
-    limit_all_json
+    '&status=in+progress&status=submitted'
 )
 
 histone_qc_fields = [
@@ -37,6 +33,13 @@ histone_qc_fields = [
     'F1',
     'F2'
 ]
+
+
+def make_url(base_url, query, additional=LIMIT_ALL_JSON):
+    '''
+    Returns full URL.
+    '''
+    return base_url + query + additional
 
 
 def parse_json(json_object, fields):
