@@ -24,6 +24,7 @@ CHIP_EXPERIMENTS_QUERY = (
     '&status=in+progress&status=submitted'
 )
 
+# Only download needed fields.
 EXPERIMENT_FIELDS_QUERY = (
     '&field=@id'
     '&field=accession'
