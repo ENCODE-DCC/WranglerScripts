@@ -6,7 +6,7 @@ import os
 
 LIMIT_ALL_JSON = '&limit=all&format=json'
 
-histone_peak_files_query = (
+HISTONE_PEAK_FILES_QUERY = (
     '/search/?type=File'
     '&output_type=replicated+peaks'
     '&output_type=stable+peaks'
@@ -16,7 +16,7 @@ histone_peak_files_query = (
     '&status=in+progress&status=uploading'
 )
 
-histone_experiments_query = (
+HISTONE_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
     '&assay_title=ChIP-seq'
     '&award.project=ENCODE'
@@ -24,7 +24,7 @@ histone_experiments_query = (
     '&status=in+progress&status=submitted'
 )
 
-histone_qc_fields = [
+HISTONE_QC_FIELDS = [
     'nreads',
     'nreads_in_peaks',
     'npeak_overlap',
