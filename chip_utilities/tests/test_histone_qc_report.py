@@ -4,6 +4,7 @@ from histone_qc_report import (
     parse_json,
     make_url,
     HISTONE_PEAK_FILES_QUERY,
+    EXPERIMENT_FIELDS_QUERY,
     LIMIT_ALL_JSON
 )
 
@@ -59,4 +60,10 @@ def test_make_url(base_url):
     )
     assert make_url(base_url, HISTONE_PEAK_FILES_QUERY) == (
         base_url + HISTONE_PEAK_FILES_QUERY + LIMIT_ALL_JSON
+    )
+    assert make_url(base_url, HISTONE_PEAK_FILES_QUERY, [LIMIT_ALL_JSON]) == (
+        base_url + HISTONE_PEAK_FILES_QUERY + LIMIT_ALL_JSON
+    )
+    assert make_url(base_url, HISTONE_PEAK_FILES_QUERY, [EXPERIMENT_FIELDS_QUERY, LIMIT_ALL_JSON]) == (
+        base_url + HISTONE_PEAK_FILES_QUERY + EXPERIMENT_FIELDS_QUERY + LIMIT_ALL_JSON
     )
