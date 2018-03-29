@@ -16,12 +16,24 @@ HISTONE_PEAK_FILES_QUERY = (
     '&status=in+progress&status=uploading'
 )
 
-HISTONE_EXPERIMENTS_QUERY = (
+CHIP_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
     '&assay_title=ChIP-seq'
     '&award.project=ENCODE'
     '&status=released'
     '&status=in+progress&status=submitted'
+)
+
+EXPERIMENT_FIELDS_QUERY = (
+    '&field=@id'
+    '&field=accession'
+    '&field=status'
+    '&field=award.rfa'
+    '&field=target.name'
+    '&field=biosample_term_name'
+    '&field=biosample_type'
+    '&field=replication_type'
+    '&field=lab.name'
 )
 
 HISTONE_QC_FIELDS = [
@@ -39,7 +51,8 @@ def make_url(base_url, query, additional=LIMIT_ALL_JSON):
     '''
     Returns full URL.
     '''
-    return base_url + query + additional
+    end = additional if isinstance(additional, str) else ''.join(additional)
+    return base_url + query + end
 
 
 def parse_json(json_object, fields):
@@ -86,6 +99,8 @@ def main():
     args = get_args()
     logging.basicConfig(level=args.log_level)
     authid, authpw, base_url = common.processkey(args.key, args.keyfile)
+
+
 
 
 if __name__ == '__main__':
