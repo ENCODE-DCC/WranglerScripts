@@ -3,10 +3,12 @@ from histone_qc_report import (
     HISTONE_QC_FIELDS,
     parse_json,
     make_url,
+    get_data,
     HISTONE_PEAK_FILES_QUERY,
     EXPERIMENT_FIELDS_QUERY,
     LIMIT_ALL_JSON
 )
+from mock import patch
 
 
 @pytest.fixture
@@ -67,3 +69,10 @@ def test_make_url(base_url):
     assert make_url(base_url, HISTONE_PEAK_FILES_QUERY, [EXPERIMENT_FIELDS_QUERY, LIMIT_ALL_JSON]) == (
         base_url + HISTONE_PEAK_FILES_QUERY + EXPERIMENT_FIELDS_QUERY + LIMIT_ALL_JSON
     )
+
+
+@patch('common.encoded_get')
+def test_get_data(mock_get, base_url):
+    mock_get.return_value = {'@graph': [{'test': 1}]}
+    results = get_data(base_url, ('ABC', '123'))
+    assert results[0]['test'] == 1
