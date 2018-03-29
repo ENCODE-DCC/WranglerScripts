@@ -37,6 +37,15 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=lab.name'
 )
 
+FILE_FIELDS_QUERY = (
+    '&field=@id'
+    '&field=accession'
+    '&field=status'
+    '&field=assembly'
+    '&field=step_run'
+    '&field=quality_metrics'
+)
+
 HISTONE_QC_FIELDS = [
     'nreads',
     'nreads_in_peaks',
@@ -75,7 +84,7 @@ def get_data(url, keypair):
 def get_experiments_and_files(base_url, keypair):
     experiment_url = make_url(base_url, CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY)
     experiment_data = get_data(experiment_url, keypair)
-    file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY)
+    file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY)
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
 
