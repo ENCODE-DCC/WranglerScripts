@@ -169,9 +169,9 @@ def build_rows(experiment_data, file_data):
         1. Find every related file in file_data.
         2. Assert one file in group.
         3. Assert not more than one QC metric.
-        3. Parse dx_job_id from file, get analysis_id.
-        4. Parse QC metric (or return Nones)
-        5. Append record to list.
+        4. Parse dx_job_id from file, get analysis_id.
+        5. Parse QC metric (or return Nones)
+        6. Append record to list.
     '''
     data = []
     for e in experiment_data:
