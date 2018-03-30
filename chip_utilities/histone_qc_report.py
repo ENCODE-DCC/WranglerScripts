@@ -179,7 +179,7 @@ def build_rows(experiment_data, file_data):
         if len(f) != 1:
             logger_warn_skip('related file', e['@id'], len(f))
             continue
-        f = f[0] if f else {}
+        f = f[0]
         q = f.get('quality_metrics')
         if len(q) > 1:
             logger_warn_skip('quality metric', e['@id'], len(q))
