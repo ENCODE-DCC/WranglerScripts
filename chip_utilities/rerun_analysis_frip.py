@@ -25,12 +25,12 @@ APPLETS_PROJECT_ID = next(dxpy.find_projects(
 APPLETS = {}
 
 ASSAY_SPECIFICS = {
-    'tf_chip_seq': {
+    'tf': {
         'pre_stage': 'SPP Peaks',
         'final_stage': 'Final IDR peak calls',
         'applet': 'encode_idr',
     },
-    'histone_chip_seq': {
+    'histone': {
         'pre_stage': 'ENCODE Peaks',
         'final_stage': 'Final narrowpeaks',
         'applet': 'overlap_peaks',
@@ -65,6 +65,7 @@ def get_args():
     parser.add_argument('--accession', help='Automatically accession the results to the ENCODE Portal', type=t_or_f, default=None)
     parser.add_argument('--debug', help="Print debug messages", type=t_or_f, default=None)
     parser.add_argument('--dryrun', help="Set up workflow but don't run.", type=t_or_f, default=None)
+    parser.add_argument('-a', '--assay_type', choices=['tf', 'histone'], help='Assay type. Required.', required=True)
 
     return parser.parse_args()
 
@@ -124,7 +125,7 @@ def get_assay_specific_variables(analysis, assay_type):
     return final_stage, new_input, new_applet
 
 
-def rerun_with_frip(analysis_id, dryrun):
+def rerun_with_frip(analysis_id, dryrun, assay_type):
     logger.debug(
         'rerun_with_frip: analysis_id %s'
         % (analysis_id))
@@ -135,11 +136,6 @@ def rerun_with_frip(analysis_id, dryrun):
         'project': project_id,
         'initializeFrom': {'id': analysis.get_id()},
         'temporary': True})
-    assay_type = analysis.describe()['executableName']
-    logger.debug(
-        'assay type: %s'
-        % assay_type
-    )
     new_workflow = dxpy.DXWorkflow(temp['id'])
     logger.debug(
         'rerun_with_frip: new_workflow %s %s'
@@ -252,7 +248,7 @@ def main():
             continue
 
         try:
-            new_analysis = rerun_with_frip(analysis_id, args.dryrun)
+            new_analysis = rerun_with_frip(analysis_id, args.dryrun, args.assay_type)
         except:
             row = "%s\terror" % (analysis_id)
             print("%s\t%s" % (analysis_id, "error"), file=sys.stderr)
