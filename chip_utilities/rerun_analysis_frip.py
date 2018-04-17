@@ -105,8 +105,9 @@ def get_assay_specific_variables(analysis, assay_type):
     pre_stage_input = stage_named(
         ASSAY_SPECIFICS[assay_type]['pre_stage'], analysis
     )['execution']['input']
-    final_stage = stage_named(ASSAY_SPECIFICS[assay_type]['final_stage'], analysis)
-    print(final_stage)
+    final_stage = stage_named(
+        ASSAY_SPECIFICS[assay_type]['final_stage'], analysis
+    )
     new_input = final_stage['execution']['input']
     new_input.update(
         {
