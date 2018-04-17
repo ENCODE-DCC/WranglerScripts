@@ -123,7 +123,7 @@ def get_assay_specific_variables(analysis, assay_type):
     new_applet = find_applet_by_name(ASSAY_SPECIFICS[assay_type]['applet'])
     return final_stage, new_input, new_applet
 
-        
+
 def rerun_with_frip(analysis_id, dryrun):
     logger.debug(
         'rerun_with_frip: analysis_id %s'
