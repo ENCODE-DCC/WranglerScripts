@@ -24,6 +24,19 @@ APPLETS_PROJECT_ID = next(dxpy.find_projects(
     return_handler=True)).get_id()
 APPLETS = {}
 
+ASSAY_SPECIFICS = {
+    'tf': {
+        'pre_stage': 'SPP Peaks',
+        'final_stage': 'Final IDR peak calls',
+        'applet': 'encode_idr',
+    },
+    'histone': {
+        'pre_stage': 'ENCODE Peaks',
+        'final_stage': 'Final narrowpeaks',
+        'applet': 'overlap_peaks',
+    }
+}
+
 EPILOG = '''Notes:
 
 Examples:
@@ -52,6 +65,7 @@ def get_args():
     parser.add_argument('--accession', help='Automatically accession the results to the ENCODE Portal', type=t_or_f, default=None)
     parser.add_argument('--debug', help="Print debug messages", type=t_or_f, default=None)
     parser.add_argument('--dryrun', help="Set up workflow but don't run.", type=t_or_f, default=None)
+    parser.add_argument('-a', '--assay_type', choices=['tf', 'histone'], help='Assay type. Required.', required=True)
 
     return parser.parse_args()
 
@@ -83,7 +97,34 @@ def stage_named(name, analysis):
     return stage
 
 
-def rerun_with_frip(analysis_id, dryrun):
+def get_assay_specific_variables(analysis, assay_type):
+    '''
+    Find final stage input and applet and update them with
+    inputs from penulitmate stage.
+    '''
+    pre_stage_input = stage_named(
+        ASSAY_SPECIFICS[assay_type]['pre_stage'], analysis
+    )['execution']['input']
+    final_stage = stage_named(ASSAY_SPECIFICS[assay_type]['final_stage'], analysis)
+    print(final_stage)
+    new_input = final_stage['execution']['input']
+    new_input.update(
+        {
+            name: input_file
+            for name, input_file in pre_stage_input.items()
+            if name in ['rep1_ta', 'rep1_xcor', 'rep2_ta', 'rep2_xcor']
+        }
+    )
+    new_input.update(
+        {
+            'paired_end': pre_stage_input['rep1_paired_end']
+        }
+    )
+    new_applet = find_applet_by_name(ASSAY_SPECIFICS[assay_type]['applet'])
+    return final_stage, new_input, new_applet
+
+
+def rerun_with_frip(analysis_id, dryrun, assay_type):
     logger.debug(
         'rerun_with_frip: analysis_id %s'
         % (analysis_id))
@@ -98,35 +139,21 @@ def rerun_with_frip(analysis_id, dryrun):
     logger.debug(
         'rerun_with_frip: new_workflow %s %s'
         % (new_workflow.get_id(), new_workflow.name))
-    final_idr_stage = stage_named('Final IDR peak calls', analysis)
+    final_stage, new_input, new_applet = get_assay_specific_variables(
+        analysis,
+        assay_type
+    )
     accessioning_stage = stage_named('Accession results', analysis)
     if accessioning_stage:
         new_workflow.remove_stage(accessioning_stage['id'])
-    new_applet = find_applet_by_name('encode_idr')
     logger.debug(
         'rerun_with_frip: new_applet %s %s'
         % (new_applet.get_id(), new_applet.name))
-    new_input = final_idr_stage['execution']['input']
-    encode_spp_stage_input = \
-        stage_named("SPP Peaks", analysis)['execution']['input']
-    # include only the input names actually used - this allows support
-    # for both replicated and unreplicated analysis where there is no
-    # rep2
-    spp_input_names = \
-        [i for i in ['rep1_ta', 'rep1_xcor', 'rep2_ta', 'rep2_xcor']
-         if i in encode_spp_stage_input]
-    new_input.update(dict(zip(
-        spp_input_names,
-        map(lambda name: encode_spp_stage_input[name], spp_input_names)
-    )))
-    new_input.update({
-        'paired_end': encode_spp_stage_input['rep1_paired_end']
-    })
     logger.debug(
         'rerun_with_frip: new_input \n%s'
         % (pformat(new_input)))
     new_workflow.update_stage(
-        final_idr_stage['id'],
+        final_stage['id'],
         executable=new_applet.get_id(),
         stage_input=new_input,
         force=True)
@@ -220,7 +247,7 @@ def main():
             continue
 
         try:
-            new_analysis = rerun_with_frip(analysis_id, args.dryrun)
+            new_analysis = rerun_with_frip(analysis_id, args.dryrun, args.assay_type)
         except:
             row = "%s\terror" % (analysis_id)
             print("%s\t%s" % (analysis_id, "error"), file=sys.stderr)
