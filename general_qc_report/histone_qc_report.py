@@ -6,66 +6,9 @@ import dxpy
 import logging
 import pandas as pd
 import os
-
-LIMIT_ALL_JSON = '&limit=all&format=json'
-
-HISTONE_PEAK_FILES_QUERY = (
-    '/search/?type=File'
-    '&output_type=replicated+peaks'
-    '&output_type=stable+peaks'
-    '&lab.title=ENCODE+Processing+Pipeline'
-    '&file_format=bed'
-    '&status=released'
-    '&status=in+progress'
-    '&status=uploading'
-)
-
-HISTONE_CHIP_EXPERIMENTS_QUERY = (
-    '/search/?type=Experiment'
-    '&assay_title=ChIP-seq'
-    '&target.investigated_as=histone'
-    '&award.project=ENCODE'
-    '&status=released'
-    '&status=in+progress'
-    '&status=submitted'
-)
-
-# Only download needed fields.
-EXPERIMENT_FIELDS_QUERY = (
-    '&field=@id'
-    '&field=accession'
-    '&field=status'
-    '&field=award.rfa'
-    '&field=date_created'
-    '&field=target.name'
-    '&field=biosample_term_name'
-    '&field=biosample_type'
-    '&field=replication_type'
-    '&field=lab.name'
-)
-
-FILE_FIELDS_QUERY = (
-    '&field=@id'
-    '&field=accession'
-    '&field=date_created'
-    '&field=status'
-    '&field=dataset'
-    '&field=assembly'
-    '&field=step_run'
-    '&field=quality_metrics'
-    '&field=notes'
-)
-
-HISTONE_QC_FIELDS = [
-    'nreads',
-    'nreads_in_peaks',
-    'npeak_overlap',
-    'Fp',
-    'Ft',
-    'F1',
-    'F2',
-    'quality_metric_of'
-]
+from qc_report_constants import (
+    LIMIT_ALL_JSON, HISTONE_PEAK_FILES_QUERY, HISTONE_CHIP_EXPERIMENTS_QUERY,
+    EXPERIMENT_FIELDS_QUERY, FILE_FIELDS_QUERY, HISTONE_QC_FIELDS)
 
 
 def make_url(base_url, query, additional=LIMIT_ALL_JSON):
@@ -80,17 +23,13 @@ def parse_json(json_object, fields):
     '''
     Returns object filtered by fields.
     '''
-    return {
-        field: json_object.get(field)
-        for field in fields
-    }
+    return {field: json_object.get(field) for field in fields}
 
 
 def logger_warn_skip(expected_type, experiment_id, len_data):
-    logging.warn(
-        'Expected one unique %s in experiment %s. '
-        'Found %d. Skipping!' % (expected_type, experiment_id, len_data)
-    )
+    logging.warn('Expected one unique %s in experiment %s. '
+                 'Found %d. Skipping!' % (expected_type, experiment_id,
+                                          len_data))
 
 
 def get_data(url, keypair):
@@ -106,9 +45,12 @@ def get_experiments_and_files(base_url, keypair, assembly):
     '''
     Returns all relevant experiment and files.
     '''
-    experiment_url = make_url(base_url, HISTONE_CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY + '&assembly=%s' % assembly)
+    experiment_url = make_url(
+        base_url, HISTONE_CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY +
+        '&assembly=%s' % assembly)
     experiment_data = get_data(experiment_url, keypair)
-    file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY + '&assembly=%s' % assembly)
+    file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY
+                        + '&assembly=%s' % assembly)
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
 
@@ -191,31 +133,24 @@ def build_rows(experiment_data, file_data):
 
 def get_args():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        '-d', '--debug',
+        '-d',
+        '--debug',
         help='Print debug messages.',
         action='store_const',
         dest='log_level',
         const=logging.DEBUG,
-        default=logging.WARNING
-    )
+        default=logging.WARNING)
     parser.add_argument(
         '--key',
         help='The keypair identifier from the keyfile.',
-        default='www'
-    )
+        default='www')
     parser.add_argument(
         '--keyfile',
         help='The keyfile.',
-        default=os.path.expanduser('~/keypairs.json')
-    )
-    parser.add_argument(
-        '--assembly',
-        help='Genome assembly.',
-        required=True
-    )
+        default=os.path.expanduser('~/keypairs.json'))
+    parser.add_argument('--assembly', help='Genome assembly.', required=True)
     return parser.parse_args()
 
 
@@ -224,10 +159,13 @@ def main():
     logging.basicConfig(level=args.log_level)
     authid, authpw, base_url = common.processkey(args.key, args.keyfile)
     keypair = (authid, authpw)
-    experiment_data, file_data = get_experiments_and_files(base_url, keypair, args.assembly)
+    experiment_data, file_data = get_experiments_and_files(
+        base_url, keypair, args.assembly)
     rows = build_rows(experiment_data, file_data)
     df = pd.DataFrame(rows)
-    df.to_csv('histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)
+    df.to_csv(
+        'histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)
+
 
 if __name__ == '__main__':
     main()
