@@ -97,3 +97,14 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '&status=in+progress'
     '&status=uploading'
 )
+
+RNA_MAPPING_FILES_QUERY = (
+    '/search/?type=File'
+    '&lab.title=ENCODE+Processing+Pipeline'
+    '&output_type=alignments'
+    '&output_type=transcriptome+alignments'
+    '&file_format=bam'
+    '&status=released'
+    '&status=in+progress'
+    '&status=uploading'
+)
