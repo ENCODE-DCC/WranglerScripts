@@ -115,3 +115,16 @@ RNA_MAPPING_FILES_QUERY = (
     '&status=in+progress'
     '&status=uploading'
 )
+
+
+# REPORT TYPE SPECIFICS
+
+REPORT_TYPE_DETAILS = {
+    'histone_qc': {
+        'experiment_query': HISTONE_CHIP_EXPERIMENTS_QUERY,
+        'experiment_fields': EXPERIMENT_FIELDS_QUERY,
+        'file_query': HISTONE_PEAK_FILES_QUERY,
+        'file_fields': FILE_FIELDS_QUERY,
+        'qc_fields': HISTONE_QC_FIELDS
+    }
+}
