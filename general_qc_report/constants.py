@@ -116,6 +116,15 @@ RNA_MAPPING_FILES_QUERY = (
     '&status=uploading'
 )
 
+RNA_MAD_QC_FIELDS = [
+    'SD of log ratios',
+    'Pearson correlation',
+    'Spearman correlation',
+    'MAD of log ratios',
+    'quality_metric_of',
+    'attachment'
+]
+
 
 # REPORT TYPE SPECIFICS
 
@@ -126,5 +135,12 @@ REPORT_TYPE_DETAILS = {
         'file_query': HISTONE_PEAK_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
         'qc_fields': HISTONE_QC_FIELDS
+    },
+    'rna_qc': {
+        'experiment_query': RNA_EXPERIMENTS_QUERY,
+        'experiment_fields': EXPERIMENT_FIELDS_QUERY,
+        'file_query': RNA_QUANTIFICATION_FILES_QUERY,
+        'file_fields': FILE_FIELDS_QUERY,
+        'qc_fields': RNA_MAD_QC_FIELDS
     }
 }
