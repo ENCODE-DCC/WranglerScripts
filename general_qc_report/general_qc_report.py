@@ -56,25 +56,25 @@ def get_data(url, keypair):
     return results['@graph']
 
 
-def get_experiments_and_files(base_url, keypair, args):
+def get_experiments_and_files(base_url, keypair, report_type, assembly):
     '''
     Returns all relevant experiment and files.
     '''
     experiment_url = make_url(
         base_url,
         (
-            REPORT_TYPE_DETAILS[args.report_type]['experiment_query'] +
-            REPORT_TYPE_DETAILS[args.report_type]['experiment_fields'] +
-            '&assembly=%s' % args.assembly
+            REPORT_TYPE_DETAILS[report_type]['experiment_query'] +
+            REPORT_TYPE_DETAILS[report_type]['experiment_fields'] +
+            '&assembly=%s' % assembly
         )
     )
     experiment_data = get_data(experiment_url, keypair)
     file_url = make_url(
         base_url,
         (
-            REPORT_TYPE_DETAILS[args.report_type]['file_query'] +
-            REPORT_TYPE_DETAILS[args.report_type]['file_fields'] +
-            '&assembly=%s' % args.assembly
+            REPORT_TYPE_DETAILS[report_type]['file_query'] +
+            REPORT_TYPE_DETAILS[report_type]['file_fields'] +
+            '&assembly=%s' % assembly
         )
     )
     file_data = get_data(file_url, keypair)
@@ -199,7 +199,12 @@ def main():
     logging.basicConfig(level=args.log_level)
     authid, authpw, base_url = common.processkey(args.key, args.keyfile)
     keypair = (authid, authpw)
-    experiment_data, file_data = get_experiments_and_files(base_url, keypair, args)
+    experiment_data, file_data = get_experiments_and_files(
+        base_url,
+        keypair,
+        args.report_type,
+        args.assembly
+    )
     rows = build_rows(experiment_data, file_data)
     df = pd.DataFrame(rows)
     df.to_csv('histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)

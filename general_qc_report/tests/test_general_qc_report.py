@@ -250,7 +250,12 @@ def test_get_data(mock_get, base_url, keypair):
 @patch('common.encoded_get')
 def test_get_experiments_and_files(mock_get, base_url, keypair, test_args):
     mock_get.side_effect = [file_query(), experiment_query()]
-    f, e = get_experiments_and_files(base_url, keypair, test_args)
+    f, e = get_experiments_and_files(
+        base_url,
+        keypair,
+        test_args.report_type,
+        test_args.assembly
+    )
     assert len(f) == len(e) == 2
 
 
