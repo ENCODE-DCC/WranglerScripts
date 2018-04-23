@@ -8,7 +8,7 @@ from histone_qc_report import (
     EXPERIMENT_FIELDS_QUERY,
     LIMIT_ALL_JSON,
     get_experiments_and_files,
-    build_rows
+    build_rows,
     get_dx_details_from_job_id,
     get_job_id_from_file,
     filter_related_files,
