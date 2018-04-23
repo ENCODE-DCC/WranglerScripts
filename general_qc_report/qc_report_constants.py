@@ -1,8 +1,10 @@
 '''
 module containing constants used by qc reporting tools
 '''
-
+# GENERIC
 LIMIT_ALL_JSON = '&limit=all&format=json'
+
+# HISTONE SPECIFIC
 
 HISTONE_PEAK_FILES_QUERY = ('/search/?type=File'
                             '&output_type=replicated+peaks'
@@ -47,3 +49,5 @@ HISTONE_QC_FIELDS = [
     'nreads', 'nreads_in_peaks', 'npeak_overlap', 'Fp', 'Ft', 'F1', 'F2',
     'quality_metric_of'
 ]
+
+# RNA SPECIFIC
