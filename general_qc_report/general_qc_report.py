@@ -6,9 +6,15 @@ import dxpy
 import logging
 import pandas as pd
 import os
+
 from qc_report_constants import (
-    LIMIT_ALL_JSON, HISTONE_PEAK_FILES_QUERY, HISTONE_CHIP_EXPERIMENTS_QUERY,
-    EXPERIMENT_FIELDS_QUERY, FILE_FIELDS_QUERY, HISTONE_QC_FIELDS)
+    LIMIT_ALL_JSON,
+    HISTONE_PEAK_FILES_QUERY,
+    HISTONE_CHIP_EXPERIMENTS_QUERY,
+    EXPERIMENT_FIELDS_QUERY,
+    FILE_FIELDS_QUERY,
+    HISTONE_QC_FIELDS
+)
 
 
 def make_url(base_url, query, additional=LIMIT_ALL_JSON):

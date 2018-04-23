@@ -1,9 +1,19 @@
 import pytest
 from histone_qc_report import (
-    HISTONE_QC_FIELDS, parse_json, make_url, get_data,
-    HISTONE_PEAK_FILES_QUERY, EXPERIMENT_FIELDS_QUERY, LIMIT_ALL_JSON,
-    get_experiments_and_files, build_rows, get_dx_details_from_job_id,
-    get_job_id_from_file, filter_related_files, frip_in_output)
+    HISTONE_QC_FIELDS,
+    parse_json,
+    make_url,
+    get_data,
+    HISTONE_PEAK_FILES_QUERY,
+    EXPERIMENT_FIELDS_QUERY,
+    LIMIT_ALL_JSON,
+    get_experiments_and_files,
+    build_rows
+    get_dx_details_from_job_id,
+    get_job_id_from_file,
+    filter_related_files,
+    frip_in_output
+)
 from mock import patch
 
 
