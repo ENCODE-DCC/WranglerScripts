@@ -197,6 +197,17 @@ def dx_describe():
     }
 
 
+@pytest.fixture
+def test_args():
+    import argparse
+    args = argparse.Namespace()
+    args.__dict__.update({
+        'assembly': 'GRCh38',
+        'report_type': 'histone_qc'
+    })
+    return args
+
+
 @pytest.mark.parametrize(
     'key, value', [
         ('F1', None),
@@ -237,9 +248,9 @@ def test_get_data(mock_get, base_url, keypair):
 
 
 @patch('common.encoded_get')
-def test_get_experiments_and_files(mock_get, base_url, keypair, assembly):
+def test_get_experiments_and_files(mock_get, base_url, keypair, test_args):
     mock_get.side_effect = [file_query(), experiment_query()]
-    f, e = get_experiments_and_files(base_url, keypair, assembly)
+    f, e = get_experiments_and_files(base_url, keypair, test_args)
     assert len(f) == len(e) == 2
 
 

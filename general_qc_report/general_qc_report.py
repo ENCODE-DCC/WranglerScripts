@@ -17,7 +17,8 @@ from constants import (
     RNA_EXPERIMENTS_QUERY,
     RNA_QUANTIFICATION_FILES_QUERY,
     RNA_MAPPING_FILES_QUERY,
-    REPORT_TYPES
+    REPORT_TYPES,
+    REPORT_TYPE_DETAILS
 )
 
 
@@ -55,13 +56,27 @@ def get_data(url, keypair):
     return results['@graph']
 
 
-def get_experiments_and_files(base_url, keypair, assembly):
+def get_experiments_and_files(base_url, keypair, args):
     '''
     Returns all relevant experiment and files.
     '''
-    experiment_url = make_url(base_url, HISTONE_CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY + '&assembly=%s' % assembly)
+    experiment_url = make_url(
+        base_url,
+        (
+            REPORT_TYPE_DETAILS[args.report_type]['experiment_query'] +
+            REPORT_TYPE_DETAILS[args.report_type]['experiment_fields'] +
+            '&assembly=%s' % args.assembly
+        )
+    )
     experiment_data = get_data(experiment_url, keypair)
-    file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY + '&assembly=%s' % assembly)
+    file_url = make_url(
+        base_url,
+        (
+            REPORT_TYPE_DETAILS[args.report_type]['file_query'] +
+            REPORT_TYPE_DETAILS[args.report_type]['file_fields'] +
+            '&assembly=%s' % args.assembly
+        )
+    )
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
 
@@ -167,6 +182,7 @@ def get_args():
     parser.add_argument(
         '--assembly',
         help='Genome assembly.',
+        choices=['GRCh38', 'hg19', 'mm10'],
         required=True
     )
     parser.add_argument(
@@ -183,7 +199,7 @@ def main():
     logging.basicConfig(level=args.log_level)
     authid, authpw, base_url = common.processkey(args.key, args.keyfile)
     keypair = (authid, authpw)
-    experiment_data, file_data = get_experiments_and_files(base_url, keypair, args.assembly)
+    experiment_data, file_data = get_experiments_and_files(base_url, keypair, args)
     rows = build_rows(experiment_data, file_data)
     df = pd.DataFrame(rows)
     df.to_csv('histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)
