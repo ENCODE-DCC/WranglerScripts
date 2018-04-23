@@ -51,3 +51,16 @@ HISTONE_QC_FIELDS = [
 ]
 
 # RNA SPECIFIC
+
+RNA_EXPERIMENTS_QUERY = ('/search/?type=Experiment'
+                         '&award.project=ENCODE'
+                         '&assay_slims=Transcription'
+                         '&assay_title=polyA+RNA-seq'
+                         '&assay_title=total+RNA-seq'
+                         '&assay_title=small+RNA-seq'
+                         '&assay_title=single+cell+RNA-seq'
+                         '&assay_title=microRNA-seq'
+                         '&assay_title=CRISPRi+RNA-seq'
+                         '&assay_title=CRISPR+RNA-seq'
+                         '&assay_title=polyA+depleted+RNA-seq'
+                         '&award.project=Roadmap')
