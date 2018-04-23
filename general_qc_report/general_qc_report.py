@@ -29,7 +29,10 @@ def parse_json(json_object, fields):
     '''
     Returns object filtered by fields.
     '''
-    return {field: json_object.get(field) for field in fields}
+    return {
+        field: json_object.get(field)
+        for field in fields
+    }
 
 
 def logger_warn_skip(expected_type, experiment_id, len_data):
@@ -52,13 +55,9 @@ def get_experiments_and_files(base_url, keypair, assembly):
     '''
     Returns all relevant experiment and files.
     '''
-    experiment_url = make_url(
-        base_url, HISTONE_CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY + '&assembly=%s' % assembly
-    )
+    experiment_url = make_url(base_url, HISTONE_CHIP_EXPERIMENTS_QUERY + EXPERIMENT_FIELDS_QUERY + '&assembly=%s' % assembly)
     experiment_data = get_data(experiment_url, keypair)
-    file_url = make_url(
-        base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY + '&assembly=%s' % assembly
-    )
+    file_url = make_url(base_url, HISTONE_PEAK_FILES_QUERY + FILE_FIELDS_QUERY + '&assembly=%s' % assembly)
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
 
@@ -178,7 +177,6 @@ def main():
     rows = build_rows(experiment_data, file_data)
     df = pd.DataFrame(rows)
     df.to_csv('histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)
-
 
 if __name__ == '__main__':
     main()
