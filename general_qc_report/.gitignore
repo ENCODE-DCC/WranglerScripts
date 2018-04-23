@@ -1,0 +1,3 @@
+*.ipynb
+.pytest_cache
+common.pyc histone_qc_report.pyc qc_report_constants.pyc
