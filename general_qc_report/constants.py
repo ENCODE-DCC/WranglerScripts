@@ -5,6 +5,14 @@ module containing constants used by qc reporting tools
 
 LIMIT_ALL_JSON = '&limit=all&format=json'
 
+REPORT_TYPES = [
+    'histone_qc',
+    'histone_mapping',
+    'tf_mapping',
+    'tf_qc',
+    'rna_mapping',
+    'rna_qc'
+]
 
 # Only download needed fields.
 EXPERIMENT_FIELDS_QUERY = (

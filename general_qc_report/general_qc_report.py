@@ -16,7 +16,8 @@ from constants import (
     HISTONE_QC_FIELDS,
     RNA_EXPERIMENTS_QUERY,
     RNA_QUANTIFICATION_FILES_QUERY,
-    RNA_MAPPING_FILES_QUERY
+    RNA_MAPPING_FILES_QUERY,
+    REPORT_TYPES
 )
 
 
@@ -168,6 +169,12 @@ def get_args():
         help='Genome assembly.',
         required=True
     )
+    parser.add_argument(
+        '-r', '--report_type',
+        help='Report type.',
+        choices=REPORT_TYPES,
+        required=True
+    )
     return parser.parse_args()
 
 
@@ -180,6 +187,7 @@ def main():
     rows = build_rows(experiment_data, file_data)
     df = pd.DataFrame(rows)
     df.to_csv('histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)
+
 
 if __name__ == '__main__':
     main()

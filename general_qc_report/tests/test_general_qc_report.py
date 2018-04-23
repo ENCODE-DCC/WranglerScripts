@@ -12,7 +12,8 @@ from general_qc_report import (
     get_dx_details_from_job_id,
     get_job_id_from_file,
     filter_related_files,
-    frip_in_output
+    frip_in_output,
+    REPORT_TYPES
 )
 from mock import patch
 
@@ -288,3 +289,9 @@ def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query, hist
     file['quality_metrics'] = [histone_qc, histone_qc]
     rows = build_rows(experiment_query['@graph'], [file])
     assert len(rows) == 0
+
+
+def test_report_type_constants():
+    assert 'histone_qc' in REPORT_TYPES
+    assert 'rna_qc' in REPORT_TYPES
+
