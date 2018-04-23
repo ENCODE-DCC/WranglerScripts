@@ -91,7 +91,6 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '/search/?type=File'
     '&lab.title=ENCODE+Processing+Pipeline'
     '&output_type=gene+quantifications'
-    '&status=released'
     '&file_format=tsv'
     '&status=released'
     '&status=in+progress'
