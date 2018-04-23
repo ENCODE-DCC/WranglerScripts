@@ -7,7 +7,7 @@ import logging
 import pandas as pd
 import os
 
-from qc_report_constants import (
+from constants import (
     LIMIT_ALL_JSON,
     HISTONE_PEAK_FILES_QUERY,
     HISTONE_CHIP_EXPERIMENTS_QUERY,
