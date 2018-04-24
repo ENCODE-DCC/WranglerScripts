@@ -93,13 +93,21 @@ def get_job_id_from_file(f):
 
 
 def get_dx_details_from_job_id(job_id):
-    d = dxpy.describe(job_id)
-    return {
-        'job_id': job_id,
-        'analysis': d.get('analysis'),
-        'project': d.get('project'),
-        'output': d.get('output')
-    }
+    try:
+        d = dxpy.describe(job_id)
+        dx_details = {
+            'job_id': job_id,
+            'analysis': d.get('analysis'),
+            'project': d.get('project'),
+            'output': d.get('output')
+        }
+    except Exception as e:
+        if any([x in str(e) for x in ['project-F3KkvG801gkPgbpfFbKqy28P', 'project-F3KkvG801gkPgbpfFbKqy28P']]):
+            logging.warn('Project is gone!')
+            dx_details = {}
+        else:
+            raise e
+    return dx_details
 
 
 def frip_in_output(output):
@@ -108,14 +116,7 @@ def frip_in_output(output):
 
 def parse_experiment_file_qc(e, f, q, report_type, base_url):
     job_id = get_job_id_from_file(f)
-    try:
-        dx_details = get_dx_details_from_job_id(job_id)
-    except Exception as ex:
-        if any([x in str(ex) for x in ['project-F3KkvG801gkPgbpfFbKqy28P', 'project-F3KkvG801gkPgbpfFbKqy28P']]):
-            logging.warn('Project is gone!')
-            dx_details = {}
-        else:
-            raise ex
+    dx_details = get_dx_details_from_job_id(job_id)
     output = dx_details.pop('output', {})
     has_frip = frip_in_output(output)
     qc_parsed = parse_json(q, REPORT_TYPE_DETAILS[report_type]['qc_fields'])
