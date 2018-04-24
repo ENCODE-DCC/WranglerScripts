@@ -174,6 +174,36 @@ RNA_MQM_SORT_ORDER = [
     'experiment_accession'
 ]
 
+
+# https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
+RNA_FLAGSTATS_FIELDS = [
+    '@id',
+    'quality_metric_of'
+    'diff_chroms',
+    'diff_chroms_qc_failed',
+    'duplicates',
+    'duplicates_qc_failed',
+    'mapped',
+    'mapped_pct',
+    'mapped_qc_failed',
+    'paired',
+    'paired_properly',
+    'paired_properly_pct',
+    'paired_properly_qc_failed',
+    'paired_qc_failed',
+    'read1',
+    'read1_qc_failed',
+    'read2',
+    'read2_qc_failed',
+    'singletons',
+    'singletons_pct',
+    'singletons_qc_failed',
+    'total',
+    'total_qc_failed',
+    'with_itself',
+    'with_itself_qc_failed'
+]
+
 # REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
