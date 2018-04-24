@@ -36,6 +36,11 @@ def keypair():
 @pytest.fixture
 def histone_qc():
     return {
+        "@type": [
+            "HistoneChipSeqQualityMetric",
+            "QualityMetric",
+            "Item"
+        ],
         "quality_metric_of": [
             "/files/ENCFF660DGD/"
         ],
@@ -69,6 +74,11 @@ def file_query():
                 "notes": '{"dx-createdBy": {"job": "job-FBZp3z80369GYzY2Jz7FX8Qq", "executable": "applet-F9YvJzj0369JPFjp7zFkkvXg", "user": "user-mkajco"}, "qc": {"npeaks_in": 131917, "npeaks_rejected": 38043, "npeaks_out": 93874}, "dx-parentAnalysis": "analysis-FBZp3z80369GYzY2Jz7FX8Qg", "dx-id": "file-FBZy98j0bY1G7j3xFJ0pGJ2F"}',
                 "quality_metrics": [
                      {
+                         "@type": [
+                             "HistoneChipSeqQualityMetric",
+                             "QualityMetric",
+                             "Item"
+                         ],
                          "quality_metric_of": [
                              "/files/ENCFF660DGD/"
                          ],
@@ -285,37 +295,40 @@ def test_filter_related_files(experiment_query, file_query):
 
 
 @patch('dxpy.describe')
-def test_build_rows(mock_dx, experiment_query, file_query, test_args):
+def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url):
     mock_dx.return_value = dx_describe()
     rows = build_rows(
         experiment_query['@graph'],
         file_query['@graph'],
-        test_args.report_type
+        test_args.report_type,
+        base_url
     )
     assert len(rows) == 2
 
 
 @patch('dxpy.describe')
-def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args):
+def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args, base_url):
     mock_dx.return_value = dx_describe()
     rows = build_rows(
         experiment_query['@graph'],
         file_query['@graph'][:1],
-        test_args.report_type
+        test_args.report_type,
+        base_url
     )
     assert len(rows) == 1
 
 
 @patch('dxpy.describe')
 def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
-                                     histone_qc, test_args):
+                                     histone_qc, test_args, base_url):
     mock_dx.return_value = dx_describe()
     file = file_query['@graph'][0]
     file['quality_metrics'] = [histone_qc, histone_qc]
     rows = build_rows(
         experiment_query['@graph'],
         [file],
-        test_args.report_type
+        test_args.report_type,
+        base_url
     )
     assert len(rows) == 0
 
