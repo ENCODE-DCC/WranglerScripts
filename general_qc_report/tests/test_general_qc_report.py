@@ -16,6 +16,7 @@ from general_qc_report import (
     get_dx_details_from_job_id,
     get_job_id_from_file,
     filter_related_files,
+    filter_related_experiments,
     frip_in_output,
     get_row_builder
 )
@@ -98,6 +99,13 @@ def test_filter_related_files(experiment_query, file_query):
     assert f[0]['accession'] == 'ENCFF660DGD'
 
 
+def test_filter_related_experiments(experiment_query, file_query):
+    dataset = file_query['@graph'][0]['dataset']
+    e = filter_related_experiments(dataset, experiment_query['@graph'])
+    assert len(e) == 1
+    assert e[0]['@id'] == '/experiments/ENCSR656SIB/'
+
+
 @patch('dxpy.describe')
 def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
     mock_dx.return_value = dx_describe
@@ -146,7 +154,8 @@ def test_row_builder_returns_correct_function():
     assert get_row_builder('rna_qc') is build_rows_from_experiment
     assert get_row_builder('rna_mapping') is build_rows_from_file
 
-  
+
 def test_row_builder_raises_error():
     with pytest.raises(KeyError):
         get_row_builder('blah')
+

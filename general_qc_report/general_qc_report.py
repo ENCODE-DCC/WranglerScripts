@@ -77,6 +77,10 @@ def filter_related_files(experiment_id, file_data):
     return [f for f in file_data if f.get('dataset') == experiment_id]
 
 
+def filter_related_experiments(dataset, exp_data):
+    return [e for e in exp_data if e.get('@id') == dataset]
+
+
 def get_job_id_from_file(f):
     job_id = f.get('step_run').get('dx_applet_details', [])[0].get('dx_job_id')
     if ':' in job_id:
@@ -185,7 +189,9 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url):
         2. Pull all unique QC metrics out of file.
         3. Parse experiment, file, and qc metrics.
     '''
-    pass
+    data = []
+    for f in file_data:
+        e = filter_related_experiments(f['dataset'], experiment_data)
 
 
 def get_row_builder(report_type):
