@@ -162,6 +162,64 @@ RNA_MQM_SORT_ORDER = [
     'experiment_accession'
 ]
 
+
+# https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
+RNA_FLAGSTATS_FIELDS = [
+    '@id',
+    'quality_metric_of'
+    'diff_chroms',
+    'diff_chroms_qc_failed',
+    'duplicates',
+    'duplicates_qc_failed',
+    'mapped',
+    'mapped_pct',
+    'mapped_qc_failed',
+    'paired',
+    'paired_properly',
+    'paired_properly_pct',
+    'paired_properly_qc_failed',
+    'paired_qc_failed',
+    'read1',
+    'read1_qc_failed',
+    'read2',
+    'read2_qc_failed',
+    'singletons',
+    'singletons_pct',
+    'singletons_qc_failed',
+    'total',
+    'total_qc_failed',
+    'with_itself',
+    'with_itself_qc_failed'
+]
+
+RNA_STAR_QM_FIELDS = [
+    '@id',
+    '% of reads mapped to multiple loci',
+    '% of reads mapped to too many loci',
+    '% of reads unmapped: other',
+    '% of reads unmapped: too many mismatches',
+    '% of reads unmapped: too short',
+    'Average input read length',
+    'Average mapped length',
+    'Deletion average length',
+    'Deletion rate per base',
+    'Insertion average length',
+    'Insertion rate per base',
+    'Mapping speed, Million of reads per hour',
+    'Mismatch rate per base, %',
+    'Number of input reads',
+    'Number of reads mapped to multiple loci',
+    'Number of reads mapped to too many loci',
+    'Number of splices: AT/AC',
+    'Number of splices: Annotated (sjdb)',
+    'Number of splices: GC/AG',
+    'Number of splices: GT/AG',
+    'Number of splices: Non-canonical',
+    'Number of splices: Total',
+    'Uniquely mapped reads %',
+    'Uniquely mapped reads number'
+]
+
 # REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
