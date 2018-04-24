@@ -285,25 +285,38 @@ def test_filter_related_files(experiment_query, file_query):
 
 
 @patch('dxpy.describe')
-def test_build_rows(mock_dx, experiment_query, file_query):
+def test_build_rows(mock_dx, experiment_query, file_query, test_args):
     mock_dx.return_value = dx_describe()
-    rows = build_rows(experiment_query['@graph'], file_query['@graph'])
+    rows = build_rows(
+        experiment_query['@graph'],
+        file_query['@graph'],
+        test_args.report_type
+    )
     assert len(rows) == 2
 
 
 @patch('dxpy.describe')
-def test_build_rows_missing_file(mock_dx, experiment_query, file_query):
+def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args):
     mock_dx.return_value = dx_describe()
-    rows = build_rows(experiment_query['@graph'], file_query['@graph'][:1])
+    rows = build_rows(
+        experiment_query['@graph'],
+        file_query['@graph'][:1],
+        test_args.report_type
+    )
     assert len(rows) == 1
 
 
 @patch('dxpy.describe')
-def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query, histone_qc):
+def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
+                                     histone_qc, test_args):
     mock_dx.return_value = dx_describe()
     file = file_query['@graph'][0]
     file['quality_metrics'] = [histone_qc, histone_qc]
-    rows = build_rows(experiment_query['@graph'], [file])
+    rows = build_rows(
+        experiment_query['@graph'],
+        [file],
+        test_args.report_type
+    )
     assert len(rows) == 0
 
 

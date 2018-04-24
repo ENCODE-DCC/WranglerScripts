@@ -14,7 +14,7 @@ from constants import (
     HISTONE_PEAK_FILES_QUERY,
     HISTONE_CHIP_EXPERIMENTS_QUERY,
     HISTONE_QC_FIELDS,
-    RNA_EXPERIMENTS_QUERY,
+    RNA_MQM_EXPERIMENTS_QUERY,
     RNA_QUANTIFICATION_FILES_QUERY,
     RNA_MAPPING_FILES_QUERY,
     REPORT_TYPES,
@@ -40,10 +40,10 @@ def parse_json(json_object, fields):
     }
 
 
-def logger_warn_skip(expected_type, experiment_id, len_data):
+def logger_warn_skip(expected_no, expected_type, experiment_id, len_data):
     logging.warn(
-        'Expected one unique %s in experiment %s. '
-        'Found %d. Skipping!' % (expected_type, experiment_id, len_data)
+        'Expected %d unique %s in experiment %s. '
+        'Found %d. Skipping!' % (expected_no, expected_type, experiment_id, len_data)
     )
 
 
@@ -87,7 +87,7 @@ def filter_related_files(experiment_id, file_data):
 
 def get_job_id_from_file(f):
     job_id = f.get('step_run').get('dx_applet_details', [])[0].get('dx_job_id')
-    if job_id:
+    if ':' in job_id:
         job_id = job_id.split(':')[1]
     return job_id
 
@@ -106,17 +106,36 @@ def frip_in_output(output):
     return any(['frip' in k for k in output])
 
 
-def parse_experiment_file_qc(e, f, q):
+def parse_experiment_file_qc(e, f, q, report_type, base_url):
     job_id = get_job_id_from_file(f)
-    dx_details = get_dx_details_from_job_id(job_id)
-    output = dx_details.pop('output', None)
+    try:
+        dx_details = get_dx_details_from_job_id(job_id)
+    except Exception as ex:
+        if any([x in str(ex) for x in ['project-F3KkvG801gkPgbpfFbKqy28P', 'project-F3KkvG801gkPgbpfFbKqy28P']]):
+            logging.warn('Project is gone!')
+            dx_details = {}
+        else:
+            raise ex
+    output = dx_details.pop('output', {})
     has_frip = frip_in_output(output)
-    qc_parsed = parse_json(q, HISTONE_QC_FIELDS)
+    qc_parsed = parse_json(q, REPORT_TYPE_DETAILS[report_type]['qc_fields'])
+    qc_parsed['attachment'] = (
+        '=image("%s%s%s", 1)' % (base_url, qc_parsed.get('@id'), qc_parsed.get('attachment').get('href'))
+        if qc_parsed.get('attachment') and isinstance(qc_parsed.get('attachment'), dict)
+        else None
+        )
     row = {
         'date': f.get('date_created'),
+        'assay_title': e.get('assay_title'),
         'experiment_accession': e.get('accession'),
         'experiment_status': e.get('status'),
         'target': e.get('target', {}).get('name'),
+        'library_insert_size': ', '.join({
+            lib
+            for r in e.get('replicates', {})
+            for lib in r.get('library', {}).values()
+            if lib
+        }),
         'biosample_term_name': e.get('biosample_term_name'),
         'biosample_type': e.get('biosample_type'),
         'replication': e.get('replication_type'),
@@ -130,7 +149,7 @@ def parse_experiment_file_qc(e, f, q):
     return row
 
 
-def build_rows(experiment_data, file_data):
+def build_rows(experiment_data, file_data, report_type, base_url):
     '''
     Builds records that can be passed to a dataframe.
     For every experiment:
@@ -141,19 +160,25 @@ def build_rows(experiment_data, file_data):
         5. Parse QC metric (or return Nones)
         6. Append record to list.
     '''
+    file_no =  REPORT_TYPE_DETAILS[report_type]['file_no']
+    qc_no =  REPORT_TYPE_DETAILS[report_type]['qc_no']
     data = []
     for e in experiment_data:
         f = filter_related_files(e['@id'], file_data)
-        if len(f) != 1:
-            logger_warn_skip('related file', e['@id'], len(f))
+        if len(f) != file_no:
+            logger_warn_skip(file_no, 'related file', e['@id'], len(f))
             continue
         f = f[0]
-        q = f.get('quality_metrics')
-        if len(q) > 1:
-            logger_warn_skip('quality metric', e['@id'], len(q))
+        q = [
+            qc
+            for qc in f.get('quality_metrics')
+            if qc['@type'][0] in REPORT_TYPE_DETAILS[report_type]['qc_type']
+        ]
+        if len(q) > qc_no:
+            logger_warn_skip(qc_no, 'quality metric', e['@id'], len(q))
             continue
         q = q[0] if q else {}
-        data.append(parse_experiment_file_qc(e, f, q))
+        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url))
     return data
 
 
@@ -205,9 +230,17 @@ def main():
         args.report_type,
         args.assembly
     )
-    rows = build_rows(experiment_data, file_data)
+    rows = build_rows(experiment_data, file_data, args.report_type, base_url)
     df = pd.DataFrame(rows)
-    df.to_csv('histone_qc_report_%s.tsv' % args.assembly, sep='\t', index=False)
+    if REPORT_TYPE_DETAILS[args.report_type].get('col_order'):
+        df = df[REPORT_TYPE_DETAILS[args.report_type].get('col_order')]
+    if REPORT_TYPE_DETAILS[args.report_type].get('sort_order'):
+        df = df.sort_values(by=REPORT_TYPE_DETAILS[args.report_type].get('sort_order'))
+    df.to_csv(
+        '%s_report_%s.tsv' % (args.report_type, args.assembly),
+        sep='\t',
+        index=False
+    )
 
 
 if __name__ == '__main__':
