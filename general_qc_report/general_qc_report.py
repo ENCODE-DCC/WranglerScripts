@@ -9,14 +9,6 @@ import os
 
 from constants import (
     LIMIT_ALL_JSON,
-    EXPERIMENT_FIELDS_QUERY,
-    FILE_FIELDS_QUERY,
-    HISTONE_PEAK_FILES_QUERY,
-    HISTONE_CHIP_EXPERIMENTS_QUERY,
-    HISTONE_QC_FIELDS,
-    RNA_MQM_EXPERIMENTS_QUERY,
-    RNA_QUANTIFICATION_FILES_QUERY,
-    RNA_MAPPING_FILES_QUERY,
     REPORT_TYPES,
     REPORT_TYPE_DETAILS
 )
@@ -120,13 +112,14 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
     output = dx_details.pop('output', {})
     has_frip = frip_in_output(output)
     qc_parsed = parse_json(q, REPORT_TYPE_DETAILS[report_type]['qc_fields'])
-    qc_parsed['attachment'] = (
+    qc_parsed['mad_plot'] = (
         '=image("%s%s%s", 1)' % (base_url, qc_parsed.get('@id'), qc_parsed.get('attachment').get('href'))
         if qc_parsed.get('attachment') and isinstance(qc_parsed.get('attachment'), dict)
         else None
         )
+    qc_parsed.pop('attachment', None)
     row = {
-        'date': f.get('date_created'),
+        'analysis_date': f.get('date_created'),
         'assay_title': e.get('assay_title'),
         'experiment_accession': e.get('accession'),
         'experiment_status': e.get('status'),
