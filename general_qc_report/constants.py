@@ -130,6 +130,7 @@ RNA_MAPPING_FILES_QUERY = (
     '&quality_metrics.assay_term_name=single+cell+isolation+followed+by+RNA-seq'
     '&quality_metrics.assay_term_name=siRNA+knockdown+followed+by+RNA-seq'
     '&quality_metrics.assay_term_name=small+RNA-seq'
+    '&frame=embedded'
 )
 
 RNA_MAD_QC_FIELDS = [
