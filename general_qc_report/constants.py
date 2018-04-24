@@ -204,6 +204,34 @@ RNA_FLAGSTATS_FIELDS = [
     'with_itself_qc_failed'
 ]
 
+RNA_STAR_QM_FIELDS = [
+    '@id',
+    '% of reads mapped to multiple loci',
+    '% of reads mapped to too many loci',
+    '% of reads unmapped: other',
+    '% of reads unmapped: too many mismatches',
+    '% of reads unmapped: too short',
+    'Average input read length',
+    'Average mapped length',
+    'Deletion average length',
+    'Deletion rate per base',
+    'Insertion average length',
+    'Insertion rate per base',
+    'Mapping speed, Million of reads per hour',
+    'Mismatch rate per base, %',
+    'Number of input reads',
+    'Number of reads mapped to multiple loci',
+    'Number of reads mapped to too many loci',
+    'Number of splices: AT/AC',
+    'Number of splices: Annotated (sjdb)',
+    'Number of splices: GC/AG',
+    'Number of splices: GT/AG',
+    'Number of splices: Non-canonical',
+    'Number of splices: Total',
+    'Uniquely mapped reads %',
+    'Uniquely mapped reads number'
+]
+
 # REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
