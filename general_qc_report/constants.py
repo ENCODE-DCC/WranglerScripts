@@ -91,7 +91,8 @@ RNA_EXPERIMENTS_QUERY = (
     '&assay_title=CRISPRi+RNA-seq'
     '&assay_title=CRISPR+RNA-seq'
     '&assay_title=polyA+depleted+RNA-seq'
-    '&assay_title=shRNA RNA-seq'
+    '&assay_title=shRNA+RNA-seq'
+    '&assay_title=siRNA+RNA-seq'
     '&status=released'
     '&status=in+progress'
     '&status=submitted'
@@ -114,6 +115,7 @@ RNA_QUANTIFICATION_FILES_QUERY = (
 )
 
 RNA_MAD_QC_FIELDS = [
+    '@id',
     'SD of log ratios',
     'Pearson correlation',
     'Spearman correlation',
@@ -139,7 +141,7 @@ RNA_MQM_REPORT_COLUMNS = [
     'SD of log ratios',
     'Spearman correlation',
     'MAD of log ratios',
-    'mad_plot',
+    'attachment',
     'project',
     'analysis',
     'job_id',

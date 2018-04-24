@@ -89,12 +89,18 @@ def filter_quality_metrics_from_file(f, report_type):
     ]
 
 
-def collapse_quality_metrics(q):
+def is_nonoverlapping(q,report_type):
+    qc_fields = REPORT_TYPE_DETAILS[report_type]['qc_fields']
     if not isinstance(q, list):
         raise ValueError('Must pass in in list of objects')
-    if len([field for qc in q for field in qc]) != len({field for qc in q for field in qc}):
-        logging.warn(q)
+    if len([field for qc in q for field in qc if field in qc_fields]) != len({field for qc in q for field in qc if field in qc_fields}):
         raise ValueError('Overlapping fields in object')
+    
+
+
+def collapse_quality_metrics(q, report_type=None):
+    if report_type is not None:
+        is_nonoverlapping(q, report_type)
     new_q = {}
     [new_q.update(qc) for qc in q]
     return new_q
@@ -129,18 +135,21 @@ def frip_in_output(output):
     return any(['frip' in k for k in output])
 
 
+def process_qc(base_url, qc_parsed):
+    # Make attachment image with link.
+    if qc_parsed.get('attachment') and isinstance(qc_parsed.get('attachment'), dict) and qc_parsed.get('@id'):
+        url = base_url + qc_parsed.get('@id') + qc_parsed.get('attachment').get('href')
+        qc_parsed['attachment'] = '=hyperlink("%s", =image("%s", 2))' % (url, url)
+        qc_parsed.pop('@id', None)
+    return qc_parsed
+
 def parse_experiment_file_qc(e, f, q, report_type, base_url):
     job_id = get_job_id_from_file(f)
     dx_details = get_dx_details_from_job_id(job_id)
     output = dx_details.pop('output', {})
     has_frip = frip_in_output(output)
     qc_parsed = parse_json(q, REPORT_TYPE_DETAILS[report_type]['qc_fields'])
-    qc_parsed['mad_plot'] = (
-        '=image("%s%s%s", 1)' % (base_url, qc_parsed.get('@id'), qc_parsed.get('attachment').get('href'))
-        if qc_parsed.get('attachment') and isinstance(qc_parsed.get('attachment'), dict)
-        else None
-        )
-    qc_parsed.pop('attachment', None)
+    qc_processed = process_qc(base_url, qc_parsed)
     row = {
         'analysis_date': f.get('date_created'),
         'assay_title': e.get('assay_title'),
@@ -161,7 +170,7 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
         'assembly': f.get('assembly'),
         'has_frip': has_frip
     }
-    row.update(qc_parsed)
+    row.update(qc_processed)
     row.update(dx_details)
     return row
 
@@ -209,22 +218,26 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url):
     for f in file_data:
         e = filter_related_experiments(f['dataset'], experiment_data)
         if len(e) != 1:
-            logger_warn_skip('one', 'related experiment', f['accession'], len(e))
+            logger_warn_skip(1, 'related experiment', f['accession'], len(e))
             continue
         e = e[0]
         q = filter_quality_metrics_from_file(f, report_type)
-        if len(q) != qc_no:
+        if len(q) > qc_no:
             logger_warn_skip(qc_no, 'quality_metric', f['accession'], len(q))
             continue
-        q = collapse_quality_metrics(q)
+        # Flatten list of lists.
         qc_fields = [
             field
             for item in REPORT_TYPE_DETAILS[report_type]['qc_fields']
             for field in item
         ]
-        
-        qc_parsed = parse_json(q, qc_fields)
-             
+        # Set global qc_fields to flattened list.
+        REPORT_TYPE_DETAILS[report_type]['qc_fields'] = qc_fields
+        # Collapse list of quality metrics to one object.
+        q = collapse_quality_metrics(q, report_type)
+        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url))
+    return data
+
 
 def get_row_builder(report_type):
     if REPORT_TYPE_DETAILS[report_type]['row_builder'] == 'from_experiment':

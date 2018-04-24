@@ -164,10 +164,5 @@ def test_row_builder_raises_error():
 def test_collapse_quality_metrics():
     assert collapse_quality_metrics([]) == {}
     assert collapse_quality_metrics([{'a': 1}, {'b': 2}]) == {'a': 1, 'b': 2}
-    with pytest.raises(ValueError):
-        collapse_quality_metrics([{'a': 1}, {'a': 2}]) == {'a': 2}
-    with pytest.raises(ValueError):
-        collapse_quality_metrics({})
-    with pytest.raises(ValueError):
-        collapse_quality_metrics('')
+    assert collapse_quality_metrics([{'a': 1}, {'a': 2}]) == {'a': 2}
 
