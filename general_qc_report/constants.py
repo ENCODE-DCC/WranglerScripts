@@ -77,14 +77,12 @@ HISTONE_QC_FIELDS = [
     'quality_metric_of'
 ]
 
+# RNA GENERIC
 
-# RNA MQM SPECIFIC
-
-RNA_MQM_EXPERIMENTS_QUERY = (
+RNA_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
     '&award.project=ENCODE'
     '&award.project=Roadmap'
-    '&replication_type!=unreplicated'
     '&assay_slims=Transcription'
     '&assay_title=polyA+RNA-seq'
     '&assay_title=total+RNA-seq'
@@ -98,6 +96,12 @@ RNA_MQM_EXPERIMENTS_QUERY = (
     '&status=released'
     '&status=in+progress'
     '&status=submitted'
+)
+
+# RNA MQM SPECIFIC
+
+RNA_MQM_EXPERIMENTS_QUERY = (
+    RNA_EXPERIMENTS_QUERY + '&replication_type!=unreplicated'
 )
 
 RNA_QUANTIFICATION_FILES_QUERY = (
