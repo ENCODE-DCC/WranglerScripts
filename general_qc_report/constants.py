@@ -162,7 +162,6 @@ RNA_MQM_SORT_ORDER = [
     'experiment_accession'
 ]
 
-
 # https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
 RNA_FLAGSTATS_FIELDS = [
     '@id',
@@ -189,7 +188,9 @@ RNA_FLAGSTATS_FIELDS = [
     'total',
     'total_qc_failed',
     'with_itself',
-    'with_itself_qc_failed'
+    'with_itself_qc_failed',
+    'quality_metric_of'
+    'attachment'
 ]
 
 RNA_STAR_QM_FIELDS = [
