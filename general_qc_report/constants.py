@@ -78,7 +78,7 @@ HISTONE_QC_FIELDS = [
 ]
 
 
-# RNA SPECIFIC
+# RNA MQM SPECIFIC
 
 RNA_MQM_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
@@ -108,28 +108,6 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '&status=released'
     '&status=in+progress'
     '&status=uploading'
-)
-
-RNA_MAPPING_FILES_QUERY = (
-    '/search/?type=File'
-    '&output_type=alignments'
-    '&output_type=transcriptome+alignments'
-    '&file_format=bam'
-    '&status=released'
-    '&status=in+progress'
-    '&status=uploading'
-    '&award.project=ENCODE'
-    '&award.project=Roadmap'
-    '&lab.title=ENCODE+Processing+Pipeline'
-    '&quality_metrics.assay_term_name=RNA-seq'
-    '&quality_metrics.assay_term_name=CRISPR+genome+editing+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=CRISPRi+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=direct+RNA-seq'
-    '&quality_metrics.assay_term_name=microRNA-seq'
-    '&quality_metrics.assay_term_name=shRNA+knockdown+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=single+cell+isolation+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=siRNA+knockdown+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=small+RNA-seq'
 )
 
 RNA_MAD_QC_FIELDS = [
@@ -172,6 +150,30 @@ RNA_MQM_SORT_ORDER = [
     'target',
     'experiment_accession'
 ]
+
+# RNA MAPPING SPECIFIC
+
+RNA_MAPPING_FILES_QUERY = (
+    '/search/?type=File'
+    '&output_type=alignments'
+    '&output_type=transcriptome+alignments'
+    '&file_format=bam'
+    '&status=released'
+    '&status=in+progress'
+    '&status=uploading'
+    '&award.project=ENCODE'
+    '&award.project=Roadmap'
+    '&lab.title=ENCODE+Processing+Pipeline'
+    '&quality_metrics.assay_term_name=RNA-seq'
+    '&quality_metrics.assay_term_name=CRISPR+genome+editing+followed+by+RNA-seq'
+    '&quality_metrics.assay_term_name=CRISPRi+followed+by+RNA-seq'
+    '&quality_metrics.assay_term_name=direct+RNA-seq'
+    '&quality_metrics.assay_term_name=microRNA-seq'
+    '&quality_metrics.assay_term_name=shRNA+knockdown+followed+by+RNA-seq'
+    '&quality_metrics.assay_term_name=single+cell+isolation+followed+by+RNA-seq'
+    '&quality_metrics.assay_term_name=siRNA+knockdown+followed+by+RNA-seq'
+    '&quality_metrics.assay_term_name=small+RNA-seq'
+)
 
 # https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
 RNA_FLAGSTATS_FIELDS = [
