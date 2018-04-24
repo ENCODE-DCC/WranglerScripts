@@ -58,8 +58,8 @@ def test_get_data(mock_get, base_url, keypair):
 
 
 @patch('common.encoded_get')
-def test_get_experiments_and_files(mock_get, base_url, keypair, test_args):
-    mock_get.side_effect = [file_query(), experiment_query()]
+def test_get_experiments_and_files(mock_get, base_url, keypair, test_args, file_query, experiment_query):
+    mock_get.side_effect = [file_query, experiment_query]
     f, e = get_experiments_and_files(
         base_url,
         keypair,
@@ -70,8 +70,8 @@ def test_get_experiments_and_files(mock_get, base_url, keypair, test_args):
 
 
 @patch('dxpy.describe')
-def test_get_dx_details_from_job_id(mock_dx):
-    mock_dx.return_value = dx_describe()
+def test_get_dx_details_from_job_id(mock_dx, dx_describe):
+    mock_dx.return_value = dx_describe
     dx_details = get_dx_details_from_job_id('123')
     assert dx_details.get('job_id') == '123'
     assert 'frip' in dx_details.get('output')
@@ -95,8 +95,8 @@ def test_filter_related_files(experiment_query, file_query):
 
 
 @patch('dxpy.describe')
-def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url):
-    mock_dx.return_value = dx_describe()
+def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
+    mock_dx.return_value = dx_describe
     rows = build_rows(
         experiment_query['@graph'],
         file_query['@graph'],
@@ -107,8 +107,8 @@ def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url):
 
 
 @patch('dxpy.describe')
-def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args, base_url):
-    mock_dx.return_value = dx_describe()
+def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
+    mock_dx.return_value = dx_describe
     rows = build_rows(
         experiment_query['@graph'],
         file_query['@graph'][:1],
@@ -120,8 +120,8 @@ def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_arg
 
 @patch('dxpy.describe')
 def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
-                                     histone_qc, test_args, base_url):
-    mock_dx.return_value = dx_describe()
+                                     histone_qc, test_args, base_url, dx_describe):
+    mock_dx.return_value = dx_describe
     file = file_query['@graph'][0]
     file['quality_metrics'] = [histone_qc, histone_qc]
     rows = build_rows(
