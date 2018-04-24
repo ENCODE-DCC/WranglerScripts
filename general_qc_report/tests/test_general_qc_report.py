@@ -11,11 +11,13 @@ from general_qc_report import (
     make_url,
     get_data,
     get_experiments_and_files,
-    build_rows,
+    build_rows_from_experiment,
+    build_rows_from_file,
     get_dx_details_from_job_id,
     get_job_id_from_file,
     filter_related_files,
-    frip_in_output
+    frip_in_output,
+    get_row_builder
 )
 from mock import patch
 
@@ -99,7 +101,7 @@ def test_filter_related_files(experiment_query, file_query):
 @patch('dxpy.describe')
 def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
     mock_dx.return_value = dx_describe
-    rows = build_rows(
+    rows = build_rows_from_experiment(
         experiment_query['@graph'],
         file_query['@graph'],
         test_args.report_type,
@@ -111,7 +113,7 @@ def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, 
 @patch('dxpy.describe')
 def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
     mock_dx.return_value = dx_describe
-    rows = build_rows(
+    rows = build_rows_from_experiment(
         experiment_query['@graph'],
         file_query['@graph'][:1],
         test_args.report_type,
@@ -126,7 +128,7 @@ def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
     mock_dx.return_value = dx_describe
     file = file_query['@graph'][0]
     file['quality_metrics'] = [histone_qc, histone_qc]
-    rows = build_rows(
+    rows = build_rows_from_experiment(
         experiment_query['@graph'],
         [file],
         test_args.report_type,
@@ -139,3 +141,12 @@ def test_report_type_constants():
     assert 'histone_qc' in REPORT_TYPES
     assert 'rna_qc' in REPORT_TYPES
 
+
+def test_row_builder_returns_correct_function():
+    assert get_row_builder('rna_qc') is build_rows_from_experiment
+    assert get_row_builder('rna_mapping') is build_rows_from_file
+
+  
+def test_row_builder_raises_error():
+    with pytest.raises(KeyError):
+        get_row_builder('blah')

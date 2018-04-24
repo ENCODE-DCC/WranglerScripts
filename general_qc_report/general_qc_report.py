@@ -143,13 +143,13 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
     return row
 
 
-def build_rows(experiment_data, file_data, report_type, base_url):
+def build_rows_from_experiment(experiment_data, file_data, report_type, base_url):
     '''
     Builds records that can be passed to a dataframe.
     For every experiment:
         1. Find every related file in file_data.
-        2. Assert one file in group.
-        3. Assert not more than one QC metric.
+        2. Assert file_no file in group.
+        3. Assert not more than qc_no QC metrics.
         4. Parse dx_job_id from file, get analysis_id.
         5. Parse QC metric (or return Nones)
         6. Append record to list.
@@ -175,6 +175,35 @@ def build_rows(experiment_data, file_data, report_type, base_url):
         data.append(parse_experiment_file_qc(e, f, q, report_type, base_url))
     return data
 
+
+def build_rows_from_file(experiment_data, file_data, report_type, base_url):
+    '''
+    Builds records that can be passed in to dataframe.
+    For every file:
+        1. Find experiment it belongs to (file.dataset == experiment.@id).
+           Should just be one.
+        2. Pull all unique QC metrics out of file.
+        3. Parse experiment, file, and qc metrics.
+    '''
+    pass
+
+
+def get_row_builder(report_type):
+    if REPORT_TYPE_DETAILS[report_type]['row_builder'] == 'from_experiment':
+        return build_rows_from_experiment
+    elif REPORT_TYPE_DETAILS[report_type]['row_builder'] == 'from_file':
+        return build_rows_from_file
+    else:
+        raise KeyError('Invalid row builder')
+
+
+def format_dataframe(df, report_type):
+    if REPORT_TYPE_DETAILS[report_type].get('col_order'):
+        df = df[REPORT_TYPE_DETAILS[report_type].get('col_order')]
+    if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
+        df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
+    return df
+    
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -224,12 +253,10 @@ def main():
         args.report_type,
         args.assembly
     )
+    build_rows = get_row_builder(args.report_type)
     rows = build_rows(experiment_data, file_data, args.report_type, base_url)
     df = pd.DataFrame(rows)
-    if REPORT_TYPE_DETAILS[args.report_type].get('col_order'):
-        df = df[REPORT_TYPE_DETAILS[args.report_type].get('col_order')]
-    if REPORT_TYPE_DETAILS[args.report_type].get('sort_order'):
-        df = df.sort_values(by=REPORT_TYPE_DETAILS[args.report_type].get('sort_order'))
+    df = format_dataframe(df, args.report_type)
     df.to_csv(
         '%s_report_%s.tsv' % (args.report_type, args.assembly),
         sep='\t',

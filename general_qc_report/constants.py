@@ -66,7 +66,6 @@ HISTONE_CHIP_EXPERIMENTS_QUERY = (
 )
 
 HISTONE_QC_FIELDS = [
-    '@id',
     'nreads',
     'nreads_in_peaks',
     'npeak_overlap',
@@ -115,7 +114,6 @@ RNA_QUANTIFICATION_FILES_QUERY = (
 )
 
 RNA_MAD_QC_FIELDS = [
-    '@id',
     'SD of log ratios',
     'Pearson correlation',
     'Spearman correlation',
@@ -181,7 +179,6 @@ RNA_MAPPING_FILES_QUERY = (
 
 # https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
 RNA_FLAGSTATS_FIELDS = [
-    '@id',
     'quality_metric_of'
     'diff_chroms',
     'diff_chroms_qc_failed',
@@ -211,7 +208,6 @@ RNA_FLAGSTATS_FIELDS = [
 ]
 
 RNA_STAR_QM_FIELDS = [
-    '@id',
     '% of reads mapped to multiple loci',
     '% of reads mapped to too many loci',
     '% of reads unmapped: other',
@@ -249,7 +245,8 @@ REPORT_TYPE_DETAILS = {
         'qc_fields': HISTONE_QC_FIELDS,
         'file_no': 1,
         'qc_no': 1,
-        'qc_type': ['HistoneChipSeqQualityMetric']
+        'qc_type': ['HistoneChipSeqQualityMetric'],
+        'row_builder': 'from_experiment'
     },
     'rna_qc': {
         'experiment_query': RNA_MQM_EXPERIMENTS_QUERY,
@@ -261,6 +258,15 @@ REPORT_TYPE_DETAILS = {
         'qc_no': 1,
         'qc_type': ['MadQualityMetric'],
         'col_order': RNA_MQM_REPORT_COLUMNS,
-        'sort_order': RNA_MQM_SORT_ORDER
+        'sort_order': RNA_MQM_SORT_ORDER,
+        'row_builder': 'from_experiment'
+    },
+    'rna_mapping': {
+        'experiment_query': RNA_EXPERIMENTS_QUERY,
+        'experiment_fields': EXPERIMENT_FIELDS_QUERY,
+        'file_query': RNA_MAPPING_FILES_QUERY,
+        'file_fields': FILE_FIELDS_QUERY,
+        'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_STAR_QM_FIELDS],
+        'row_builder': 'from_file'
     }
 }

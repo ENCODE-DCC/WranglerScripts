@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 from general_qc_report import (
     get_experiments_and_files,
-    build_rows
+    build_rows_from_experiment
 )
 from constants import (
     REPORT_TYPE_DETAILS
@@ -26,7 +26,7 @@ def test_functional_rna_mqm_report_get_data(replaced_details, replaced_get, base
     exps, files = get_experiments_and_files(base_url, (None, None), 'rna_qc', 'GRCh38')
     assert len(exps) == 1
     assert len(files) == 2
-    rows = build_rows(exps, files, 'rna_qc', base_url)
+    rows = build_rows_from_experiment(exps, files, 'rna_qc', base_url)
     assert len(rows) == 1
     assert all([col in rows[0] for col in REPORT_TYPE_DETAILS['rna_qc']['col_order']])
     assert rows[0]['Pearson correlation'] == 0.9737423
