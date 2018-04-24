@@ -112,25 +112,13 @@ RNA_QUANTIFICATION_FILES_QUERY = (
 
 RNA_MAPPING_FILES_QUERY = (
     '/search/?type=File'
+    '&lab.title=ENCODE+Processing+Pipeline'
     '&output_type=alignments'
     '&output_type=transcriptome+alignments'
     '&file_format=bam'
     '&status=released'
     '&status=in+progress'
     '&status=uploading'
-    '&award.project=ENCODE'
-    '&award.project=Roadmap'
-    '&lab.title=ENCODE+Processing+Pipeline'
-    '&quality_metrics.assay_term_name=RNA-seq'
-    '&quality_metrics.assay_term_name=CRISPR+genome+editing+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=CRISPRi+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=direct+RNA-seq'
-    '&quality_metrics.assay_term_name=microRNA-seq'
-    '&quality_metrics.assay_term_name=shRNA+knockdown+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=single+cell+isolation+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=siRNA+knockdown+followed+by+RNA-seq'
-    '&quality_metrics.assay_term_name=small+RNA-seq'
-    '&frame=embedded'
 )
 
 RNA_MAD_QC_FIELDS = [
