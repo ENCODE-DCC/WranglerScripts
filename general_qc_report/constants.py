@@ -179,7 +179,6 @@ RNA_MAPPING_FILES_QUERY = (
 
 # https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
 RNA_FLAGSTATS_FIELDS = [
-    'quality_metric_of'
     'diff_chroms',
     'diff_chroms_qc_failed',
     'duplicates',
@@ -202,9 +201,7 @@ RNA_FLAGSTATS_FIELDS = [
     'total',
     'total_qc_failed',
     'with_itself',
-    'with_itself_qc_failed',
-    'quality_metric_of'
-    'attachment'
+    'with_itself_qc_failed'
 ]
 
 RNA_STAR_QM_FIELDS = [
@@ -267,6 +264,8 @@ REPORT_TYPE_DETAILS = {
         'file_query': RNA_MAPPING_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
         'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_STAR_QM_FIELDS],
+        'qc_no': 2,
+        'qc_type': ['SamtoolsFlagstatsQualityMetric', 'StarQualityMetric'],
         'row_builder': 'from_file'
     }
 }

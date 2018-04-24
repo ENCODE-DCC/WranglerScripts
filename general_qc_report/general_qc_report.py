@@ -81,6 +81,25 @@ def filter_related_experiments(dataset, exp_data):
     return [e for e in exp_data if e.get('@id') == dataset]
 
 
+def filter_quality_metrics_from_file(f, report_type):
+    return [
+        qc
+        for qc in f.get('quality_metrics')
+        if qc['@type'][0] in REPORT_TYPE_DETAILS[report_type]['qc_type']
+    ]
+
+
+def collapse_quality_metrics(q):
+    if not isinstance(q, list):
+        raise ValueError('Must pass in in list of objects')
+    if len([field for qc in q for field in qc]) != len({field for qc in q for field in qc}):
+        logging.warn(q)
+        raise ValueError('Overlapping fields in object')
+    new_q = {}
+    [new_q.update(qc) for qc in q]
+    return new_q
+
+
 def get_job_id_from_file(f):
     job_id = f.get('step_run').get('dx_applet_details', [])[0].get('dx_job_id')
     if ':' in job_id:
@@ -167,11 +186,7 @@ def build_rows_from_experiment(experiment_data, file_data, report_type, base_url
             logger_warn_skip(file_no, 'related file', e['@id'], len(f))
             continue
         f = f[0]
-        q = [
-            qc
-            for qc in f.get('quality_metrics')
-            if qc['@type'][0] in REPORT_TYPE_DETAILS[report_type]['qc_type']
-        ]
+        q = filter_quality_metrics_from_file(f, report_type)
         if len(q) > qc_no:
             logger_warn_skip(qc_no, 'quality metric', e['@id'], len(q))
             continue
@@ -189,10 +204,27 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url):
         2. Pull all unique QC metrics out of file.
         3. Parse experiment, file, and qc metrics.
     '''
+    qc_no = REPORT_TYPE_DETAILS[report_type]['qc_no']
     data = []
     for f in file_data:
         e = filter_related_experiments(f['dataset'], experiment_data)
-
+        if len(e) != 1:
+            logger_warn_skip('one', 'related experiment', f['accession'], len(e))
+            continue
+        e = e[0]
+        q = filter_quality_metrics_from_file(f, report_type)
+        if len(q) != qc_no:
+            logger_warn_skip(qc_no, 'quality_metric', f['accession'], len(q))
+            continue
+        q = collapse_quality_metrics(q)
+        qc_fields = [
+            field
+            for item in REPORT_TYPE_DETAILS[report_type]['qc_fields']
+            for field in item
+        ]
+        
+        qc_parsed = parse_json(q, qc_fields)
+             
 
 def get_row_builder(report_type):
     if REPORT_TYPE_DETAILS[report_type]['row_builder'] == 'from_experiment':
@@ -209,7 +241,7 @@ def format_dataframe(df, report_type):
     if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
         df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
     return df
-    
+
 
 def get_args():
     parser = argparse.ArgumentParser(

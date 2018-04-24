@@ -18,7 +18,8 @@ from general_qc_report import (
     filter_related_files,
     filter_related_experiments,
     frip_in_output,
-    get_row_builder
+    get_row_builder,
+    collapse_quality_metrics
 )
 from mock import patch
 
@@ -158,4 +159,15 @@ def test_row_builder_returns_correct_function():
 def test_row_builder_raises_error():
     with pytest.raises(KeyError):
         get_row_builder('blah')
+
+
+def test_collapse_quality_metrics():
+    assert collapse_quality_metrics([]) == {}
+    assert collapse_quality_metrics([{'a': 1}, {'b': 2}]) == {'a': 1, 'b': 2}
+    with pytest.raises(ValueError):
+        collapse_quality_metrics([{'a': 1}, {'a': 2}]) == {'a': 2}
+    with pytest.raises(ValueError):
+        collapse_quality_metrics({})
+    with pytest.raises(ValueError):
+        collapse_quality_metrics('')
 
