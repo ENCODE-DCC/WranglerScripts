@@ -5,6 +5,14 @@ module containing constants used by qc reporting tools
 
 LIMIT_ALL_JSON = '&limit=all&format=json'
 
+REPORT_TYPES = [
+    'histone_qc',
+    'histone_mapping',
+    'tf_mapping',
+    'tf_qc',
+    'rna_mapping',
+    'rna_qc'
+]
 
 # Only download needed fields.
 EXPERIMENT_FIELDS_QUERY = (
@@ -18,6 +26,8 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=biosample_type'
     '&field=replication_type'
     '&field=lab.name'
+    '&field=replicates.library.size_range'
+    '&field=assay_title'
 )
 
 FILE_FIELDS_QUERY = (
@@ -56,6 +66,7 @@ HISTONE_CHIP_EXPERIMENTS_QUERY = (
 )
 
 HISTONE_QC_FIELDS = [
+    '@id',
     'nreads',
     'nreads_in_peaks',
     'npeak_overlap',
@@ -69,10 +80,11 @@ HISTONE_QC_FIELDS = [
 
 # RNA SPECIFIC
 
-RNA_EXPERIMENTS_QUERY = (
+RNA_MQM_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
     '&award.project=ENCODE'
     '&award.project=Roadmap'
+    '&replication_type!=unreplicated'
     '&assay_slims=Transcription'
     '&assay_title=polyA+RNA-seq'
     '&assay_title=total+RNA-seq'
@@ -82,6 +94,7 @@ RNA_EXPERIMENTS_QUERY = (
     '&assay_title=CRISPRi+RNA-seq'
     '&assay_title=CRISPR+RNA-seq'
     '&assay_title=polyA+depleted+RNA-seq'
+    '&assay_title=shRNA RNA-seq'
     '&status=released'
     '&status=in+progress'
     '&status=submitted'
@@ -91,7 +104,6 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '/search/?type=File'
     '&lab.title=ENCODE+Processing+Pipeline'
     '&output_type=gene+quantifications'
-    '&status=released'
     '&file_format=tsv'
     '&status=released'
     '&status=in+progress'
@@ -108,3 +120,71 @@ RNA_MAPPING_FILES_QUERY = (
     '&status=in+progress'
     '&status=uploading'
 )
+
+RNA_MAD_QC_FIELDS = [
+    '@id',
+    'SD of log ratios',
+    'Pearson correlation',
+    'Spearman correlation',
+    'MAD of log ratios',
+    'quality_metric_of',
+    'attachment'
+]
+
+RNA_MQM_REPORT_COLUMNS = [
+    'experiment_accession',
+    'experiment_status',
+    'date',
+    'assay_title',
+    'lab',
+    'rfa',
+    'biosample_term_name',
+    'biosample_type',
+    'assembly',
+    'target',
+    'attachment',
+    'MAD of log ratios',
+    'Pearson correlation',
+    'SD of log ratios',
+    'Spearman correlation',
+    'library_insert_size',
+    'replication',
+    'project',
+    'analysis',
+    'job_id',
+    'quality_metric_of'
+]
+
+RNA_MQM_SORT_ORDER = [
+    'lab',
+    'biosample_term_name',
+    'target',
+    'experiment_accession'
+]
+
+# REPORT TYPE SPECIFICS
+
+REPORT_TYPE_DETAILS = {
+    'histone_qc': {
+        'experiment_query': HISTONE_CHIP_EXPERIMENTS_QUERY,
+        'experiment_fields': EXPERIMENT_FIELDS_QUERY,
+        'file_query': HISTONE_PEAK_FILES_QUERY,
+        'file_fields': FILE_FIELDS_QUERY,
+        'qc_fields': HISTONE_QC_FIELDS,
+        'file_no': 1,
+        'qc_no': 1,
+        'qc_type': ['HistoneChipSeqQualityMetric']
+    },
+    'rna_qc': {
+        'experiment_query': RNA_MQM_EXPERIMENTS_QUERY,
+        'experiment_fields': EXPERIMENT_FIELDS_QUERY,
+        'file_query': RNA_QUANTIFICATION_FILES_QUERY,
+        'file_fields': FILE_FIELDS_QUERY,
+        'qc_fields': RNA_MAD_QC_FIELDS,
+        'file_no': 2,
+        'qc_no': 1,
+        'qc_type': ['MadQualityMetric'],
+        'col_order': RNA_MQM_REPORT_COLUMNS,
+        'sort_order': RNA_MQM_SORT_ORDER
+    }
+}
