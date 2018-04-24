@@ -160,8 +160,8 @@ def build_rows(experiment_data, file_data, report_type, base_url):
         5. Parse QC metric (or return Nones)
         6. Append record to list.
     '''
-    file_no =  REPORT_TYPE_DETAILS[report_type]['file_no']
-    qc_no =  REPORT_TYPE_DETAILS[report_type]['qc_no']
+    file_no = REPORT_TYPE_DETAILS[report_type]['file_no']
+    qc_no = REPORT_TYPE_DETAILS[report_type]['qc_no']
     data = []
     for e in experiment_data:
         f = filter_related_files(e['@id'], file_data)
