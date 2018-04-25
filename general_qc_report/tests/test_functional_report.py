@@ -45,3 +45,4 @@ def test_functional_rna_mapping_report_get_data(replaced_details, replaced_get, 
     assert len(files) == 4, 'wrong number of files received'
     rows = build_rows_from_file(experiments, files, 'rna_mapping', base_url)
     assert len(rows) == 4, 'wrong number of rows built'
+    assert [r for r in rows if r['file_accession'] == 'ENCFF475WLJ'][0]['Number of splices: GT/AG'] == 39684966
