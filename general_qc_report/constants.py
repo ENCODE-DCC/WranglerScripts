@@ -1,7 +1,7 @@
 '''
 module containing constants used by qc reporting tools
 '''
-num GENERIC
+# GENERIC
 
 LIMIT_ALL_JSON = '&limit=all&format=json'
 
@@ -14,7 +14,7 @@ REPORT_TYPES = [
     'rna_qc'
 ]
 
-num Only download needed fields.
+# Only download needed fields.
 EXPERIMENT_FIELDS_QUERY = (
     '&field=@id'
     '&field=accession'
@@ -43,7 +43,7 @@ FILE_FIELDS_QUERY = (
     '&field=notes'
 )
 
-num HISTONE SPECIFIC
+# HISTONE SPECIFIC
 
 HISTONE_PEAK_FILES_QUERY = (
     '/search/?type=File'
@@ -66,7 +66,7 @@ HISTONE_CHIP_EXPERIMENTS_QUERY = (
     '&status=submitted'
 )
 
-HISTONE_qc_FIELDS = [
+HISTONE_QC_FIELDS = [
     'nreads',
     'nreads_in_peaks',
     'npeak_overlap',
@@ -77,7 +77,7 @@ HISTONE_qc_FIELDS = [
     'quality_metric_of'
 ]
 
-num RNA GENERIC
+# RNA GENERIC
 
 RNA_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
@@ -99,7 +99,7 @@ RNA_EXPERIMENTS_QUERY = (
     '&status=submitted'
 )
 
-num RNA MQM SPECIFIC
+# RNA MQM SPECIFIC
 
 RNA_MQM_EXPERIMENTS_QUERY = (
     RNA_EXPERIMENTS_QUERY + '&replication_type!=unreplicated'
@@ -115,7 +115,7 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '&status=uploading'
 )
 
-RNA_MAD_qc_FIELDS = [
+RNA_MAD_QC_FIELDS = [
     '@id',
     'SD of log ratios',
     'Pearson correlation',
@@ -156,7 +156,7 @@ RNA_MQM_SORT_ORDER = [
     'experiment_accession'
 ]
 
-num RNA MAPPING SPECIFIC
+# RNA MAPPING SPECIFIC
 
 RNA_MAPPING_FILES_QUERY = (
     '/search/?type=File'
@@ -180,7 +180,7 @@ RNA_MAPPING_FILES_QUERY = (
     '&quality_metrics.assay_term_name=small+RNA-seq'
 )
 
-num https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
+# https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
 RNA_FLAGSTATS_FIELDS = [
     'diff_chroms',
     'diff_chroms_qc_failed',
@@ -207,7 +207,7 @@ RNA_FLAGSTATS_FIELDS = [
     'with_itself_qc_failed'
 ]
 
-RNA_star_QM_FIELDS = [
+RNA_STAR_QM_FIELDS = [
     '% of reads mapped to multiple loci',
     '% of reads mapped to too many loci',
     '% of reads unmapped: other',
@@ -291,7 +291,7 @@ RNA_MAPPING_SORT_ORDER = [
     'experiment_accession'
 ]
 
-num REPORT TYPE SPECIFICS
+# REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
     'histone_qc': {
@@ -299,7 +299,7 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': HISTONE_PEAK_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': HISTONE_qc_FIELDS,
+        'qc_fields': HISTONE_QC_FIELDS,
         'file_no': 1,
         'qc_no': 1,
         'qc_type': ['HistoneChipSeqQualityMetric'],
@@ -310,7 +310,7 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_QUANTIFICATION_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': RNA_MAD_qc_FIELDS,
+        'qc_fields': RNA_MAD_QC_FIELDS,
         'file_no': 2,
         'qc_no': 1,
         'qc_type': ['MadQualityMetric'],
@@ -323,11 +323,12 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_MAPPING_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_star_QM_FIELDS],
+        'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_STAR_QM_FIELDS],
         'qc_no_max': 2,
         'qc_no_min': 1,
-        'qc_type': ['SamtoolsFlagstatsQualityMetric', 'starQualityMetric'],
+        'qc_type': ['SamtoolsFlagstatsQualityMetric', 'StarQualityMetric'],
         'row_builder': 'from_file',
-        'sort_order': RNA_MAPPING_SORT_ORDER
+        'sort_order': RNA_MAPPING_SORT_ORDER,
+        'rename_columns': RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING
     }
 }

@@ -256,6 +256,9 @@ def format_dataframe(df, report_type):
         df = df[REPORT_TYPE_DETAILS[report_type].get('col_order')]
     if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
         df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
+    if REPORT_TYPE_DETAILS[report_type].get('rename_columns'):
+        df.rename(REPORT_TYPE_DETAILS[report_type].get('rename_columns'),
+                  axis='columns')
     return df
 
 
