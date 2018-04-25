@@ -142,6 +142,7 @@ def process_qc(base_url, qc_parsed):
         qc_parsed.pop('@id', None)
     return qc_parsed
 
+
 def parse_experiment_file_qc(e, f, q, report_type, base_url):
     job_id = get_job_id_from_file(f)
     dx_details = get_dx_details_from_job_id(job_id)
