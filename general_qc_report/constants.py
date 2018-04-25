@@ -1,7 +1,7 @@
 '''
 module containing constants used by qc reporting tools
 '''
-# GENERIC
+num GENERIC
 
 LIMIT_ALL_JSON = '&limit=all&format=json'
 
@@ -14,7 +14,7 @@ REPORT_TYPES = [
     'rna_qc'
 ]
 
-# Only download needed fields.
+num Only download needed fields.
 EXPERIMENT_FIELDS_QUERY = (
     '&field=@id'
     '&field=accession'
@@ -43,7 +43,7 @@ FILE_FIELDS_QUERY = (
     '&field=notes'
 )
 
-# HISTONE SPECIFIC
+num HISTONE SPECIFIC
 
 HISTONE_PEAK_FILES_QUERY = (
     '/search/?type=File'
@@ -66,7 +66,7 @@ HISTONE_CHIP_EXPERIMENTS_QUERY = (
     '&status=submitted'
 )
 
-HISTONE_QC_FIELDS = [
+HISTONE_qc_FIELDS = [
     'nreads',
     'nreads_in_peaks',
     'npeak_overlap',
@@ -77,7 +77,7 @@ HISTONE_QC_FIELDS = [
     'quality_metric_of'
 ]
 
-# RNA GENERIC
+num RNA GENERIC
 
 RNA_EXPERIMENTS_QUERY = (
     '/search/?type=Experiment'
@@ -99,7 +99,7 @@ RNA_EXPERIMENTS_QUERY = (
     '&status=submitted'
 )
 
-# RNA MQM SPECIFIC
+num RNA MQM SPECIFIC
 
 RNA_MQM_EXPERIMENTS_QUERY = (
     RNA_EXPERIMENTS_QUERY + '&replication_type!=unreplicated'
@@ -115,7 +115,7 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '&status=uploading'
 )
 
-RNA_MAD_QC_FIELDS = [
+RNA_MAD_qc_FIELDS = [
     '@id',
     'SD of log ratios',
     'Pearson correlation',
@@ -156,7 +156,7 @@ RNA_MQM_SORT_ORDER = [
     'experiment_accession'
 ]
 
-# RNA MAPPING SPECIFIC
+num RNA MAPPING SPECIFIC
 
 RNA_MAPPING_FILES_QUERY = (
     '/search/?type=File'
@@ -180,7 +180,7 @@ RNA_MAPPING_FILES_QUERY = (
     '&quality_metrics.assay_term_name=small+RNA-seq'
 )
 
-# https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
+num https://github.com/ENCODE-DCC/encoded/blob/dev/src/encoded/schemas/samtools_flagstats_quality_metric.json
 RNA_FLAGSTATS_FIELDS = [
     'diff_chroms',
     'diff_chroms_qc_failed',
@@ -207,7 +207,7 @@ RNA_FLAGSTATS_FIELDS = [
     'with_itself_qc_failed'
 ]
 
-RNA_STAR_QM_FIELDS = [
+RNA_star_QM_FIELDS = [
     '% of reads mapped to multiple loci',
     '% of reads mapped to too many loci',
     '% of reads unmapped: other',
@@ -234,6 +234,56 @@ RNA_STAR_QM_FIELDS = [
     'Uniquely mapped reads number'
 ]
 
+RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING = {
+    'diff_chroms': 'num_reads_with_mate_mapped_to_diff_chr_passing_qc',
+    'diff_chroms_qc_failed': 'num_reads_with_mate_mapped_to_diff_chr_failing_qc',
+    'duplicates': 'num_reads_with_duplicates_passing_qc',
+    'duplicates_qc_failed': 'num_reads_with_duplicates_failing_qc',
+    'mapped': 'num_reads_mapped_passing_qc',
+    'mapped_pct': 'pct_reads_mapped_passing_qc',
+    'mapped_qc_failed': 'pct_reads_mapped_failing_qc',
+    'paired': 'num_of_paired_reads_passing_qc',
+    'paired_properly': 'num_reads_properly_paired_passing_qc',
+    'paired_properly_pct': 'pct_of_properly_paired_reads_passing_qc',
+    'paired_properly_qc_failed': 'pct_of_properly_paired_reads_failing_qc',
+    'paired_qc_failed': 'num_of_paired_reads_failing_qc',
+    'read1': 'num_of_read1_reads_passing_qc',
+    'read1_qc_failed': 'num_of_read1_reads_failing_qc',
+    'read2': 'num_of_read2_reads_passing_qc',
+    'read2_qc_failed': 'num_of_read2_reads_failing_qc',
+    'singletons': 'num_of_singletons_passing_qc',
+    'singletons_pct': 'pct_of_singletons_passing_qc',
+    'singletons_qc_failed': 'num_of_singletons_failing_qc',
+    'total': 'num_of_total_reads_passing_qc',
+    'total_qc_failed': 'num_of_total_reads_failing_qc',
+    'with_itself': 'num_of_reads_with_itself_and_mate_mapped_passing_qc',
+    'with_itself_qc_failed': 'num_of_reads_with_itself_and_mate_mapped_failing_qc',
+    '% of reads mapped to multiple loci': 'star_pct_of_reads_mapped_to_multiple_loci',
+    '% of reads mapped to too many loci': 'star_pct_of_reads_mapped_to_too_many_loci',
+    '% of reads unmapped: other': 'star_pct_of_reads_unmapped_other',
+    '% of reads unmapped: too many mismatches': 'star_pct_of_reads_unmapped_too_many_mismatches',
+    '% of reads unmapped: too short': 'star_pct_of_reads_unmapped_too_short',
+    'Average input read length': 'star_average_input_read_length',
+    'Average mapped length': 'star_average_mapped_length',
+    'Deletion average length': 'star_deletion_average_length',
+    'Deletion rate per base': 'star_deletion_rate_per_base',
+    'Insertion average length': 'star_insertion_average_length',
+    'Insertion rate per base': 'star_insertion_rate_per_base',
+    'Mapping speed, Million of reads per hour': 'star_mapping_speed_million_of_reads_per_hour',
+    'Mismatch rate per base, %': 'star_mismatch_rate_per_base_pct',
+    'Number of input reads': 'star_number_of_input_reads',
+    'Number of reads mapped to multiple loci': 'star_number_of_reads_mapped_to_multiple_loci',
+    'Number of reads mapped to too many loci': 'star_number_of_reads_mapped_to_too_many_loci',
+    'Number of splices: AT/AC': 'star_number_of_splices_AT_AC',
+    'Number of splices: Annotated (sjdb)': 'star_number_of_splices_annotated_sjdb',
+    'Number of splices: GC/AG': 'star_number_of_splices_GC_AG',
+    'Number of splices: GT/AG': 'star_number_of_splices_GT_AG',
+    'Number of splices: Non-canonical': 'star_number_of_splices_non_canonical',
+    'Number of splices: Total': 'star_number_of_splices_total',
+    'Uniquely mapped reads %': 'star_uniquely_mapped_reads_pct',
+    'Uniquely mapped reads number': 'star_uniquely_mapped_reads_number'
+}
+
 RNA_MAPPING_SORT_ORDER = [
     'lab',
     'biosample_term_name',
@@ -241,7 +291,7 @@ RNA_MAPPING_SORT_ORDER = [
     'experiment_accession'
 ]
 
-# REPORT TYPE SPECIFICS
+num REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
     'histone_qc': {
@@ -249,7 +299,7 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': HISTONE_PEAK_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': HISTONE_QC_FIELDS,
+        'qc_fields': HISTONE_qc_FIELDS,
         'file_no': 1,
         'qc_no': 1,
         'qc_type': ['HistoneChipSeqQualityMetric'],
@@ -260,7 +310,7 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_QUANTIFICATION_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': RNA_MAD_QC_FIELDS,
+        'qc_fields': RNA_MAD_qc_FIELDS,
         'file_no': 2,
         'qc_no': 1,
         'qc_type': ['MadQualityMetric'],
@@ -273,10 +323,10 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_MAPPING_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_STAR_QM_FIELDS],
+        'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_star_QM_FIELDS],
         'qc_no_max': 2,
         'qc_no_min': 1,
-        'qc_type': ['SamtoolsFlagstatsQualityMetric', 'StarQualityMetric'],
+        'qc_type': ['SamtoolsFlagstatsQualityMetric', 'starQualityMetric'],
         'row_builder': 'from_file',
         'sort_order': RNA_MAPPING_SORT_ORDER
     }
