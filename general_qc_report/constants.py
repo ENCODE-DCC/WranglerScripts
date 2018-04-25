@@ -33,6 +33,7 @@ EXPERIMENT_FIELDS_QUERY = (
 FILE_FIELDS_QUERY = (
     '&field=@id'
     '&field=accession'
+    '&field=output_type'
     '&field=date_created'
     '&field=status'
     '&field=dataset'
@@ -233,6 +234,13 @@ RNA_STAR_QM_FIELDS = [
     'Uniquely mapped reads number'
 ]
 
+RNA_MAPPING_SORT_ORDER = [
+    'lab',
+    'biosample_term_name',
+    'target',
+    'experiment_accession'
+]
+
 # REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
@@ -266,8 +274,10 @@ REPORT_TYPE_DETAILS = {
         'file_query': RNA_MAPPING_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
         'qc_fields': [RNA_FLAGSTATS_FIELDS, RNA_STAR_QM_FIELDS],
-        'qc_no': 2,
+        'qc_no_max': 2,
+        'qc_no_min': 1,
         'qc_type': ['SamtoolsFlagstatsQualityMetric', 'StarQualityMetric'],
-        'row_builder': 'from_file'
+        'row_builder': 'from_file',
+        'sort_order': RNA_MAPPING_SORT_ORDER
     }
 }

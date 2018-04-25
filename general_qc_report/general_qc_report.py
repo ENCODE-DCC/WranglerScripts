@@ -97,7 +97,6 @@ def is_nonoverlapping(q,report_type):
         raise ValueError('Overlapping fields in object')
     
 
-
 def collapse_quality_metrics(q, report_type=None):
     if report_type is not None:
         is_nonoverlapping(q, report_type)
@@ -153,6 +152,7 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
     row = {
         'analysis_date': f.get('date_created'),
         'assay_title': e.get('assay_title'),
+        'output_type': f.get('output_type'),
         'experiment_accession': e.get('accession'),
         'experiment_status': e.get('status'),
         'target': e.get('target', {}).get('name'),
@@ -213,7 +213,16 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url):
         2. Pull all unique QC metrics out of file.
         3. Parse experiment, file, and qc metrics.
     '''
-    qc_no = REPORT_TYPE_DETAILS[report_type]['qc_no']
+    # Flatten list of lists.
+    qc_fields = [
+        field
+        for item in REPORT_TYPE_DETAILS[report_type]['qc_fields']
+        for field in item
+    ]
+    # Set global qc_fields to flattened list.
+    REPORT_TYPE_DETAILS[report_type]['qc_fields'] = qc_fields
+    qc_no_min = REPORT_TYPE_DETAILS[report_type]['qc_no_min']
+    qc_no_max = REPORT_TYPE_DETAILS[report_type]['qc_no_max']
     data = []
     for f in file_data:
         e = filter_related_experiments(f['dataset'], experiment_data)
@@ -222,20 +231,14 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url):
             continue
         e = e[0]
         q = filter_quality_metrics_from_file(f, report_type)
-        if len(q) > qc_no:
-            logger_warn_skip(qc_no, 'quality_metric', f['accession'], len(q))
+        if not qc_no_min <= len(q) <= qc_no_max:
+            logger_warn_skip(qc_no_max, 'quality_metric', f['accession'], len(q))
             continue
-        # Flatten list of lists.
-        qc_fields = [
-            field
-            for item in REPORT_TYPE_DETAILS[report_type]['qc_fields']
-            for field in item
-        ]
-        # Set global qc_fields to flattened list.
-        REPORT_TYPE_DETAILS[report_type]['qc_fields'] = qc_fields
         # Collapse list of quality metrics to one object.
         q = collapse_quality_metrics(q, report_type)
-        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url))
+        row = parse_experiment_file_qc(e, f, q, report_type, base_url)
+        row.update({'file_accession': f.get('accession')})
+        data.append(row)
     return data
 
 
