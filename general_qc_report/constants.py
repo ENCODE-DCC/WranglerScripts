@@ -291,6 +291,44 @@ RNA_MAPPING_SORT_ORDER = [
     'experiment_accession'
 ]
 
+RNA_MAPPING_COLUMN_ORDER = [
+    'experiment_accession', # make link
+    'assay_title',
+    'library_insert_size',
+    'biosample_type',
+    'biosample_term_name',
+    'target',
+    'replication',
+    'lab',
+    'rfa',
+    'experiment_status',
+    'assembly',
+    'file_accession', #make link
+    'output_type',
+    'read_length' # ADD
+    'endedness' # ADD
+    'stranded' # ADD
+    'read_depth (uniq + multi)' # ADD
+    'num_reads_mapped_passing_qc',
+    'pct_reads_mapped_passing_qc',
+    'num_of_total_reads_passing_qc',
+    'num_of_total_reads_failing_qc'
+    'num_of_paired_reads_passing_qc',
+    'num_reads_properly_paired_passing_qc',
+    'pct_of_properly_paired_reads_passing_qc',
+    'num_reads_mapped_failing_qc',
+    'num_of_properly_paired_reads_failing_qc',
+    'star_number_of_input_reads',
+    'star_uniquely_mapped_reads_number',
+    'star_uniquely_mapped_reads_pct',
+    'star_average_input_read_length',
+    'star_average_mapped_length',
+    'star_pct_of_reads_mapped_to_multiple_loci',
+    'star_pct_of_reads_unmapped_too_short',
+    'analysis', # make link
+    'analysis_date',
+    ]
+
 # REPORT TYPE SPECIFICS
 
 REPORT_TYPE_DETAILS = {
