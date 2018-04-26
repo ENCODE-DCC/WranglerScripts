@@ -87,3 +87,11 @@ def test_make_page_title():
     now = datetime.now().strftime('%m_%d_%Y')
     page_title = make_page_title('histone_qc', 'hg19')
     assert page_title == 'histone_qc_report_hg19_{}'.format(now)
+
+
+@patch('pygsheets.authorize')
+def test_make_google_connection(pyg_mocked):
+    gc = google_connection('api_xyz')
+    assert pyg_mocked.called
+
+    
