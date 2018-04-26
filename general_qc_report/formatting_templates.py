@@ -1,18 +1,14 @@
 import numpy as np
 
-colors = np.array(
-    [
-        [252, 1, 1],
-        [253, 154, 0],
-        [246, 205, 206],
-        [220, 220, 220],
-        [205, 216, 244],
-        [253, 231, 181],
-        [255, 255, 255],
-        [183, 225, 205],
-        [243, 200, 194]
-    ]
-) / 255.0
+colors = np.array([[252, 1, 1],
+                   [253, 154, 0],
+                   [246, 205, 206],
+                   [220, 220, 220],
+                   [205, 216, 244],
+                   [253, 231, 181],
+                   [255, 255, 255],
+                   [183, 225, 205],
+                   [243, 200, 194]]) / 255.0
 
 
 red = colors[0]
@@ -83,8 +79,7 @@ note = {
     }
 }
 
-
-number_cols= {
+number_cols = {
     'three_decimal_cols': {'pattern': '0.000', 'cols': []},
     'two_decimal_cols': {'pattern': '0.00', 'cols': []},
     'million_cols': {'pattern': '0.0,,"M"', 'cols': []}
@@ -149,7 +144,6 @@ condition_dict = {
         }, "index": 0
     }
 }
-
 
 tf_idr_notes_dict = {
     'Nt': 'Nt = number of peaks that pass IDR comparing peaks called on reads from each true (biological) replicate',
