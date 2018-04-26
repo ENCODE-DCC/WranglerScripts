@@ -1,6 +1,11 @@
 '''
 module containing constants used by qc reporting tools
 '''
+
+from formatting_templates import (
+    RNA_MAPPING_FORMATTING
+)
+
 # GENERIC
 
 LIMIT_ALL_JSON = '&limit=all&format=json'
@@ -367,6 +372,7 @@ REPORT_TYPE_DETAILS = {
         'qc_type': ['SamtoolsFlagstatsQualityMetric', 'StarQualityMetric'],
         'row_builder': 'from_file',
         'sort_order': RNA_MAPPING_SORT_ORDER,
-        'rename_columns': RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING
+        'rename_columns': RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING,
+        'formatting': RNA_MAPPING_FORMATTING
     }
 }

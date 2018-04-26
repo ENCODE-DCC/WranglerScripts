@@ -3,6 +3,7 @@ import pandas as pd
 import pygsheets
 from datetime import datetime
 from googleapiclient.errors import HttpError
+from constants import REPORT_TYPE_DETAILS
 
 # To authorize access to Google Drive/Sheets for particular account: Find
 # client_secret file from Google and run
@@ -47,6 +48,16 @@ def send_dataframe_to_google_sheet(df, wks):
     wks.set_dataframe(df.fillna(''), copy_head=True, fit=True, start='A1')
 
 
+def apply_formatting_to_dataframe(df, wks, report_type):
+    formatting = REPORT_TYPE_DETAILS[report_type]['formatting']
+    updates = []
+    for f in formatting:
+        # build the formatting
+        update = {}
+        updates.append(update)
+    wks.client.sh_batch_update(wks.spreadsheet.id, updates)
+
+
 def output_to_google_sheets(df, args):
     gc = google_connection(args.api_key)
     wks = open_and_clear_sheet(
@@ -56,6 +67,8 @@ def output_to_google_sheets(df, args):
     )
     logging.warn('Sending dataframe to Google Sheets')
     send_dataframe_to_google_sheet(df, wks)
+    logging.warn('Applying formatting')
+    apply_formatting_to_dataframe(df, wks, args.report_type)
 
 
 def output_to_tsv(df, args):
