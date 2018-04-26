@@ -277,3 +277,7 @@ note = {
         "fields": "note"
     }
 }
+
+
+RNA_MAPPING_FORMATTING = [
+]
