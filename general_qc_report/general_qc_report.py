@@ -300,7 +300,7 @@ def get_args():
     parser.add_argument(
         '--sheet_title',
         help='Name of Google Sheet.',
-        default='ENCODE ChIP QC'
+        default='ENCODE QC'
     )
     parser.add_argument(
         '--apikey',
