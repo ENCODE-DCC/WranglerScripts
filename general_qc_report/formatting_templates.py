@@ -280,4 +280,11 @@ note = {
 
 
 RNA_MAPPING_FORMATTING = [
+    'header': {},
+    'freeze_header': {}
+    'notes': {},
+    'font': {}
+    'numbers': {},
+    'conditional': {},
+    'additional': {}
 ]
