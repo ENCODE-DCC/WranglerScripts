@@ -13,6 +13,8 @@ from constants import (
     REPORT_TYPE_DETAILS
 )
 
+from output import get_outputter
+
 
 def make_url(base_url, query, additional=LIMIT_ALL_JSON):
     '''
@@ -52,6 +54,7 @@ def get_experiments_and_files(base_url, keypair, report_type, assembly):
     '''
     Returns all relevant experiment and files.
     '''
+    logging.warn('Getting files and experiments from portal')
     experiment_url = make_url(
         base_url,
         (
@@ -67,7 +70,8 @@ def get_experiments_and_files(base_url, keypair, report_type, assembly):
             REPORT_TYPE_DETAILS[report_type]['file_query'] +
             REPORT_TYPE_DETAILS[report_type]['file_fields'] +
             '&assembly=%s' % assembly
-        )
+        ),
+        additional='&limit=25&format=json'
     )
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
@@ -258,8 +262,12 @@ def format_dataframe(df, report_type):
     if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
         df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
     if REPORT_TYPE_DETAILS[report_type].get('rename_columns'):
-        df = df.rename(REPORT_TYPE_DETAILS[report_type].get('rename_columns'),
-                       axis='columns')
+        df = df.rename(columns=REPORT_TYPE_DETAILS[report_type].get('rename_columns'))
+    # Collapse list to string.
+    if 'quality_metric_of' in df.columns:
+        df['quality_metric_of'] = df['quality_metric_of'].apply(
+            lambda x: ', '.join(x) if isinstance(x, list) else x
+        )
     return df
 
 
@@ -303,9 +311,15 @@ def get_args():
         default='ENCODE QC'
     )
     parser.add_argument(
-        '--apikey',
+        '--api_key',
         help='Path to secret credential for Google Sheets.',
         default=os.path.expanduser('~/sheets.googleapis.com-python.json')
+    )
+    parser.add_argument(
+        '-o', '--output_type',
+        help='Output to TSV or Google Sheets (requires authentication)',
+        choices=['tsv', 'google_sheets'],
+        default='tsv'
     )
     return parser.parse_args()
 
@@ -325,11 +339,8 @@ def main():
     rows = build_rows(experiment_data, file_data, args.report_type, base_url)
     df = pd.DataFrame(rows)
     df = format_dataframe(df, args.report_type)
-    df.to_csv(
-        '%s_report_%s.tsv' % (args.report_type, args.assembly),
-        sep='\t',
-        index=False
-    )
+    outputter = get_outputter(args.output_type)
+    outputter(df, args)
 
 
 if __name__ == '__main__':
