@@ -297,6 +297,16 @@ def get_args():
         choices=REPORT_TYPES,
         required=True
     )
+    parser.add_argument(
+        '--sheet_title',
+        help='Name of Google Sheet.',
+        default='ENCODE ChIP QC'
+    )
+    parser.add_argument(
+        '--apikey',
+        help='Path to secret credential for Google Sheets.',
+        default=os.path.expanduser('~/sheets.googleapis.com-python.json')
+    )
     return parser.parse_args()
 
 
