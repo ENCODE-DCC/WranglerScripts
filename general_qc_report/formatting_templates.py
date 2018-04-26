@@ -8,7 +8,9 @@ colors = np.array(
         [220, 220, 220],
         [205, 216, 244],
         [253, 231, 181],
-        [255, 255, 255]
+        [255, 255, 255],
+        [183, 225, 205],
+        [243, 200, 194]
     ]
 ) / 255.0
 
@@ -20,11 +22,9 @@ gray = colors[3]
 blue = colors[4]
 yellow = colors[5]
 white = colors[6]
+green = colors[7]
+red2 = colors[8]
 
-
-green = colors[0]
-yellow = colors[1]
-red = colors[2]
 
 header = {
     "repeatCell": {
@@ -84,7 +84,7 @@ note = {
 }
 
 
-number_cols = {
+number_cols= {
     'three_decimal_cols': {'pattern': '0.000', 'cols': []},
     'two_decimal_cols': {'pattern': '0.00', 'cols': []},
     'million_cols': {'pattern': '0.0,,"M"', 'cols': []}
@@ -151,90 +151,6 @@ condition_dict = {
 }
 
 
-idr_conditions = [
-    {"addConditionalFormatRule": {
-        "rule": {
-            "ranges": [
-                {
-                    "startRowIndex": 1
-                }
-            ],
-            "booleanRule": {
-                "condition": {
-                    "type": "TEXT_CONTAINS",
-                    "values": [
-                        {
-                            "userEnteredValue": "pass"
-                        }
-                    ]
-                },
-                "format": {
-                    "backgroundColor": {
-                        "red": green[0],
-                        "green": green[1],
-                        "blue": green[2]
-                    },
-                }
-            }
-        }, "index": 0
-    }
-    },
-    {"addConditionalFormatRule": {
-        "rule": {
-            "ranges": [
-                {
-                    "startRowIndex": 1,
-                }
-            ],
-            "booleanRule": {
-                "condition": {
-                    "type": "TEXT_CONTAINS",
-                    "values": [
-                        {
-                            "userEnteredValue": "borderline"
-                        }
-                    ]
-                },
-                "format": {
-                    "backgroundColor": {
-                        "red": yellow[0],
-                        "green": yellow[1],
-                        "blue": yellow[2]
-                    },
-                }
-            }
-        }, "index": 0
-    }
-    },
-    {"addConditionalFormatRule": {
-     "rule": {
-         "ranges": [
-             {
-                 "startRowIndex": 1
-             }
-         ],
-         "booleanRule": {
-             "condition": {
-                 "type": "TEXT_CONTAINS",
-                 "values": [
-                     {
-                         "userEnteredValue": "fail"
-                     }
-                 ]
-             },
-             "format": {
-                 "backgroundColor": {
-                     "red": red[0],
-                     "green": red[1],
-                     "blue": red[2]
-                 },
-             }
-         }
-     }, "index": 0
-     }
-    }
-]
-
 tf_idr_notes_dict = {
     'Nt': 'Nt = number of peaks that pass IDR comparing peaks called on reads from each true (biological) replicate',
     'Np': 'Np = the number of peaks that pass IDR when comparing peaks called on psedoreplicates of the reads pooled from both true replicates',
@@ -279,12 +195,26 @@ note = {
 }
 
 
-RNA_MAPPING_FORMATTING = [
-    'header': {},
-    'freeze_header': {}
-    'notes': {},
-    'font': {}
-    'numbers': {},
-    'conditional': {},
+RNA_MAPPING_FORMATTING = {
+    'header': {'template': header},
+    'freeze_header': {'template': freeze_header},
+    'note': {},
+    'font': {'template': font_size_format},
+    'number': {
+        'template': number_format,
+        'numeric_cols_pattern': [
+            ('star_number_of_input_reads', '0.0,,"M"')
+        ]
+    },
+    'conditional': {
+        'template': condition_dict,
+        'conditions': {
+            'star_number_of_input_reads': [
+                ('NUMBER_LESS', ['100000000'], red),
+                ('NUMBER_BETWEEN', ['100000000', '2050000000'], orange),
+                ('NUMBER_GREATER', ['205000000'], blue)
+            ]
+        }
+    },
     'additional': {}
-]
+}

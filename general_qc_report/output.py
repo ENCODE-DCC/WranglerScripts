@@ -11,14 +11,6 @@ from constants import REPORT_TYPE_DETAILS
 # gc = pygsheets.authorize(outh_file='client_secret_xxxx.json')
 # This creates sheets.googleapis.com-python.json.
 
-formatter_mapping = {
-    'header': header_formatter,
-    'freeze_header': freeze_header_formatter,
-    'notes': notes_formatter,
-    'font': font_formatter,
-    'conditional': conditonal_formatter,
-    'additional': additional_formatter
-    }
 
 def get_outputter(output_type):
     if output_type == 'tsv':
@@ -61,28 +53,95 @@ def get_template(template):
     return copy.deepcopy(template)
 
 
-def header_formatter():
+def set_sheet_id(form, wks):
+    form['repeatCell']['range']['sheetId'] = wks.id
+    return form
+
+
+def set_column_for_formatting(df, col_name, form):
+    num = df.columns.get_loc(col_name)
+    form['repeatCell']['range']['startColumnIndex'] = num
+    form['repeatCell']['range']['endColumnIndex'] = num + 1
+    return form
+
+
+def set_column_for_conditional_formatting(df, col_name, form, wks):
+    num = df.columns.get_loc(col_name)
+    form['addConditionalFormatRule']['rule']['ranges'][0]['startColumnIndex'] = num
+    form['addConditionalFormatRule']['rule']['ranges'][0]['endColumnIndex'] = num + 1
+    form['addConditionalFormatRule']['rule']['ranges'][0]['sheetId'] = wks.id
+    return form
+
+
+def header_formatter(formatter_value, df, wks):
+    form = get_template(formatter_value['template'])
+    form = set_sheet_id(form, wks)
+    return form
+
+
+def freeze_header_formatter(formatter_value, df, wks):
+    form = get_template(formatter_value['template'])
+    form['updateSheetProperties']['properties']['sheetId'] = wks.id
+    return form
+
+
+def note_formatter():
     pass
 
 
-def freeze_header_formatter():
-    pass
+def font_formatter(formatter_value, df, wks):
+    form = get_template(formatter_value['template'])
+    form = set_sheet_id(form, wks)
+    return form
 
 
-def notes_formatter():
-    pass
+def number_formatter(formatter_value, df, wks):
+    updates = []
+    for col_pattern in formatter_value['numeric_cols_pattern']:
+        form = get_template(formatter_value['template'])
+        form = set_sheet_id(form, wks)
+        form = set_column_for_formatting(df, col_pattern[0], form)
+        form['repeatCell']['cell']['userEnteredFormat']['numberFormat']['pattern'] = col_pattern[1]
+        updates.append(form)
+    return updates
 
 
-def font_formatter():
-    pass
-
-
-def conditonal_formatter():
-    pass
+def conditonal_formatter(formatter_value, df, wks):
+    updates = []
+    for col_name, conditions in formatter_value['conditions'].items():
+        for condition in conditions:
+            form = get_template(formatter_value['template'])
+            condition_type = condition[0]
+            condition_values = condition[1]
+            condition_color = condition[2]
+            # Must loop through because NUMBER_BETWEEN condition requires two objects.
+            if condition_values:
+                for value in condition_values:
+                        form['addConditionalFormatRule']['rule']['booleanRule']['condition']['values'].append(
+                            {"userEnteredValue": value}
+                        )
+            form['addConditionalFormatRule']['rule']['booleanRule']['condition']['type'] = condition_type
+            form['addConditionalFormatRule']['rule']['booleanRule']['format']['backgroundColor']['red'] = condition_color[0]
+            form['addConditionalFormatRule']['rule']['booleanRule']['format']['backgroundColor']['green'] = condition_color[1]
+            form['addConditionalFormatRule']['rule']['booleanRule']['format']['backgroundColor']['blue'] = condition_color[2]
+            form = set_column_for_conditional_formatting(df, col_name, form, wks)
+            updates.append(form)
+    return updates
 
 
 def additional_formatter():
     pass
+
+
+formatter_mapping = {
+    'header': header_formatter,
+    'freeze_header': freeze_header_formatter,
+    'note': note_formatter,
+    'font': font_formatter,
+    'number': number_formatter,
+    'conditional': conditonal_formatter,
+    'additional': additional_formatter
+}
 
 
 def get_formatter(formatter_name):
@@ -90,14 +149,6 @@ def get_formatter(formatter_name):
     if not formatter:
         raise KeyError('Formatter not found %s' % formatter_name)
     return formatter
-
-
-def set_column_for_formatting(df, col_name, form, wks):
-    num = df.columns.columns.get_loc(col_name)
-    form['repeatCell']['range']['startColumnIndex'] = num
-    formr['repeatCell']['range']['endColumnIndex'] = num + 1
-    form['repeatCell']['range']['sheetId'] = wks.id
-    return form
 
 
 def apply_formatting_to_dataframe(df, wks, report_type):
@@ -108,7 +159,7 @@ def apply_formatting_to_dataframe(df, wks, report_type):
             continue
         # build the formatting
         formatter = get_formatter(formatter_name)
-        update = formatter(formatter_value)
+        update = formatter(formatter_value, df, wks)
         updates.extend(update) if isinstance(update, list) else updates.append(update)
     wks.client.sh_batch_update(wks.spreadsheet.id, updates)
 
