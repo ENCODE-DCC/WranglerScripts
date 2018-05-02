@@ -186,7 +186,9 @@ def test_process_qc(base_url):
         base_url,
         {
             '@id': '/123/',
-            'attachment': {'href': '@@download/abc'}
+            'attachment': {
+                'href': '@@download/abc'
+            }
         }
     )
     assert qc['attachment'] == (
