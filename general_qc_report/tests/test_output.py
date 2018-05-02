@@ -94,4 +94,3 @@ def test_make_google_connection(pyg_mocked):
     gc = google_connection('api_xyz')
     assert pyg_mocked.called
 
-    
