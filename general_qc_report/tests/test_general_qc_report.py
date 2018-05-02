@@ -21,7 +21,8 @@ from general_qc_report import (
     frip_in_output,
     get_row_builder,
     collapse_quality_metrics,
-    is_nonoverlapping
+    is_nonoverlapping,
+    process_qc
 )
 from mock import patch
 
@@ -178,3 +179,18 @@ def test_is_nonoverlapping(replaced_details):
         is_nonoverlapping({'a': 1}, 'rna_qc')
     with pytest.raises(ValueError):
         is_nonoverlapping([{'a': 1}, {'a': 2}, {'c': 3}], 'rna_qc')
+
+
+def test_process_qc(base_url):
+    qc = process_qc(
+        base_url,
+        {
+            '@id': '/123/',
+            'attachment': {'href': '@@download/abc'}
+        }
+    )
+    assert qc['attachment'] == (
+        '=hyperlink("https://www.encodeproject.org/123/@@download/abc",'
+        ' =image("https://www.encodeproject.org/123/@@download/abc", 2))'
+    )
+    assert '@id' not in qc

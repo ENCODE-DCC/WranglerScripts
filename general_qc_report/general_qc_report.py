@@ -142,7 +142,9 @@ def frip_in_output(output):
 
 def process_qc(base_url, qc_parsed):
     # Make attachment image with link.
-    if qc_parsed.get('attachment') and isinstance(qc_parsed.get('attachment'), dict) and qc_parsed.get('@id'):
+    if all([qc_parsed.get('attachment'),
+            isinstance(qc_parsed.get('attachment'), dict),
+            qc_parsed.get('@id')]):
         url = base_url + qc_parsed.get('@id') + qc_parsed.get('attachment').get('href')
         qc_parsed['attachment'] = '=hyperlink("%s", =image("%s", 2))' % (url, url)
         qc_parsed.pop('@id', None)
