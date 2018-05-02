@@ -93,13 +93,15 @@ def filter_quality_metrics_from_file(f, report_type):
     ]
 
 
-def is_nonoverlapping(q,report_type):
+def is_nonoverlapping(q, report_type):
     qc_fields = REPORT_TYPE_DETAILS[report_type]['qc_fields']
     if not isinstance(q, list):
-        raise ValueError('Must pass in in list of objects')
-    if len([field for qc in q for field in qc if field in qc_fields]) != len({field for qc in q for field in qc if field in qc_fields}):
+        raise KeyError('Must pass in in list of objects')
+    list_of_fields = [field for qc in q for field in qc if field in qc_fields]
+    set_of_fields = set(list_of_fields)
+    if len(list_of_fields) != len(set_of_fields):
         raise ValueError('Overlapping fields in object')
-    
+
 
 def collapse_quality_metrics(q, report_type=None):
     if report_type is not None:

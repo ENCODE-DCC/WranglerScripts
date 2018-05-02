@@ -1,10 +1,11 @@
 import pytest
 from constants import (
     HISTONE_QC_FIELDS,
-    HISTONE_PEAK_FILES_QUERY,    
+    HISTONE_PEAK_FILES_QUERY,
     EXPERIMENT_FIELDS_QUERY,
     LIMIT_ALL_JSON,
-    REPORT_TYPES
+    REPORT_TYPES,
+    REPORT_TYPE_DETAILS
 )
 from general_qc_report import (
     parse_json,
@@ -19,7 +20,8 @@ from general_qc_report import (
     filter_related_experiments,
     frip_in_output,
     get_row_builder,
-    collapse_quality_metrics
+    collapse_quality_metrics,
+    is_nonoverlapping
 )
 from mock import patch
 
@@ -166,3 +168,13 @@ def test_collapse_quality_metrics():
     assert collapse_quality_metrics([{'a': 1}, {'b': 2}]) == {'a': 1, 'b': 2}
     assert collapse_quality_metrics([{'a': 1}, {'a': 2}]) == {'a': 2}
 
+
+@patch('constants.REPORT_TYPE_DETAILS')
+def test_is_nonoverlapping(replaced_details):
+    REPORT_TYPE_DETAILS['rna_qc']['qc_fields'] = ['a', 'b', 'c']
+    replaced_details.return_value = REPORT_TYPE_DETAILS
+    is_nonoverlapping([{'a': 1}, {'b': 2}, {'c': 3}], 'rna_qc')
+    with pytest.raises(KeyError):
+        is_nonoverlapping({'a': 1}, 'rna_qc')
+    with pytest.raises(ValueError):
+        is_nonoverlapping([{'a': 1}, {'a': 2}, {'c': 3}], 'rna_qc')
