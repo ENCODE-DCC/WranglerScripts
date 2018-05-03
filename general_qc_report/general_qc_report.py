@@ -165,11 +165,31 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
         'experiment_accession': e.get('accession'),
         'experiment_status': e.get('status'),
         'target': e.get('target', {}).get('name'),
+        'read_length': ', '.join({
+            str(f.get('read_length'))
+            for f in e.get('files', [])
+            if f.get('read_length')
+        }),
+        'run_type': ', '.join({
+            f.get('run_type')
+            for f in e.get('files', [])
+            if f.get('run_type')
+        }),
         'library_insert_size': ', '.join({
-            lib
-            for r in e.get('replicates', {})
-            for lib in r.get('library', {}).values()
-            if lib
+            r.get('library', {}).get('size_range')
+            for r in e.get('replicates', [])
+            if r.get('library', {}).get('size_range')
+        }),
+        'strand_specificity': ', '.join({
+            str(r.get('library', {}).get('strand_specificity'))
+            for r in e.get('replicates', [])
+            if r.get('library', {}).get('strand_specificity') is not None
+        }),
+        'depleted_in_term_name': ', '.join({
+            t
+            for r in e.get('replicates', [])
+            for t in r.get('library', {}).get('depleted_in_term_name', [])
+            if r.get('library', {}).get('depleted_in_term_name')
         }),
         'biosample_term_name': e.get('biosample_term_name'),
         'biosample_type': e.get('biosample_type'),
@@ -261,12 +281,12 @@ def get_row_builder(report_type):
 
 
 def format_dataframe(df, report_type):
+    if REPORT_TYPE_DETAILS[report_type].get('rename_columns'):
+        df = df.rename(columns=REPORT_TYPE_DETAILS[report_type].get('rename_columns'))
     if REPORT_TYPE_DETAILS[report_type].get('col_order'):
         df = df[REPORT_TYPE_DETAILS[report_type].get('col_order')]
     if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
         df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
-    if REPORT_TYPE_DETAILS[report_type].get('rename_columns'):
-        df = df.rename(columns=REPORT_TYPE_DETAILS[report_type].get('rename_columns'))
     # Collapse list to string.
     if 'quality_metric_of' in df.columns:
         df['quality_metric_of'] = df['quality_metric_of'].apply(

@@ -32,6 +32,10 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=replication_type'
     '&field=lab.name'
     '&field=replicates.library.size_range'
+    '&field=replicates.library.strand_specificity'
+    '&field=replicates.library.depleted_in_term_name'
+    '&field=files.read_length'
+    '&field=files.run_type'
     '&field=assay_title'
 )
 
@@ -298,6 +302,8 @@ RNA_MAPPING_SORT_ORDER = [
 
 RNA_MAPPING_COLUMN_ORDER = [
     'experiment_accession', # make link
+    'experiment_status',
+    'file_accession',
     'assay_title',
     'library_insert_size',
     'biosample_type',
@@ -306,18 +312,17 @@ RNA_MAPPING_COLUMN_ORDER = [
     'replication',
     'lab',
     'rfa',
-    'experiment_status',
     'assembly',
-    'file_accession', #make link
     'output_type',
-    'read_length' # ADD
-    'endedness' # ADD
-    'stranded' # ADD
-    'read_depth (uniq + multi)' # ADD
+    'read_length',
+    'run_type', # ADD
+    'strand_specificity',
+    'depleted_in_term_name',
+    #'read_depth, (uniq + multi)' # ADD
     'num_reads_mapped_passing_qc',
     'pct_reads_mapped_passing_qc',
     'num_of_total_reads_passing_qc',
-    'num_of_total_reads_failing_qc'
+    'num_of_total_reads_failing_qc',
     'num_of_paired_reads_passing_qc',
     'num_reads_properly_paired_passing_qc',
     'pct_of_properly_paired_reads_passing_qc',
@@ -373,6 +378,7 @@ REPORT_TYPE_DETAILS = {
         'row_builder': 'from_file',
         'sort_order': RNA_MAPPING_SORT_ORDER,
         'rename_columns': RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING,
-        'formatting': RNA_MAPPING_FORMATTING
+        'formatting': RNA_MAPPING_FORMATTING,
+        'col_order': RNA_MAPPING_COLUMN_ORDER
     }
 }
