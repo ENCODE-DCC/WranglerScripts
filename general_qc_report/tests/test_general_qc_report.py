@@ -191,8 +191,10 @@ def test_process_qc(base_url):
             }
         }
     )
+    qc1 = process_qc(base_url, {})
     assert qc['attachment'] == (
         '=hyperlink("https://www.encodeproject.org/123/@@download/abc",'
         ' =image("https://www.encodeproject.org/123/@@download/abc", 2))'
     )
     assert '@id' not in qc
+    assert qc1 == {}
