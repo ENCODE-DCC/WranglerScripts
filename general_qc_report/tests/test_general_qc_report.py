@@ -117,7 +117,8 @@ def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, 
         experiment_query['@graph'],
         file_query['@graph'],
         test_args.report_type,
-        base_url
+        base_url,
+        test_args
     )
     assert len(rows) == 2
 
@@ -129,7 +130,8 @@ def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_arg
         experiment_query['@graph'],
         file_query['@graph'][:1],
         test_args.report_type,
-        base_url
+        base_url,
+        test_args
     )
     assert len(rows) == 1
 
@@ -144,7 +146,8 @@ def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
         experiment_query['@graph'],
         [file],
         test_args.report_type,
-        base_url
+        base_url,
+        test_args
     )
     assert len(rows) == 0
 
@@ -189,12 +192,13 @@ def test_process_qc(base_url):
             'attachment': {
                 'href': '@@download/abc'
             }
-        }
+        },
+        'google_sheets'
     )
-    qc1 = process_qc(base_url, {})
+    qc1 = process_qc(base_url, {}, 'google_sheets')
     assert qc['attachment'] == (
         '=hyperlink("https://www.encodeproject.org/123/@@download/abc",'
-        ' =image("https://www.encodeproject.org/123/@@download/abc", 2))'
+        ' image("https://www.encodeproject.org/123/@@download/abc", 2))'
     )
     assert '@id' not in qc
     assert qc1 == {}

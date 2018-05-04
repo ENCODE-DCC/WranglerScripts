@@ -50,6 +50,16 @@ FILE_FIELDS_QUERY = (
     '&field=step_run'
     '&field=quality_metrics'
     '&field=notes'
+    '&field=technical_replicates'
+)
+
+# REFERENCE SPECIFIC
+
+REFERENCE_DATASETS_QUERY = (
+)
+
+REFERENCE_DATASETS_FIELDS = (
+
 )
 
 # HISTONE SPECIFIC
@@ -160,9 +170,9 @@ RNA_MQM_REPORT_COLUMNS = [
 
 RNA_MQM_SORT_ORDER = [
     'lab',
+    'assay_title',
     'biosample_term_name',
-    'target',
-    'experiment_accession'
+    'target'
 ]
 
 # RNA MAPPING SPECIFIC
@@ -295,15 +305,16 @@ RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING = {
 
 RNA_MAPPING_SORT_ORDER = [
     'lab',
+    'assay_title',
     'biosample_term_name',
     'target',
-    'experiment_accession'
+    'experiment_accession',
+    'biological_replicates',
+    'output_type'
 ]
 
 RNA_MAPPING_COLUMN_ORDER = [
     'experiment_accession', # make link
-    'experiment_status',
-    'file_accession',
     'assay_title',
     'library_insert_size',
     'biosample_type',
@@ -312,10 +323,14 @@ RNA_MAPPING_COLUMN_ORDER = [
     'replication',
     'lab',
     'rfa',
+    'experiment_status',
     'assembly',
+    'file_accession',
+    'biological_replicates',
+    #'spikeins_used',
     'output_type',
     'read_length',
-    'run_type', # ADD
+    'run_type',
     'strand_specificity',
     'depleted_in_term_name',
     #'read_depth, (uniq + multi)' # ADD

@@ -145,24 +145,24 @@ def frip_in_output(output):
     return any(['frip' in k for k in output])
 
 
-def process_qc(base_url, qc_parsed):
+def process_qc(base_url, qc_parsed, output_type):
     # Make attachment image with link.
     if all([qc_parsed.get('attachment'),
             isinstance(qc_parsed.get('attachment'), dict),
             qc_parsed.get('@id')]):
         url = base_url + qc_parsed.get('@id') + qc_parsed.get('attachment').get('href')
-        qc_parsed['attachment'] = '=hyperlink("%s", =image("%s", 2))' % (url, url)
+        qc_parsed['attachment'] = '=hyperlink("%s", image("%s", 2))' % (url, url) if output_type == 'google_sheets' else url
         qc_parsed.pop('@id', None)
     return qc_parsed
 
 
-def parse_experiment_file_qc(e, f, q, report_type, base_url):
+def parse_experiment_file_qc(e, f, q, report_type, base_url, args):
     job_id = get_job_id_from_file(f)
     dx_details = get_dx_details_from_job_id(job_id)
     output = dx_details.pop('output', {})
     has_frip = frip_in_output(output)
     qc_parsed = parse_json(q, REPORT_TYPE_DETAILS[report_type]['qc_fields'])
-    qc_processed = process_qc(base_url, qc_parsed)
+    qc_processed = process_qc(base_url, qc_parsed, args.output_type)
     row = {
         'analysis_date': f.get('date_created'),
         'assay_title': e.get('assay_title'),
@@ -202,6 +202,11 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
         'lab': e.get('lab', {}).get('name'),
         'rfa': e.get('award', {}).get('rfa'),
         'assembly': f.get('assembly'),
+        'biological_replicates': ', '.join({
+            r
+            for r in f.get('biological_replicates', [])
+            if f.get('biological_replicates', [])
+        }),
         'has_frip': has_frip
     }
     row.update(qc_processed)
@@ -209,7 +214,7 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url):
     return row
 
 
-def build_rows_from_experiment(experiment_data, file_data, report_type, base_url):
+def build_rows_from_experiment(experiment_data, file_data, report_type, base_url, args):
     '''
     Builds records that can be passed to a dataframe.
     For every experiment:
@@ -234,11 +239,11 @@ def build_rows_from_experiment(experiment_data, file_data, report_type, base_url
             logger_warn_skip(qc_no, 'quality metric', e['@id'], len(q))
             continue
         q = q[0] if q else {}
-        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url))
+        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url, args))
     return data
 
 
-def build_rows_from_file(experiment_data, file_data, report_type, base_url):
+def build_rows_from_file(experiment_data, file_data, report_type, base_url, args):
     '''
     Builds records that can be passed in to dataframe.
     For every file:
@@ -270,7 +275,7 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url):
             continue
         # Collapse list of quality metrics to one object.
         q = collapse_quality_metrics(q, report_type)
-        row = parse_experiment_file_qc(e, f, q, report_type, base_url)
+        row = parse_experiment_file_qc(e, f, q, report_type, base_url, args)
         row.update({'file_accession': f.get('accession')})
         data.append(row)
     return data
@@ -365,7 +370,7 @@ def main():
         args.assembly
     )
     build_rows = get_row_builder(args.report_type)
-    rows = build_rows(experiment_data, file_data, args.report_type, base_url)
+    rows = build_rows(experiment_data, file_data, args.report_type, base_url, args)
     df = pd.DataFrame(rows)
     df = format_dataframe(df, args.report_type)
     outputter = get_outputter(args.output_type)

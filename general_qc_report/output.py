@@ -152,7 +152,9 @@ def get_formatter(formatter_name):
 
 
 def apply_formatting_to_dataframe(df, wks, report_type):
-    formatting = REPORT_TYPE_DETAILS[report_type]['formatting']
+    formatting = REPORT_TYPE_DETAILS[report_type].get('formatting')
+    if not formatting:
+        return
     updates = []
     for formatter_name, formatter_value in formatting.items():
         if not formatter_value:

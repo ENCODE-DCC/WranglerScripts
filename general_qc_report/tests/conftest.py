@@ -195,6 +195,7 @@ def test_args():
     args = argparse.Namespace()
     args.__dict__.update({
         'assembly': 'GRCh38',
-        'report_type': 'histone_qc'
+        'report_type': 'histone_qc',
+        'output_type': 'google_sheets'
     })
     return args
