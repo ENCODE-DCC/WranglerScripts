@@ -36,6 +36,7 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=replicates.library.depleted_in_term_name'
     '&field=files.read_length'
     '&field=files.run_type'
+    '&field=files.biological_replicates'
     '&field=assay_title'
 )
 
@@ -50,7 +51,7 @@ FILE_FIELDS_QUERY = (
     '&field=step_run'
     '&field=quality_metrics'
     '&field=notes'
-    '&field=technical_replicates'
+    '&field=biological_replicates'
 )
 
 # REFERENCE SPECIFIC
@@ -314,7 +315,7 @@ RNA_MAPPING_SORT_ORDER = [
 ]
 
 RNA_MAPPING_COLUMN_ORDER = [
-    'experiment_accession', # make link
+    'experiment_accession',
     'assay_title',
     'library_insert_size',
     'biosample_type',
