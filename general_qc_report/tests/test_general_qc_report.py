@@ -80,11 +80,20 @@ def test_get_experiments_and_files(mock_get, base_url, keypair, test_args, file_
 
 
 @patch('dxpy.describe')
-def test_get_dx_details_from_job_id(mock_dx, dx_describe):
+def test_get_dx_details_from_job_id(mock_dx, dx_describe, test_args):
     mock_dx.return_value = dx_describe
-    dx_details = get_dx_details_from_job_id('123')
+    dx_details = get_dx_details_from_job_id('123', test_args.skip_dnanexus)
     assert dx_details.get('job_id') == '123'
     assert 'frip' in dx_details.get('output')
+
+
+@patch('dxpy.describe')
+def test_get_dx_details_from_job_id_skip_dnanexus(mock_dx, dx_describe):
+    mock_dx.return_value = dx_describe
+    dx_details = get_dx_details_from_job_id('123', skip_dnanexus=True)
+    assert dx_details.get('job_id') == '123'
+    assert dx_details.get('output') == {}
+    assert dx_details.get('project') is None
 
 
 def test_get_job_id_from_file(file_query):
@@ -211,4 +220,3 @@ def test_build_url_from_accession(base_url):
     assert url == base_url + accession
     link = build_url_from_accession(accession, base_url, 'google_sheets')
     assert link == '=hyperlink("https://www.encodeproject.org/ENC123", "ENC123")'
-    

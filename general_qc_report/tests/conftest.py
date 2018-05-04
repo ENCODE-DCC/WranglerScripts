@@ -196,6 +196,7 @@ def test_args():
     args.__dict__.update({
         'assembly': 'GRCh38',
         'report_type': 'histone_qc',
-        'output_type': 'google_sheets'
+        'output_type': 'google_sheets',
+        'skip_dnanexus': False
     })
     return args

@@ -118,15 +118,9 @@ def get_job_id_from_file(f):
     return job_id
 
 
-def get_dx_details_from_job_id(job_id):
+def get_dx_details_from_job_id(job_id, skip_dnanexus):
     try:
-        d = dxpy.describe(job_id)
-        dx_details = {
-            'job_id': job_id,
-            'analysis': d.get('analysis'),
-            'project': d.get('project'),
-            'output': d.get('output')
-        }
+        d = {} if skip_dnanexus else dxpy.describe(job_id)
     except Exception as e:
         if any([
                 x in str(e) for x in [
@@ -135,9 +129,15 @@ def get_dx_details_from_job_id(job_id):
                 ]
         ]):
             logging.warn('Project is gone!')
-            dx_details = {}
+            d = {}
         else:
             raise e
+    dx_details = {
+            'job_id': job_id,
+            'analysis': d.get('analysis'),
+            'project': d.get('project'),
+            'output': d.get('output', {})
+        }
     return dx_details
 
 
@@ -158,7 +158,7 @@ def process_qc(base_url, qc_parsed, output_type):
 
 def parse_experiment_file_qc(e, f, q, report_type, base_url, args):
     job_id = get_job_id_from_file(f)
-    dx_details = get_dx_details_from_job_id(job_id)
+    dx_details = get_dx_details_from_job_id(job_id, args.skip_dnanexus)
     output = dx_details.pop('output', {})
     has_frip = frip_in_output(output)
     qc_parsed = parse_json(q, REPORT_TYPE_DETAILS[report_type]['qc_fields'])
@@ -203,7 +203,7 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url, args):
         'rfa': e.get('award', {}).get('rfa'),
         'assembly': f.get('assembly'),
         'biological_replicates': ', '.join({
-            r
+            str(r)
             for r in f.get('biological_replicates', [])
             if f.get('biological_replicates', [])
         }),
@@ -369,6 +369,11 @@ def get_args():
         help='Output to TSV or Google Sheets (requires authentication)',
         choices=['tsv', 'google_sheets'],
         default='tsv'
+    )
+    parser.add_argument(
+        '-s', '--skip_dnanexus',
+        help='Skip requests from DNAnexus (much faster)',
+        action='store_true'
     )
     return parser.parse_args()
 
