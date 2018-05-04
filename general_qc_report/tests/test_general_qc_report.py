@@ -22,7 +22,8 @@ from general_qc_report import (
     get_row_builder,
     collapse_quality_metrics,
     is_nonoverlapping,
-    process_qc
+    process_qc,
+    build_url_from_accession
 )
 from mock import patch
 
@@ -197,8 +198,17 @@ def test_process_qc(base_url):
     )
     qc1 = process_qc(base_url, {}, 'google_sheets')
     assert qc['attachment'] == (
-        '=hyperlink("https://www.encodeproject.org/123/@@download/abc",'
-        ' image("https://www.encodeproject.org/123/@@download/abc", 2))'
+        '=hyperlink("https://www.encodeproject.org//123/@@download/abc",'
+        ' image("https://www.encodeproject.org//123/@@download/abc", 2))'
     )
     assert '@id' not in qc
     assert qc1 == {}
+
+
+def test_build_url_from_accession(base_url):
+    accession = 'ENC123'
+    url = build_url_from_accession(accession, base_url, 'tsv')
+    assert url == base_url + accession
+    link = build_url_from_accession(accession, base_url, 'google_sheets')
+    assert link == '=hyperlink("https://www.encodeproject.org/ENC123", "ENC123")'
+    

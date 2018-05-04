@@ -290,7 +290,14 @@ def get_row_builder(report_type):
         raise KeyError('Invalid row builder')
 
 
-def format_dataframe(df, report_type):
+def build_url_from_accession(accession, base_url, output_type):
+    url = '%s%s' % (base_url, accession)
+    if output_type == 'google_sheets':
+        return '=hyperlink("%s", "%s")' % (url, accession)
+    return url
+
+
+def format_dataframe(df, report_type, base_url, output_type):
     if REPORT_TYPE_DETAILS[report_type].get('rename_columns'):
         df = df.rename(columns=REPORT_TYPE_DETAILS[report_type].get('rename_columns'))
     if REPORT_TYPE_DETAILS[report_type].get('col_order'):
@@ -301,6 +308,14 @@ def format_dataframe(df, report_type):
     if 'quality_metric_of' in df.columns:
         df['quality_metric_of'] = df['quality_metric_of'].apply(
             lambda x: ', '.join(x) if isinstance(x, list) else x
+        )
+    if 'experiment_accession' in df.columns:
+        df['experiment_accession'] = df['experiment_accession'].apply(
+            lambda accession: build_url_from_accession(accession, base_url, output_type)
+        )
+    if 'file_accession' in df.columns:
+        df['file_accession'] = df['file_accession'].apply(
+            lambda accession: build_url_from_accession(accession, base_url, output_type)
         )
     return df
 
@@ -372,7 +387,7 @@ def main():
     build_rows = get_row_builder(args.report_type)
     rows = build_rows(experiment_data, file_data, args.report_type, base_url, args)
     df = pd.DataFrame(rows)
-    df = format_dataframe(df, args.report_type)
+    df = format_dataframe(df, args.report_type, base_url, args.output_type)
     outputter = get_outputter(args.output_type)
     outputter(df, args)
 

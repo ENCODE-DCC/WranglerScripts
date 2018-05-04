@@ -2,7 +2,7 @@ import pytest
 
 @pytest.fixture
 def base_url():
-    return 'https://www.encodeproject.org'
+    return 'https://www.encodeproject.org/'
 
 
 @pytest.fixture
