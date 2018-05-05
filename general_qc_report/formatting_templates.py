@@ -208,6 +208,10 @@ RNA_MAPPING_FORMATTING = {
                 ('NUMBER_BETWEEN', ['100000000', '2050000000'], orange),
                 ('NUMBER_GREATER', ['205000000'], blue)
             ],
+            'read_length': [
+                ('NUMBER_LESS', ['50'], pink),
+                ('TEXT_CONTAINS', [','], yellow)
+            ],
             'replication': [
                 ('TEXT_CONTAINS', ['unreplicated'], pink)
             ]
