@@ -23,7 +23,10 @@ from general_qc_report import (
     collapse_quality_metrics,
     is_nonoverlapping,
     process_qc,
-    build_url_from_accession
+    build_url_from_accession,
+    calculate_read_depth,
+    contains_columns,
+    add_read_depth
 )
 from mock import patch
 
@@ -220,3 +223,25 @@ def test_build_url_from_accession(base_url):
     assert url == base_url + accession
     link = build_url_from_accession(accession, base_url, 'google_sheets')
     assert link == '=hyperlink("https://www.encodeproject.org/ENC123", "ENC123")'
+
+
+def test_calculate_read_depth():
+    import pandas as pd
+    assert calculate_read_depth(20, 20) == 40
+    assert pd.isnull(calculate_read_depth('', 20))
+
+
+def test_contains_columns(test_df):
+    assert contains_columns(test_df, ['a', 'b'])
+    assert not contains_columns(test_df, ['c'])
+
+
+def test_add_read_depth(test_rna_mapping_df):
+    import pandas as pd
+    from pandas.util.testing import (
+        assert_frame_equal,
+    )
+    df = add_read_depth(test_rna_mapping_df)
+    assert 'read_depth' in df.columns
+    assert not assert_frame_equal(test_rna_mapping_df, df)
+    assert all(df['read_depth'] == pd.Series([3, 7]))

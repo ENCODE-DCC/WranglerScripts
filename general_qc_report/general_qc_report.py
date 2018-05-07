@@ -4,6 +4,7 @@ import argparse
 import common
 import dxpy
 import logging
+import numpy as np
 import pandas as pd
 import os
 
@@ -71,7 +72,7 @@ def get_experiments_and_files(base_url, keypair, report_type, assembly):
             REPORT_TYPE_DETAILS[report_type]['file_fields'] +
             '&assembly=%s' % assembly
         ),
-        additional='&limit=200&format=json'
+        additional='&limit=25&format=json'
     )
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
@@ -297,18 +298,41 @@ def build_url_from_accession(accession, base_url, output_type):
     return url
 
 
+def calculate_read_depth(star_unique, star_multi):
+    if not isinstance(star_unique, int) or not isinstance(star_multi, int):
+        return np.nan
+    return star_unique + star_multi
+
+
+def contains_columns(df, columns):
+    return all([
+        col in df.columns
+        for col in columns
+    ])
+
+
+def add_read_depth(df):
+    # RNA mapping read_depth.
+    star_unique = 'star_uniquely_mapped_reads_number'
+    star_multi = 'star_number_of_reads_mapped_to_multiple_loci'
+    if contains_columns(df, [star_unique, star_multi]):
+        df['read_depth'] = df[[star_unique, star_multi]].apply(
+            lambda x: calculate_read_depth(x[0], x[1]),
+            axis=1
+        )
+    return df
+
+
 def format_dataframe(df, report_type, base_url, output_type):
+    # Rename columns.
     if REPORT_TYPE_DETAILS[report_type].get('rename_columns'):
         df = df.rename(columns=REPORT_TYPE_DETAILS[report_type].get('rename_columns'))
-    if REPORT_TYPE_DETAILS[report_type].get('col_order'):
-        df = df[REPORT_TYPE_DETAILS[report_type].get('col_order')]
-    if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
-        df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
     # Collapse list to string.
     if 'quality_metric_of' in df.columns:
         df['quality_metric_of'] = df['quality_metric_of'].apply(
             lambda x: ', '.join(x) if isinstance(x, list) else x
         )
+    # Make links from accessions.
     if 'experiment_accession' in df.columns:
         df['experiment_accession'] = df['experiment_accession'].apply(
             lambda accession: build_url_from_accession(accession, base_url, output_type)
@@ -317,6 +341,13 @@ def format_dataframe(df, report_type, base_url, output_type):
         df['file_accession'] = df['file_accession'].apply(
             lambda accession: build_url_from_accession(accession, base_url, output_type)
         )
+    # Add read_depth if needed.
+    df = add_read_depth(df)
+    # Sort and select columns at end.
+    if REPORT_TYPE_DETAILS[report_type].get('col_order'):
+        df = df[REPORT_TYPE_DETAILS[report_type].get('col_order')]
+    if REPORT_TYPE_DETAILS[report_type].get('sort_order'):
+        df = df.sort_values(by=REPORT_TYPE_DETAILS[report_type].get('sort_order'))
     return df
 
 

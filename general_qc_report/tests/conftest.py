@@ -200,3 +200,26 @@ def test_args():
         'skip_dnanexus': False
     })
     return args
+
+
+@pytest.fixture
+def test_df():
+    import pandas as pd
+    values = [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}]
+    return pd.DataFrame(values)
+
+
+@pytest.fixture
+def test_rna_mapping_df():
+    import pandas as pd
+    values = [
+        {
+            'star_uniquely_mapped_reads_number': 1,
+            'star_number_of_reads_mapped_to_multiple_loci': 2
+        },
+        {
+            'star_uniquely_mapped_reads_number': 3,
+            'star_number_of_reads_mapped_to_multiple_loci': 4
+        }
+    ]
+    return pd.DataFrame(values)

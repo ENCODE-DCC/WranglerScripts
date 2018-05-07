@@ -36,7 +36,6 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=replicates.library.depleted_in_term_name'
     '&field=files.read_length'
     '&field=files.run_type'
-    '&field=files.biological_replicates'
     '&field=assay_title'
 )
 
@@ -334,7 +333,7 @@ RNA_MAPPING_COLUMN_ORDER = [
     'run_type',
     'strand_specificity',
     'depleted_in_term_name',
-    #'read_depth, (uniq + multi)' # ADD
+    'read_depth',
     'num_reads_mapped_passing_qc',
     'pct_reads_mapped_passing_qc',
     'num_of_total_reads_passing_qc',
@@ -349,9 +348,10 @@ RNA_MAPPING_COLUMN_ORDER = [
     'star_uniquely_mapped_reads_pct',
     'star_average_input_read_length',
     'star_average_mapped_length',
+    'star_number_of_reads_mapped_to_multiple_loci',
     'star_pct_of_reads_mapped_to_multiple_loci',
     'star_pct_of_reads_unmapped_too_short',
-    'analysis', # make link
+    'analysis',
     'analysis_date',
     ]
 
