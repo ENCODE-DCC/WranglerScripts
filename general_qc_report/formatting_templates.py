@@ -197,16 +197,56 @@ RNA_MAPPING_FORMATTING = {
     'number': {
         'template': number_format,
         'numeric_cols_pattern': [
-            ('star_number_of_input_reads', '0.0,,"M"')
+            ('read_depth', '0.0,,"M"'),
+            ('num_reads_mapped_passing_qc', '0.0,,"M"'),
+            ('num_of_total_reads_passing_qc', '0.0,,"M"'),
+            ('num_of_total_reads_failing_qc', '0.0,,"M"'),
+            ('num_of_paired_reads_passing_qc', '0.0,,"M"'),
+            ('num_reads_properly_paired_passing_qc', '0.0,,"M"'),
+            ('num_reads_mapped_failing_qc', '0.0,,"M"'),
+            ('num_of_properly_paired_reads_failing_qc', '0.0,,"M"'),
+            ('star_number_of_input_reads', '0.0,,"M"'),
+            ('star_uniquely_mapped_reads_number', '0.0,,"M"'),
+            ('star_number_of_reads_mapped_to_multiple_loci', '0.0,,"M"')
         ]
     },
     'conditional': {
         'template': condition_dict,
         'conditions': {
+            'read_depth': [
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
+            ],
+            'num_reads_mapped_passing_qc': [
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
+            ],
+             'num_of_total_reads_passing_qc': [
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
+            ],
+            'num_of_paired_reads_passing_qc': [
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
+            ],
+            'num_reads_properly_paired_passing_qc': [
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
+            ],
             'star_number_of_input_reads': [
-                ('NUMBER_LESS', ['100000000'], red),
-                ('NUMBER_BETWEEN', ['100000000', '2050000000'], orange),
-                ('NUMBER_GREATER', ['205000000'], blue)
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
+            ],
+            'star_uniquely_mapped_reads_number': [
+                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
+                ('NUMBER_GREATER', ['30000000'], green)
             ],
             'read_length': [
                 ('NUMBER_LESS', ['50'], pink),
