@@ -79,6 +79,7 @@ def get_experiments_and_files(base_url, keypair, report_type, assembly):
 
 
 def get_references_data(base_url, keypair, report_type):
+    logging.warn('Getting references from portal')
     references_data = []
     if REPORT_TYPE_DETAILS[report_type].get('get_references', False):
         references_url = make_url(
