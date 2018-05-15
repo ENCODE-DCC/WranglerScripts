@@ -321,7 +321,7 @@ RNA_MAPPING_COLUMN_ORDER = [
     'file_accession',
     'biological_replicates',
     'spikeins_used',
-    'spikein_description'
+    'spikein_description',
     'output_type',
     'read_length',
     'run_type',
