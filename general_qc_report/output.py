@@ -65,6 +65,13 @@ def set_column_for_formatting(df, col_name, form):
     return form
 
 
+def set_column_for_width_formatting(df, col_name, form):
+    num = df.columns.get_loc(col_name)
+    form['updateDimensionProperties']['range']['startIndex'] = num
+    form['updateDimensionProperties']['range']['endIndex'] = num + 1
+    return form
+
+
 def set_column_for_conditional_formatting(df, col_name, form, wks):
     num = df.columns.get_loc(col_name)
     form['addConditionalFormatRule']['rule']['ranges'][0]['startColumnIndex'] = num
@@ -87,6 +94,17 @@ def freeze_header_formatter(formatter_value, df, wks):
 
 def note_formatter():
     pass
+
+
+def width_formatter(formatter_value, df, wks):
+    updates = []
+    for col_pattern in formatter_value['col_width_pattern']:
+        form = get_template(formatter_value['template'])
+        form['updateDimensionProperties']['range']['sheetId'] = wks.id
+        form = set_column_for_width_formatting(df, col_pattern[0], form)
+        form['updateDimensionProperties']['properties']['pixelSize'] = col_pattern[1]
+        updates.append(form)
+    return updates
 
 
 def font_formatter(formatter_value, df, wks):
@@ -140,6 +158,7 @@ formatter_mapping = {
     'font': font_formatter,
     'number': number_formatter,
     'conditional': conditonal_formatter,
+    'width': width_formatter,
     'additional': additional_formatter
 }
 

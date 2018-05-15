@@ -40,6 +40,18 @@ header = {
     }
 }
 
+column_width = {
+    "updateDimensionProperties": {
+        "range": {
+            "dimension": "COLUMNS",
+        },
+        "properties": {
+            "pixelSize": 160
+        },
+        "fields": "pixelSize"
+    }
+}
+
 freeze_header = {
     "updateSheetProperties": {
         "properties": {
@@ -261,6 +273,12 @@ RNA_MAPPING_FORMATTING = {
                 ('TEXT_CONTAINS', ['unreplicated'], pink)
             ]
         }
+    },
+    'width': {
+        'template': column_width,
+        'col_width_pattern': [
+            ('num_reads_mapped_passing_qc', 25),
+        ]
     },
     'additional': {}
 }
