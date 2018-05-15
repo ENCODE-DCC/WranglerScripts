@@ -265,3 +265,4 @@ def test_resolve_spikein_description(references_query):
     row = resolve_spikein_description(row, references_data)
     assert row['spikeins_used'] == '/references/ENCSR535LMC/'
     assert row['spikein_description'] == 'profile C1_1 ERCC spike-in concentrations used for C1 fluidigm'
+    assert '@id' in row
