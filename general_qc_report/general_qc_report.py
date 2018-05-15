@@ -336,9 +336,10 @@ def build_url_from_accession(accession, base_url, output_type):
 
 
 def calculate_read_depth(star_unique, star_multi):
-    if not isinstance(star_unique, int) or not isinstance(star_multi, int):
+    try:
+        return star_unique + star_multi
+    except TypeError:
         return np.nan
-    return star_unique + star_multi
 
 
 def contains_columns(df, columns):
