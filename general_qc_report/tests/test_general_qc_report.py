@@ -26,7 +26,8 @@ from general_qc_report import (
     build_url_from_accession,
     calculate_read_depth,
     contains_columns,
-    add_read_depth
+    add_read_depth,
+    resolve_spikein_description
 )
 from mock import patch
 
@@ -124,11 +125,14 @@ def test_filter_related_experiments(experiment_query, file_query):
 
 
 @patch('dxpy.describe')
-def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
+def test_build_rows(mock_dx, experiment_query, file_query,
+                    references_query, test_args, base_url,
+                    dx_describe):
     mock_dx.return_value = dx_describe
     rows = build_rows_from_experiment(
         experiment_query['@graph'],
         file_query['@graph'],
+        references_query['@graph'],
         test_args.report_type,
         base_url,
         test_args
@@ -137,11 +141,14 @@ def test_build_rows(mock_dx, experiment_query, file_query, test_args, base_url, 
 
 
 @patch('dxpy.describe')
-def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_args, base_url, dx_describe):
+def test_build_rows_missing_file(mock_dx, experiment_query, file_query,
+                                 references_query, test_args, base_url,
+                                 dx_describe):
     mock_dx.return_value = dx_describe
     rows = build_rows_from_experiment(
         experiment_query['@graph'],
         file_query['@graph'][:1],
+        references_query['@graph'],
         test_args.report_type,
         base_url,
         test_args
@@ -151,13 +158,15 @@ def test_build_rows_missing_file(mock_dx, experiment_query, file_query, test_arg
 
 @patch('dxpy.describe')
 def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
-                                     histone_qc, test_args, base_url, dx_describe):
+                                     references_query, histone_qc, test_args,
+                                     base_url, dx_describe):
     mock_dx.return_value = dx_describe
     file = file_query['@graph'][0]
     file['quality_metrics'] = [histone_qc, histone_qc]
     rows = build_rows_from_experiment(
         experiment_query['@graph'],
         [file],
+        references_query['@graph'],
         test_args.report_type,
         base_url,
         test_args
@@ -245,3 +254,14 @@ def test_add_read_depth(test_rna_mapping_df):
     assert 'read_depth' in df.columns
     assert not assert_frame_equal(test_rna_mapping_df, df)
     assert all(df['read_depth'] == pd.Series([3, 7]))
+
+
+def test_resolve_spikein_description(references_query):
+    row = {
+        '@id': '/experiments/ENCSR974RYS/',
+        'spikeins_used': ['/references/ENCSR535LMC/']
+    }
+    references_data = references_query['@graph']
+    row = resolve_spikein_description(row, references_data)
+    assert row['spikeins_used'] == '/references/ENCSR535LMC/'
+    assert row['spikein_description'] == 'profile C1_1 ERCC spike-in concentrations used for C1 fluidigm'

@@ -34,6 +34,7 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=replicates.library.size_range'
     '&field=replicates.library.strand_specificity'
     '&field=replicates.library.depleted_in_term_name'
+    '&field=replicates.library.spikeins_used'
     '&field=files.read_length'
     '&field=files.run_type'
     '&field=assay_title'
@@ -53,14 +54,6 @@ FILE_FIELDS_QUERY = (
     '&field=biological_replicates'
 )
 
-# REFERENCE SPECIFIC
-
-REFERENCE_DATASETS_QUERY = (
-)
-
-REFERENCE_DATASETS_FIELDS = (
-
-)
 
 # HISTONE SPECIFIC
 
@@ -327,7 +320,8 @@ RNA_MAPPING_COLUMN_ORDER = [
     'assembly',
     'file_accession',
     'biological_replicates',
-    #'spikeins_used',
+    'spikeins_used',
+    'spikein_description'
     'output_type',
     'read_length',
     'run_type',
@@ -354,6 +348,15 @@ RNA_MAPPING_COLUMN_ORDER = [
     'analysis',
     'analysis_date',
     ]
+
+# REFERENCES SPECIFIC
+
+REFERENCES_FILESET_QUERY = '/search/?type=Reference'
+
+REFERENCES_FIELDS_QUERY = (
+    '&field=@id'
+    '&field=description'
+)
 
 # REPORT TYPE SPECIFICS
 
@@ -395,6 +398,9 @@ REPORT_TYPE_DETAILS = {
         'sort_order': RNA_MAPPING_SORT_ORDER,
         'rename_columns': RNA_MAPPING_FINAL_COLUMN_NAMES_MAPPING,
         'formatting': RNA_MAPPING_FORMATTING,
-        'col_order': RNA_MAPPING_COLUMN_ORDER
+        'col_order': RNA_MAPPING_COLUMN_ORDER,
+        'get_references': True,
+        'references_query': REFERENCES_FILESET_QUERY,
+        'references_fields': REFERENCES_FIELDS_QUERY
     }
 }

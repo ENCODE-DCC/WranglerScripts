@@ -78,6 +78,20 @@ def get_experiments_and_files(base_url, keypair, report_type, assembly):
     return experiment_data, file_data
 
 
+def get_references_data(base_url, keypair, report_type):
+    references_data = []
+    if REPORT_TYPE_DETAILS[report_type].get('get_references', False):
+        references_url = make_url(
+            base_url,
+            (
+                REPORT_TYPE_DETAILS[report_type]['references_query'] +
+                REPORT_TYPE_DETAILS[report_type]['references_fields']
+            )
+        )
+        references_data = get_data(references_url, keypair)
+    return references_data
+
+
 def filter_related_files(experiment_id, file_data):
     return [f for f in file_data if f.get('dataset') == experiment_id]
 
@@ -146,6 +160,21 @@ def frip_in_output(output):
     return any(['frip' in k for k in output])
 
 
+def resolve_spikein_description(row, references_data):
+    spikein_details = {
+        description
+        for spikein in row.get('spikeins_used', [])
+        for description in [
+                r.get('description')
+                for r in references_data
+                if r.get('@id') == spikein
+        ]
+    }
+    row['spikeins_used'] = ', '.join(row['spikeins_used'])
+    row['spikein_description'] = ', '.join(spikein_details)
+    return row
+
+
 def process_qc(base_url, qc_parsed, output_type):
     # Make attachment image with link.
     if all([qc_parsed.get('attachment'),
@@ -157,7 +186,7 @@ def process_qc(base_url, qc_parsed, output_type):
     return qc_parsed
 
 
-def parse_experiment_file_qc(e, f, q, report_type, base_url, args):
+def parse_experiment_file_qc(e, f, q, report_type, base_url, args, references_data):
     job_id = get_job_id_from_file(f)
     dx_details = get_dx_details_from_job_id(job_id, args.skip_dnanexus)
     output = dx_details.pop('output', {})
@@ -186,6 +215,12 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url, args):
             for r in e.get('replicates', [])
             if r.get('library', {}).get('size_range')
         }),
+        'spikeins_used': list({
+            s
+            for r in e.get('replicates', [])
+            for s in r.get('library', {}).get('spikeins_used')
+            if r.get('library', {}).get('spikeins_used')
+        }),
         'strand_specificity': ', '.join({
             str(r.get('library', {}).get('strand_specificity'))
             for r in e.get('replicates', [])
@@ -210,12 +245,13 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url, args):
         }),
         'has_frip': has_frip
     }
+    row = resolve_spikein_description(row, references_data)
     row.update(qc_processed)
     row.update(dx_details)
     return row
 
 
-def build_rows_from_experiment(experiment_data, file_data, report_type, base_url, args):
+def build_rows_from_experiment(experiment_data, file_data, references_data, report_type, base_url, args):
     '''
     Builds records that can be passed to a dataframe.
     For every experiment:
@@ -240,11 +276,11 @@ def build_rows_from_experiment(experiment_data, file_data, report_type, base_url
             logger_warn_skip(qc_no, 'quality metric', e['@id'], len(q))
             continue
         q = q[0] if q else {}
-        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url, args))
+        data.append(parse_experiment_file_qc(e, f, q, report_type, base_url, args, references_data))
     return data
 
 
-def build_rows_from_file(experiment_data, file_data, report_type, base_url, args):
+def build_rows_from_file(experiment_data, file_data, references_data, report_type, base_url, args):
     '''
     Builds records that can be passed in to dataframe.
     For every file:
@@ -276,7 +312,7 @@ def build_rows_from_file(experiment_data, file_data, report_type, base_url, args
             continue
         # Collapse list of quality metrics to one object.
         q = collapse_quality_metrics(q, report_type)
-        row = parse_experiment_file_qc(e, f, q, report_type, base_url, args)
+        row = parse_experiment_file_qc(e, f, q, report_type, base_url, args, references_data)
         row.update({'file_accession': f.get('accession')})
         data.append(row)
     return data
@@ -420,8 +456,16 @@ def main():
         args.report_type,
         args.assembly
     )
+    references_data = get_references_data(base_url, keypair, args.report_type)
     build_rows = get_row_builder(args.report_type)
-    rows = build_rows(experiment_data, file_data, args.report_type, base_url, args)
+    rows = build_rows(
+        experiment_data,
+        file_data,
+        references_data,
+        args.report_type,
+        base_url,
+        args
+    )
     df = pd.DataFrame(rows)
     df = format_dataframe(df, args.report_type, base_url, args.output_type)
     outputter = get_outputter(args.output_type)

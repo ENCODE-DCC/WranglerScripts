@@ -181,6 +181,34 @@ def experiment_query():
 
 
 @pytest.fixture
+def references_query():
+    return {
+        "@graph": [
+            {
+                "description": "profile C1_1 ERCC spike-in concentrations used for C1 fluidigm",
+                "@id": "/references/ENCSR535LMC/"
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def spikeins_used():
+    return {
+        "@id": "/experiments/ENCSR974RYS/",
+        "replicates": [
+            {
+                "library": {
+                    "spikeins_used": [
+                        "/references/ENCSR535LMC/"
+                    ]
+                }
+            }
+        ]
+    }
+
+
+@pytest.fixture
 def dx_describe():
     return {
         'analysis': 'analysis-123456',
