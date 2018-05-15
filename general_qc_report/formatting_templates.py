@@ -214,39 +214,44 @@ RNA_MAPPING_FORMATTING = {
         'template': condition_dict,
         'conditions': {
             'read_depth': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
             'num_reads_mapped_passing_qc': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
              'num_of_total_reads_passing_qc': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
             'num_of_paired_reads_passing_qc': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
             'num_reads_properly_paired_passing_qc': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
             'star_number_of_input_reads': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
             'star_uniquely_mapped_reads_number': [
-                ('NUMBER_LESS', ['20000000'], pink),
+                ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
+            ],
+            'pct_reads_mapped_passing_qc': [
+                ('NUMBER_LESS', ['0.60'], red),
+                ('NUMBER_BETWEEN', ['0.60', '0.90'], orange),
+                ('NUMBER_GREATER', ['0.90'], green)
             ],
             'read_length': [
                 ('NUMBER_LESS', ['50'], pink),

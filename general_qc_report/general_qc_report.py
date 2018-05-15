@@ -72,7 +72,7 @@ def get_experiments_and_files(base_url, keypair, report_type, assembly):
             REPORT_TYPE_DETAILS[report_type]['file_fields'] +
             '&assembly=%s' % assembly
         ),
-       additional='&limit=25&format=json'
+       additional='&limit=500&format=json'
     )
     file_data = get_data(file_url, keypair)
     return experiment_data, file_data
