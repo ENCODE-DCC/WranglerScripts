@@ -1,6 +1,6 @@
-# ENCODE ChIP-seq utilities
+# ENCODE general QC report
 
-### Creating formatted mapping and IDR reports in Google Sheets (*must use Python 2*)
+### Creating formatted reports in Google Sheets (*must use Python 2*)
 
 1. Install dependencies:
 ```bash
@@ -22,13 +22,24 @@ gc = pygsheets.authorize(outh_file='client_secret_xxxx.json')
 
 Drop resulting sheets.googleapis.com-python.json in home folder (or specify path with --apikey argument).
 
-4. Run mapping and IDR report:
+4. Run reporting tool:
 
 ```bash
-$ python mapping_report.py --key www --assembly GRCh38 --create_google_sheet
-$ python idr_report_experiments.py --all --key www --assembly GRCh38 --create_google_sheet
+$ python general_qc_report.py --key prod --assembly GRCh38 --report_type rna_qc --sheet_title ENCODE_QC -o google_sheets -s
 ```
 
-Note `--released`, which only shows results for released experiments, will bypass need for `--key` and DNAnexus credentials.
+Options:
+| command  | description |
+| ------------- | ------------- |
+| `-h, --help` | Show help message.  |
+| `-d, --debug`  | Print debug messages.  |
+| `--key KEY` | The keypair identifier from the keyfile.  |
+| `--keyfile KEYFILE`  | The keyfile.  |
+| `--assembly` `{GRCh38, hg19 , mm10}` | Genome assembly.  |
+| `-r, --report_type` `{histone_qc, histone_mapping, tf_mapping, tf_qc, rna_mapping, rna_qc}`  | Report type.  |
+| `--sheet_title SHEET_TITLE` | Name of Google Sheet.  |
+| `--api_key API_KEY`  | Path to secret credential for Google Sheets.  |
+| `-o, --output_type` `{tsv,google_sheets}`  | Output to TSV or Google Sheets (requires authentication).  |
+| `-s, --skip_dnanexus` | Skip requests from DNAnexus (much faster). |
 
 5. Examine results posted to Google Sheets.
