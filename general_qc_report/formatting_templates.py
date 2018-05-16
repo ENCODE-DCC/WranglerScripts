@@ -201,6 +201,63 @@ note = {
 }
 
 
+RNA_QC_FORMATTING = {
+    'header': {'template': header},
+    'freeze_header': {'template': freeze_header},
+    'note': {},
+    'font': {'template': font_size_format},
+    'number': {
+        'template': number_format,
+        'numeric_cols_pattern': [
+            ('Pearson correlation', '0.00'),
+            ('SD of log ratios', '0.00'),
+            ('Spearman correlation', '0.00'),
+            ('MAD of log ratios', '0.00')
+        ]
+    },
+    'conditional': {
+        'template': condition_dict,
+        'conditions': {
+            'Pearson correlation': [
+                ('NUMBER_LESS', ['0.7'], red),
+                ('NUMBER_BETWEEN', ['0.7', '0.8'], orange)
+            ],
+            'Spearman correlation': [
+                ('NUMBER_LESS', ['0.7'], red),
+                ('NUMBER_BETWEEN', ['0.7', '0.8'], orange)
+            ]
+        }
+    },
+    'width': {
+        'template': column_width,
+        'col_width_pattern': [
+            ('experiment_accession', 90),
+            ('experiment_status', 50),
+            ('assay_title', 45),
+            ('lab', 38),
+            ('rfa', 50),
+            ('biosample_term_name', 25),
+            ('biosample_type', 25),
+            ('library_insert_size', 25),
+            ('replication', 25),
+            ('assembly', 50),
+            ('target', 45),
+            ('Pearson correlation', 38),
+            ('SD of log ratios', 38),
+            ('Spearman correlation', 38),
+            ('MAD of log ratios', 38),
+            ('attachment', 90),
+            ('project', 25),
+            ('analysis', 25),
+            ('job_id', 45),
+            ('quality_metric_of', 45),
+            ('analysis_date', 200)
+        ]
+    },
+    'additional': {}
+}
+
+
 RNA_MAPPING_FORMATTING = {
     'header': {'template': header},
     'freeze_header': {'template': freeze_header},
@@ -235,7 +292,7 @@ RNA_MAPPING_FORMATTING = {
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
             ],
-             'num_of_total_reads_passing_qc': [
+            'num_of_total_reads_passing_qc': [
                 ('NUMBER_LESS', ['20000000'], red),
                 ('NUMBER_BETWEEN', ['20000000', '30000000'], orange),
                 ('NUMBER_GREATER', ['30000000'], green)
@@ -315,7 +372,7 @@ RNA_MAPPING_FORMATTING = {
             ('experiment_accession', 90),
             ('file_accession', 90),
             ('analysis', 25),
-            ('analysis_date', 25),
+            ('analysis_date', 200),
             ('replication', 38)
         ]
     },

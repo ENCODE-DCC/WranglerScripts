@@ -3,7 +3,8 @@ module containing constants used by qc reporting tools
 '''
 
 from formatting_templates import (
-    RNA_MAPPING_FORMATTING
+    RNA_MAPPING_FORMATTING,
+    RNA_QC_FORMATTING
 )
 
 # GENERIC
@@ -140,7 +141,6 @@ RNA_MAD_QC_FIELDS = [
 RNA_MQM_REPORT_COLUMNS = [
     'experiment_accession',
     'experiment_status',
-    'analysis_date',
     'assay_title',
     'lab',
     'rfa',
@@ -158,7 +158,8 @@ RNA_MQM_REPORT_COLUMNS = [
     'project',
     'analysis',
     'job_id',
-    'quality_metric_of'
+    'quality_metric_of',
+    'analysis_date'
 ]
 
 RNA_MQM_SORT_ORDER = [
@@ -383,7 +384,8 @@ REPORT_TYPE_DETAILS = {
         'qc_type': ['MadQualityMetric'],
         'col_order': RNA_MQM_REPORT_COLUMNS,
         'sort_order': RNA_MQM_SORT_ORDER,
-        'row_builder': 'from_experiment'
+        'row_builder': 'from_experiment',
+        'formatting': RNA_QC_FORMATTING
     },
     'rna_mapping': {
         'experiment_query': RNA_EXPERIMENTS_QUERY,
