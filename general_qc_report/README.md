@@ -1,5 +1,7 @@
 # ENCODE general QC report
 
+[![Build Status](https://travis-ci.org/ENCODE-DCC/WranglerScripts.svg?branch=master)](https://travis-ci.org/ENCODE-DCC/WranglerScripts)
+
 The general QC reporting tool pulls experiment, file, and quality metric metadata from the ENCODE portal and builds reproducibly formatted reports in Google Sheets.
 
 ![example mapping report](examples/images/report_example.png)
