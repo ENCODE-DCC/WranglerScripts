@@ -7,7 +7,7 @@ The general QC reporting tool pulls experiment, file, and quality metric metadat
 ![example mapping report](examples/images/report_example.png)
 *Example transcription factor (TF) mapping report*
 
-It is easily extensible to new assay types, formatting rules, and metadata fields. The currently supported report types:
+It is easily extensible to new assay types, formatting rules, and metadata fields. The currently supported report types are:
 
 * rna_mapping (i.e. mapping metrics in RNA experiments)
 * rna_qc (i.e. gene quantifications metrics in RNA experiments)
