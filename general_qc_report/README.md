@@ -3,7 +3,7 @@
 The general QC reporting tool pulls experiment, file, and quality metric metadata from the ENCODE portal and builds reproducibly formatted reports in Google Sheets.
 
 ![example mapping report](examples/images/report_example.png)
-**Example transcription factor (tf) mapping report**
+*Example transcription factor (TF) mapping report*
 
 It is easily extensible to new assay types, formatting rules, and metadata fields. The currently supported report types:
 
