@@ -1,5 +1,14 @@
 # ENCODE general QC report
 
+The general QC reporting tool pulls experiment, file, and quality metric metadata from the ENCODE portal and builds reproducibly formatted reports in Google Sheets. It is easily extensible to new assay types, formatting rules, and metadata fields. The currently supported report types:
+
+* rna_mapping (i.e. mapping metrics in RNA experiments)
+* rna_qc (i.e. gene quantifications metrics in RNA experiments)
+* histone_qc
+* histone_mapping
+* tf_mapping
+* tf_qc
+
 ### Creating formatted reports in Google Sheets (*must use Python 2*)
 
 1. Install dependencies:
