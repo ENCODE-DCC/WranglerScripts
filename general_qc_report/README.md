@@ -14,9 +14,9 @@ It is easily extensible to new assay types, formatting rules, and metadata field
 * tf_mapping
 * tf_qc
 
-### Creating formatted reports in Google Sheets (*must use Python 2*)
+### How to use 
 
-1. Install dependencies:
+1. Install dependencies (*must use Python 2*):
 ```bash
 pip install pygsheets
 pip install pandas
