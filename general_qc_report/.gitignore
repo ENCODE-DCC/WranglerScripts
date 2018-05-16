@@ -1,0 +1,6 @@
+*.ipynb
+.pytest_cache
+*.pyc
+*.tsv
+
+.coverage

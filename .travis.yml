@@ -1,0 +1,8 @@
+language: python
+python:
+  - "2.7"
+cache: pip
+install:
+  - pip install -r general_qc_report/requirements.txt
+script:
+  - cd general_qc_report && pytest
