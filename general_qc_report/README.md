@@ -59,7 +59,7 @@ Options:
 
 5. Examine results posted to Google Sheets.
 
-6. For development run tests using pytest:
+6. Run tests using pytest (for development):
 
 ```bash
 $ pytest -k 'test_general'
