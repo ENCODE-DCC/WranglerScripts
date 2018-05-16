@@ -20,7 +20,7 @@ It is easily extensible to new assay types, formatting rules, and metadata field
 
 1. Install dependencies (*must use Python 2*):
 ```bash
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 
 2. Ask for ENCODE account credentials and client_secret file (client_secret_xxxx.json) allowing scripts to use Google API.
