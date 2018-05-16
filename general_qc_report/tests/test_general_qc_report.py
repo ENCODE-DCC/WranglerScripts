@@ -86,7 +86,7 @@ def test_get_experiments_and_files(mock_get, base_url, keypair, test_args, file_
 @patch('dxpy.describe')
 def test_get_dx_details_from_job_id(mock_dx, dx_describe, test_args):
     mock_dx.return_value = dx_describe
-    dx_details = get_dx_details_from_job_id('123', test_args.skip_dnanexus)
+    dx_details = get_dx_details_from_job_id('123', skip_dnanexus=False)
     assert dx_details.get('job_id') == '123'
     assert 'frip' in dx_details.get('output')
 

@@ -225,7 +225,7 @@ def test_args():
         'assembly': 'GRCh38',
         'report_type': 'histone_qc',
         'output_type': 'google_sheets',
-        'skip_dnanexus': False
+        'skip_dnanexus': True
     })
     return args
 
