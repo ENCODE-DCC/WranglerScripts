@@ -44,3 +44,9 @@ Options:
 | `-s, --skip_dnanexus` | Skip requests from DNAnexus (much faster) |
 
 5. Examine results posted to Google Sheets.
+
+6. For development you can run all tests using pytest:
+
+```bash
+$ pytest -k 'test_'
+```
