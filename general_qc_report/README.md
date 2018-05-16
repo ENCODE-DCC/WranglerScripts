@@ -34,7 +34,7 @@ Drop resulting sheets.googleapis.com-python.json in home folder (or specify path
 4. Run reporting tool example command:
 
 ```bash
-$ python general_qc_report.py --key prod --assembly GRCh38 --report_type rna_qc --sheet_title ENCODE_QC -o google_sheets -s
+$ python general_qc_report.py --key prod --assembly GRCh38 --report_type rna_mapping --sheet_title ENCODE_QC -o google_sheets -s
 ```
 
 Options:
