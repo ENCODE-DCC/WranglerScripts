@@ -5,4 +5,4 @@ cache: pip
 install:
   - pip install -r general_qc_report/requirements.txt
 script:
-  - cd general_qc_report && pytest -s --cov -k 'test_'
+  - cd general_qc_report && pytest
