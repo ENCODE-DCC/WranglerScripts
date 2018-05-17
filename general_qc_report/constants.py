@@ -53,7 +53,7 @@ FILE_FIELDS_QUERY = (
     '&field=quality_metrics'
     '&field=notes'
     '&field=biological_replicates'
-    '&field=analysis_step_version.name' #added
+    '&field=analysis_step_version.name'
 )
 
 

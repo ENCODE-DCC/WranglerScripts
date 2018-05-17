@@ -198,6 +198,9 @@ rna_mapping_notes_dict = {
     'star_uniquely_mapped_reads_number': '<20M Red, 20M-30M Orange, 30M> Green'
 }
 
+rna_qc_notes_dict = {
+}
+
 
 RNA_QC_FORMATTING = {
     'header': {'template': header},
