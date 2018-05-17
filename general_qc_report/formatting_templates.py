@@ -186,18 +186,9 @@ tf_mapping_notes_dict = {
     'RSC': 'Relative cross correlation coefficient. Ratio of strand cross-correlation at fragment length and at read length. Enriched datasets should have values > 1 or very close to 1 (> 0.8).'
 }
 
-
-note = {
-    "repeatCell": {
-        "range": {
-            "startRowIndex": 0,
-            "endRowIndex": 1,
-        },
-        "cell": {
-            "note": ""
-        },
-        "fields": "note"
-    }
+rna_mapping_notes_dict = {
+    'experiment_accession': 'Dis a note about experiment_accession.',
+    'assay_title': 'Dis a note about assay_title.'
 }
 
 
@@ -259,9 +250,12 @@ RNA_QC_FORMATTING = {
 
 
 RNA_MAPPING_FORMATTING = {
+    'note': {
+        'template': note,
+        'notes_dict': rna_mapping_notes_dict
+    },
     'header': {'template': header},
     'freeze_header': {'template': freeze_header},
-    'note': {},
     'font': {'template': font_size_format},
     'number': {
         'template': number_format,

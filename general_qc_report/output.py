@@ -92,8 +92,16 @@ def freeze_header_formatter(formatter_value, df, wks):
     return form
 
 
-def note_formatter():
-    pass
+def note_formatter(formatter_value, df, wks):
+    updates = []
+    notes = formatter_value['notes_dict']
+    for column, note_text in notes.items():
+        form = get_template(formatter_value['template'])
+        form = set_sheet_id(form, wks)
+        form = set_column_for_formatting(df, column, form)
+        form['repeatCell']['cell']['note'] = note_text
+        updates.append(form)
+    return updates
 
 
 def width_formatter(formatter_value, df, wks):
