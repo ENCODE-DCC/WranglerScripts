@@ -75,6 +75,7 @@ HISTONE_CHIP_EXPERIMENTS_QUERY = (
     '&assay_title=ChIP-seq'
     '&target.investigated_as=histone'
     '&award.project=ENCODE'
+    '&award.project=Roadmap'
     '&status=released'
     '&status=in+progress'
     '&status=submitted'
