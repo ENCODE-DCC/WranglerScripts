@@ -187,8 +187,15 @@ tf_mapping_notes_dict = {
 }
 
 rna_mapping_notes_dict = {
-    'experiment_accession': 'Dis a note about experiment_accession.',
-    'assay_title': 'Dis a note about assay_title.'
+    'read_length': '<50 Pink, mixed read lengths Yellow.',
+    'read_depth': '<20M Red, 20M-30M Orange, 30M> Green. Calculated by: uniquely mapped + multimapped as in audit.',
+    'num_reads_mapped_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green. Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'pct_reads_mapped_passing_qc': '<60 Red, 60-90 Orange, >90 Green. Samtools flagstat metric.',
+    'num_of_total_reads_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green.Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'num_of_paired_reads_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green.Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'num_reads_properly_paired_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green.Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'star_number_of_input_reads': '<20M Red, 20M-30M Orange, 30M> Green',
+    'star_uniquely_mapped_reads_number': '<20M Red, 20M-30M Orange, 30M> Green'
 }
 
 
