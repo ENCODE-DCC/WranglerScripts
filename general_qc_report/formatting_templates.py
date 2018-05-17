@@ -335,6 +335,7 @@ RNA_MAPPING_FORMATTING = {
     'width': {
         'template': column_width,
         'col_width_pattern': [
+            ('analysis_step', 90),
             ('read_depth', 45),
             ('num_reads_mapped_passing_qc', 45),
             ('num_of_total_reads_passing_qc', 45),

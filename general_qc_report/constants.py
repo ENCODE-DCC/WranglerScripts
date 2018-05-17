@@ -53,6 +53,7 @@ FILE_FIELDS_QUERY = (
     '&field=quality_metrics'
     '&field=notes'
     '&field=biological_replicates'
+    '&field=analysis_step_version.name' #added
 )
 
 
@@ -323,6 +324,7 @@ RNA_MAPPING_COLUMN_ORDER = [
     'biological_replicates',
     'spikeins_used',
     'spikein_description',
+    'analysis_step',
     'output_type',
     'read_length',
     'run_type',
