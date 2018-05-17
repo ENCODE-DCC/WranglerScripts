@@ -4,7 +4,8 @@ module containing constants used by qc reporting tools
 
 from formatting_templates import (
     RNA_MAPPING_FORMATTING,
-    RNA_REPLICATION_FORMATTING
+    RNA_REPLICATION_FORMATTING,
+    HISTONE_QC_FORMATTING
 )
 
 # GENERIC
@@ -90,6 +91,43 @@ HISTONE_QC_FIELDS = [
     'F1',
     'F2',
     'quality_metric_of'
+]
+
+HISTONE_QC_REPORT_COLUMNS = [
+    'experiment_accession',
+    'assay_title',
+    'library_insert_size',
+    'biosample_type',
+    'biosample_term_name',
+    'target',
+    'replication',
+    'lab',
+    'rfa',
+    'experiment_status',
+    'assembly',
+    'read_length',
+    'run_type',
+    'output_type',
+    'nreads',
+    'nreads_in_peaks',
+    'npeak_overlap',
+    'Fp',
+    'Ft',
+    'F1',
+    'F2',
+    'job_id',
+    'analysis',
+    'project',
+    'analysis_date',
+    'quality_metric_of',
+    'has_frip'
+]
+
+HISTONE_QC_SORT_ORDER = [
+    'lab',
+    'assay_title',
+    'biosample_term_name',
+    'target'
 ]
 
 # RNA GENERIC
@@ -351,8 +389,8 @@ RNA_MAPPING_COLUMN_ORDER = [
     'star_pct_of_reads_mapped_to_multiple_loci',
     'star_pct_of_reads_unmapped_too_short',
     'analysis',
-    'analysis_date',
-    ]
+    'analysis_date'
+]
 
 # REFERENCES SPECIFIC
 
@@ -375,7 +413,10 @@ REPORT_TYPE_DETAILS = {
         'file_no': 1,
         'qc_no': 1,
         'qc_type': ['HistoneChipSeqQualityMetric'],
-        'row_builder': 'from_experiment'
+        'row_builder': 'from_experiment',
+        'col_order': HISTONE_QC_REPORT_COLUMNS,
+        'sort_order': HISTONE_QC_SORT_ORDER,
+        'formatting': HISTONE_QC_FORMATTING
     },
     'rna_replication': {
         'experiment_query': RNA_REPLICATION_EXPERIMENTS_QUERY,

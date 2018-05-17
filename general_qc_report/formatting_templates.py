@@ -202,6 +202,70 @@ rna_replication_notes_dict = {
 }
 
 
+HISTONE_QC_FORMATTING = {
+    'header': {'template': header},
+    'freeze_header': {'template': freeze_header},
+    'note': {},
+    'font': {'template': font_size_format},
+    'number': {
+        'template': number_format,
+        'numeric_cols_pattern': [
+            ('Fp', '0.00'),
+            ('Ft', '0.00'),
+            ('F1', '0.00'),
+            ('F2', '0.00'),
+            ('nreads', '0.0,,"M"'),
+            ('nreads_in_peaks', '0.0,,"M"'),
+            ('npeak_overlap', '0.0,,"M"')
+        ]
+    },
+    'conditional': {
+        'template': condition_dict,
+        'conditions': {
+            'read_length': [
+                ('NUMBER_LESS', ['50'], pink),
+                ('TEXT_CONTAINS', [','], yellow)
+            ],
+            'replication': [
+                ('TEXT_CONTAINS', ['unreplicated'], pink)
+            ]
+        }
+    },
+    'width': {
+        'template': column_width,
+        'col_width_pattern': [
+            ('experiment_accession', 90),
+            ('experiment_status', 50),
+            ('assay_title', 45),
+            ('lab', 38),
+            ('rfa', 50),
+            ('read_length', 38),
+            ('run_type', 38),
+            ('biosample_term_name', 25),
+            ('biosample_type', 25),
+            ('library_insert_size', 25),
+            ('replication', 25),
+            ('assembly', 50),
+            ('target', 45),
+            ('Fp', 38),
+            ('Ft', 38),
+            ('F1', 38),
+            ('F2', 38),
+            ('nreads', 38),
+            ('nreads_in_peaks', 38),
+            ('npeak_overlap', 38),
+            ('project', 25),
+            ('analysis', 25),
+            ('job_id', 45),
+            ('quality_metric_of', 45),
+            ('analysis_date', 200),
+            ('has_frip', 38)
+        ]
+    },
+    'additional': {}
+}
+
+
 RNA_REPLICATION_FORMATTING = {
     'header': {'template': header},
     'freeze_header': {'template': freeze_header},
