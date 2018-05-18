@@ -305,7 +305,8 @@ RNA_MAPPING_SORT_ORDER = [
     'target',
     'experiment_accession',
     'biological_replicates',
-    'output_type'
+    'output_type',
+    'analysis_step'
 ]
 
 RNA_MAPPING_COLUMN_ORDER = [
