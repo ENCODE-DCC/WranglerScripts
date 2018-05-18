@@ -129,7 +129,7 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '&status=uploading'
 )
 
-RNA_REPLICATION_FIELDS = [
+RNA_MAD_QC_FIELDS = [
     '@id',
     'SD of log ratios',
     'Pearson correlation',
@@ -381,7 +381,7 @@ REPORT_TYPE_DETAILS = {
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_QUANTIFICATION_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': RNA_REPLICATION_FIELDS,
+        'qc_fields': RNA_MAD_QC_FIELDS,
         'file_no': 2,
         'qc_no': 1,
         'qc_type': ['MadQualityMetric'],
