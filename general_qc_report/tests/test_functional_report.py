@@ -22,18 +22,18 @@ def get_data_indy(url, keypair):
 @patch('common.encoded_get')
 @patch('constants.REPORT_TYPE_DETAILS')
 def test_functional_rna_mqm_report_get_data(replaced_details, replaced_get, base_url, test_args):
-    REPORT_TYPE_DETAILS['rna_qc']['experiment_query'] = REPORT_TYPE_DETAILS['rna_qc']['experiment_query'] + '&accession=ENCSR000AIZ'
-    REPORT_TYPE_DETAILS['rna_qc']['file_query'] = REPORT_TYPE_DETAILS['rna_qc']['file_query'] + '&accession=ENCFF513SFV&accession=ENCFF863OEM'
+    REPORT_TYPE_DETAILS['rna_replication']['experiment_query'] = REPORT_TYPE_DETAILS['rna_replication']['experiment_query'] + '&accession=ENCSR000AIZ'
+    REPORT_TYPE_DETAILS['rna_replication']['file_query'] = REPORT_TYPE_DETAILS['rna_replication']['file_query'] + '&accession=ENCFF513SFV&accession=ENCFF863OEM'
     replaced_details.return_value = REPORT_TYPE_DETAILS
     replaced_get.side_effect = get_data_indy
-    exps, files = get_experiments_and_files(base_url, (None, None), 'rna_qc', 'GRCh38')
+    exps, files = get_experiments_and_files(base_url, (None, None), 'rna_replication', 'GRCh38')
     assert len(exps) == 1, "wrong number of experiments received"
     assert len(files) == 2, "wrong number of files received"
-    references_data = get_references_data(base_url, (None, None), 'rna_qc')
+    references_data = get_references_data(base_url, (None, None), 'rna_replication')
     assert not references_data
-    rows = build_rows_from_experiment(exps, files, references_data, 'rna_qc', base_url, test_args)
+    rows = build_rows_from_experiment(exps, files, references_data, 'rna_replication', base_url, test_args)
     assert len(rows) == 1, 'wrong number of rows built'
-    assert all([col in rows[0] for col in REPORT_TYPE_DETAILS['rna_qc']['col_order']])
+    assert all([col in rows[0] for col in REPORT_TYPE_DETAILS['rna_replication']['col_order']])
     assert rows[0]['Pearson correlation'] == 0.9737423
 
 

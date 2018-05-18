@@ -243,7 +243,8 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url, args, references_da
             for r in f.get('biological_replicates', [])
             if f.get('biological_replicates', [])
         }),
-        'has_frip': has_frip
+        'has_frip': has_frip,
+        'analysis_step': f.get('analysis_step_version', {}).get('name')
     }
     row = resolve_spikein_description(row, references_data)
     row.update(qc_processed)

@@ -4,7 +4,7 @@ module containing constants used by qc reporting tools
 
 from formatting_templates import (
     RNA_MAPPING_FORMATTING,
-    RNA_QC_FORMATTING
+    RNA_REPLICATION_FORMATTING
 )
 
 # GENERIC
@@ -17,7 +17,7 @@ REPORT_TYPES = [
     'tf_mapping',
     'tf_qc',
     'rna_mapping',
-    'rna_qc'
+    'rna_replication'
 ]
 
 # Only download needed fields.
@@ -53,6 +53,7 @@ FILE_FIELDS_QUERY = (
     '&field=quality_metrics'
     '&field=notes'
     '&field=biological_replicates'
+    '&field=analysis_step_version.name'
 )
 
 
@@ -112,9 +113,9 @@ RNA_EXPERIMENTS_QUERY = (
     '&status=submitted'
 )
 
-# RNA MQM SPECIFIC
+# RNA REPLICATION REPORT SPECIFIC
 
-RNA_MQM_EXPERIMENTS_QUERY = (
+RNA_REPLICATION_EXPERIMENTS_QUERY = (
     RNA_EXPERIMENTS_QUERY + '&replication_type!=unreplicated'
 )
 
@@ -138,7 +139,7 @@ RNA_MAD_QC_FIELDS = [
     'attachment'
 ]
 
-RNA_MQM_REPORT_COLUMNS = [
+RNA_REPLICATION_REPORT_COLUMNS = [
     'experiment_accession',
     'experiment_status',
     'assay_title',
@@ -162,7 +163,7 @@ RNA_MQM_REPORT_COLUMNS = [
     'analysis_date'
 ]
 
-RNA_MQM_SORT_ORDER = [
+RNA_REPLICATION_SORT_ORDER = [
     'lab',
     'assay_title',
     'biosample_term_name',
@@ -304,7 +305,8 @@ RNA_MAPPING_SORT_ORDER = [
     'target',
     'experiment_accession',
     'biological_replicates',
-    'output_type'
+    'output_type',
+    'analysis_step'
 ]
 
 RNA_MAPPING_COLUMN_ORDER = [
@@ -323,6 +325,7 @@ RNA_MAPPING_COLUMN_ORDER = [
     'biological_replicates',
     'spikeins_used',
     'spikein_description',
+    'analysis_step',
     'output_type',
     'read_length',
     'run_type',
@@ -373,8 +376,8 @@ REPORT_TYPE_DETAILS = {
         'qc_type': ['HistoneChipSeqQualityMetric'],
         'row_builder': 'from_experiment'
     },
-    'rna_qc': {
-        'experiment_query': RNA_MQM_EXPERIMENTS_QUERY,
+    'rna_replication': {
+        'experiment_query': RNA_REPLICATION_EXPERIMENTS_QUERY,
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_QUANTIFICATION_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
@@ -382,10 +385,10 @@ REPORT_TYPE_DETAILS = {
         'file_no': 2,
         'qc_no': 1,
         'qc_type': ['MadQualityMetric'],
-        'col_order': RNA_MQM_REPORT_COLUMNS,
-        'sort_order': RNA_MQM_SORT_ORDER,
+        'col_order': RNA_REPLICATION_REPORT_COLUMNS,
+        'sort_order': RNA_REPLICATION_SORT_ORDER,
         'row_builder': 'from_experiment',
-        'formatting': RNA_QC_FORMATTING
+        'formatting': RNA_REPLICATION_FORMATTING
     },
     'rna_mapping': {
         'experiment_query': RNA_EXPERIMENTS_QUERY,

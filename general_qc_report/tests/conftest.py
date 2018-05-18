@@ -97,6 +97,9 @@ def file_query():
                     "aliases": [
                         "dnanexus:job-FBZp3z80369GYzY2Jz7FX8Qq"
                     ]
+                },
+                "analysis_step_version": {
+                    "name": "histone-overlap-peaks-step-v-1-1"
                 }
             },
             {
@@ -122,6 +125,9 @@ def file_query():
                     "date_created": "2018-03-01T20:03:52.764975+00:00",
                     "uuid": "8a136540-234d-4a87-b481-8c238bd559a5",
                     "submitted_by": "/users/7e95dcd6-9c35-4082-9c53-09d14c5752be/"
+                },
+                "analysis_step_version": {
+                    "name": "histone-unreplicated-partition-concordance-step-v-1-0"
                 }
             }
         ]

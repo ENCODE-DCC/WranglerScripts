@@ -186,22 +186,23 @@ tf_mapping_notes_dict = {
     'RSC': 'Relative cross correlation coefficient. Ratio of strand cross-correlation at fragment length and at read length. Enriched datasets should have values > 1 or very close to 1 (> 0.8).'
 }
 
+rna_mapping_notes_dict = {
+    'read_length': '<50 Pink, mixed read lengths Yellow.',
+    'read_depth': '<20M Red, 20M-30M Orange, 30M> Green. Calculated by: uniquely mapped + multimapped as in audit.',
+    'num_reads_mapped_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green. Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'pct_reads_mapped_passing_qc': '<60 Red, 60-90 Orange, >90 Green. Samtools flagstat metric.',
+    'num_of_total_reads_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green. Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'num_of_paired_reads_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green. Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'num_reads_properly_paired_passing_qc': '<20M Red, 20M-30M Orange, 30M> Green. Samtools flagstat metric, where multimapped reads are counted multiple (2-20) times.',
+    'star_number_of_input_reads': '<20M Red, 20M-30M Orange, 30M> Green',
+    'star_uniquely_mapped_reads_number': '<20M Red, 20M-30M Orange, 30M> Green'
+}
 
-note = {
-    "repeatCell": {
-        "range": {
-            "startRowIndex": 0,
-            "endRowIndex": 1,
-        },
-        "cell": {
-            "note": ""
-        },
-        "fields": "note"
-    }
+rna_replication_notes_dict = {
 }
 
 
-RNA_QC_FORMATTING = {
+RNA_REPLICATION_FORMATTING = {
     'header': {'template': header},
     'freeze_header': {'template': freeze_header},
     'note': {},
@@ -219,12 +220,22 @@ RNA_QC_FORMATTING = {
         'template': condition_dict,
         'conditions': {
             'Pearson correlation': [
-                ('NUMBER_LESS', ['0.7'], red),
-                ('NUMBER_BETWEEN', ['0.7', '0.8'], orange)
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",L2>0.9), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",L2>0.8), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",and(L2>0.8,L2<0.9)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",and(L2>0.7,L2<0.8)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",L2<0.8), TRUE)'], red),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",L2<0.7), TRUE)'], red),
+
             ],
             'Spearman correlation': [
-                ('NUMBER_LESS', ['0.7'], red),
-                ('NUMBER_BETWEEN', ['0.7', '0.8'], orange)
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",N2>0.9), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",N2>0.8), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",and(N2>0.8,N2<0.9)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",and(N2>0.7,N2<0.8)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",N2<0.8), TRUE)'], red),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",N2<0.7), TRUE)'], red),
+
             ]
         }
     },
@@ -259,9 +270,12 @@ RNA_QC_FORMATTING = {
 
 
 RNA_MAPPING_FORMATTING = {
+    'note': {
+        'template': note,
+        'notes_dict': rna_mapping_notes_dict
+    },
     'header': {'template': header},
     'freeze_header': {'template': freeze_header},
-    'note': {},
     'font': {'template': font_size_format},
     'number': {
         'template': number_format,
@@ -334,6 +348,7 @@ RNA_MAPPING_FORMATTING = {
     'width': {
         'template': column_width,
         'col_width_pattern': [
+            ('analysis_step', 90),
             ('read_depth', 45),
             ('num_reads_mapped_passing_qc', 45),
             ('num_of_total_reads_passing_qc', 45),
