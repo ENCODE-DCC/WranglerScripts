@@ -176,11 +176,11 @@ def test_build_rows_skip_multiple_qc(mock_dx, experiment_query, file_query,
 
 def test_report_type_constants():
     assert 'histone_qc' in REPORT_TYPES
-    assert 'rna_qc' in REPORT_TYPES
+    assert 'rna_replication' in REPORT_TYPES
 
 
 def test_row_builder_returns_correct_function():
-    assert get_row_builder('rna_qc') is build_rows_from_experiment
+    assert get_row_builder('rna_replication') is build_rows_from_experiment
     assert get_row_builder('rna_mapping') is build_rows_from_file
 
 
@@ -197,13 +197,13 @@ def test_collapse_quality_metrics():
 
 @patch('constants.REPORT_TYPE_DETAILS')
 def test_is_nonoverlapping(replaced_details):
-    REPORT_TYPE_DETAILS['rna_qc']['qc_fields'] = ['a', 'b', 'c']
+    REPORT_TYPE_DETAILS['rna_replication']['qc_fields'] = ['a', 'b', 'c']
     replaced_details.return_value = REPORT_TYPE_DETAILS
-    is_nonoverlapping([{'a': 1}, {'b': 2}, {'c': 3}], 'rna_qc')
+    is_nonoverlapping([{'a': 1}, {'b': 2}, {'c': 3}], 'rna_replication')
     with pytest.raises(KeyError):
         is_nonoverlapping({'a': 1}, 'rna_qc')
     with pytest.raises(ValueError):
-        is_nonoverlapping([{'a': 1}, {'a': 2}, {'c': 3}], 'rna_qc')
+        is_nonoverlapping([{'a': 1}, {'a': 2}, {'c': 3}], 'rna_replication')
 
 
 def test_process_qc(base_url):

@@ -4,7 +4,7 @@ module containing constants used by qc reporting tools
 
 from formatting_templates import (
     RNA_MAPPING_FORMATTING,
-    RNA_QC_FORMATTING
+    RNA_REPLICATION_FORMATTING
 )
 
 # GENERIC
@@ -17,7 +17,7 @@ REPORT_TYPES = [
     'tf_mapping',
     'tf_qc',
     'rna_mapping',
-    'rna_qc'
+    'rna_replication'
 ]
 
 # Only download needed fields.
@@ -113,9 +113,9 @@ RNA_EXPERIMENTS_QUERY = (
     '&status=submitted'
 )
 
-# RNA MQM SPECIFIC
+# RNA REPLICATION REPORT SPECIFIC
 
-RNA_MQM_EXPERIMENTS_QUERY = (
+RNA_REPLICATION_EXPERIMENTS_QUERY = (
     RNA_EXPERIMENTS_QUERY + '&replication_type!=unreplicated'
 )
 
@@ -129,7 +129,7 @@ RNA_QUANTIFICATION_FILES_QUERY = (
     '&status=uploading'
 )
 
-RNA_MAD_QC_FIELDS = [
+RNA_REPLICATION_FIELDS = [
     '@id',
     'SD of log ratios',
     'Pearson correlation',
@@ -139,7 +139,7 @@ RNA_MAD_QC_FIELDS = [
     'attachment'
 ]
 
-RNA_MQM_REPORT_COLUMNS = [
+RNA_REPLICATION_REPORT_COLUMNS = [
     'experiment_accession',
     'experiment_status',
     'assay_title',
@@ -163,7 +163,7 @@ RNA_MQM_REPORT_COLUMNS = [
     'analysis_date'
 ]
 
-RNA_MQM_SORT_ORDER = [
+RNA_REPLICATION_SORT_ORDER = [
     'lab',
     'assay_title',
     'biosample_term_name',
@@ -376,19 +376,19 @@ REPORT_TYPE_DETAILS = {
         'qc_type': ['HistoneChipSeqQualityMetric'],
         'row_builder': 'from_experiment'
     },
-    'rna_qc': {
-        'experiment_query': RNA_MQM_EXPERIMENTS_QUERY,
+    'rna_replication': {
+        'experiment_query': RNA_REPLICATION_EXPERIMENTS_QUERY,
         'experiment_fields': EXPERIMENT_FIELDS_QUERY,
         'file_query': RNA_QUANTIFICATION_FILES_QUERY,
         'file_fields': FILE_FIELDS_QUERY,
-        'qc_fields': RNA_MAD_QC_FIELDS,
+        'qc_fields': RNA_REPLICATION_FIELDS,
         'file_no': 2,
         'qc_no': 1,
         'qc_type': ['MadQualityMetric'],
-        'col_order': RNA_MQM_REPORT_COLUMNS,
-        'sort_order': RNA_MQM_SORT_ORDER,
+        'col_order': RNA_REPLICATION_REPORT_COLUMNS,
+        'sort_order': RNA_REPLICATION_SORT_ORDER,
         'row_builder': 'from_experiment',
-        'formatting': RNA_QC_FORMATTING
+        'formatting': RNA_REPLICATION_FORMATTING
     },
     'rna_mapping': {
         'experiment_query': RNA_EXPERIMENTS_QUERY,
