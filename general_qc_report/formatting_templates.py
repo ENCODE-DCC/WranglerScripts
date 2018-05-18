@@ -220,12 +220,22 @@ RNA_QC_FORMATTING = {
         'template': condition_dict,
         'conditions': {
             'Pearson correlation': [
-                ('NUMBER_LESS', ['0.7'], red),
-                ('NUMBER_BETWEEN', ['0.7', '0.8'], orange)
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",L2>0.9), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",L2>0.8), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",and(L2>0.8,L2<0.9)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",and(L2>0.7,L2<0.8)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",L2<0.8), TRUE)'], red),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",L2<0.7), TRUE)'], red),
+
             ],
             'Spearman correlation': [
-                ('NUMBER_LESS', ['0.7'], red),
-                ('NUMBER_BETWEEN', ['0.7', '0.8'], orange)
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",N2>0.9), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",N2>0.8), TRUE)'], green),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",and(N2>0.8,N2<0.9)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",and(N2>0.7,N2<0.8)), TRUE)'], orange),
+                ('CUSTOM_FORMULA', ['=if(and(I2="isogenic",N2<0.8), TRUE)'], red),
+                ('CUSTOM_FORMULA', ['=if(and(I2="anisogenic",N2<0.7), TRUE)'], red),
+
             ]
         }
     },
