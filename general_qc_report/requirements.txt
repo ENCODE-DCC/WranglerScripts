@@ -4,3 +4,4 @@ pytest==3.1.2
 pytest-cov==2.5.1
 requests==2.7.0
 dxpy==0.224.0
+oauth2client==4.1.2
