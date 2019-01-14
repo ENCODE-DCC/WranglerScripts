@@ -31,6 +31,7 @@ EXPERIMENT_FIELDS_QUERY = (
     '&field=target.name'
     '&field=biosample_term_name'
     '&field=biosample_type'
+    '&field=biosample_summary'
     '&field=replication_type'
     '&field=lab.name'
     '&field=replicates.library.size_range'
@@ -99,6 +100,7 @@ HISTONE_QC_REPORT_COLUMNS = [
     'library_insert_size',
     'biosample_type',
     'biosample_term_name',
+    'biosample_summary',
     'target',
     'replication',
     'lab',
@@ -127,6 +129,7 @@ HISTONE_QC_SORT_ORDER = [
     'lab',
     'assay_title',
     'biosample_term_name',
+    'biosample_summary',
     'target'
 ]
 
@@ -186,6 +189,7 @@ RNA_REPLICATION_REPORT_COLUMNS = [
     'rfa',
     'biosample_term_name',
     'biosample_type',
+    'biosample_summary',
     'library_insert_size',
     'replication',
     'assembly',
@@ -206,6 +210,7 @@ RNA_REPLICATION_SORT_ORDER = [
     'lab',
     'assay_title',
     'biosample_term_name',
+    'biosample_summary',
     'target'
 ]
 
@@ -341,6 +346,7 @@ RNA_MAPPING_SORT_ORDER = [
     'lab',
     'assay_title',
     'biosample_term_name',
+    'biosample_summary',
     'target',
     'experiment_accession',
     'biological_replicates',
@@ -354,6 +360,7 @@ RNA_MAPPING_COLUMN_ORDER = [
     'library_insert_size',
     'biosample_type',
     'biosample_term_name',
+    'biosample_summary',
     'target',
     'replication',
     'lab',

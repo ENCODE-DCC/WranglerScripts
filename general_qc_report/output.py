@@ -211,5 +211,6 @@ def output_to_tsv(df, args):
     df.to_csv(
         '%s.tsv' % make_page_title(args.report_type, args.assembly),
         sep='\t',
-        index=False
+        index=False,
+        encoding='utf-8'
     )

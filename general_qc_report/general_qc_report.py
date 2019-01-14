@@ -234,6 +234,7 @@ def parse_experiment_file_qc(e, f, q, report_type, base_url, args, references_da
         }),
         'biosample_term_name': e.get('biosample_term_name'),
         'biosample_type': e.get('biosample_type'),
+        'biosample_summary': e.get('biosample_summary'),
         'replication': e.get('replication_type'),
         'lab': e.get('lab', {}).get('name'),
         'rfa': e.get('award', {}).get('rfa'),
