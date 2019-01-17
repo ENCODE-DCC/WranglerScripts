@@ -444,9 +444,9 @@ def get_rows(experiment, server, authid, authpw, args):
                  or f.get('assembly') == args.assembly)
             and f.get('status') not in STATUS_TO_IGNORE
             and f['lab']['name'] in LAB_NAMES]
-    filtered_bams = [f for f in bams if f.get('output_type') == 'alignments']
+    filtered_bams = [f for f in bams if f.get('output_type') == 'alignments' or f.get('output_type') == 'redacted alignments']
     unfiltered_bams = [f for f in bams
-                       if f.get('output_type') == 'unfiltered alignments']
+                       if f.get('output_type') == 'unfiltered alignments' or f.get('output_type') == 'redacted unfiltered alignments']
     if not bams:
         row = copy.deepcopy(row_template)
         if not fastqs:
